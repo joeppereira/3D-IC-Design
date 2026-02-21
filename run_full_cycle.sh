@@ -74,6 +74,9 @@ python3 src/si_analyzer_v3.py --config ../physics_accelerated/results/golden_con
 # Adaptive Voltage Scaling (AVS) Optimization
 python3 scripts/avs_optimizer.py --config ../physics_accelerated/results/golden_config.json
 
+# IR-Drop & Power Integrity Audit
+python3 src/thermal/ir_drop_solver.py --config ../physics_accelerated/results/golden_config.json
+
 # Security & Root-of-Trust Audit
 python3 src/security_analyzer.py --config ../physics_accelerated/results/golden_config.json
 
