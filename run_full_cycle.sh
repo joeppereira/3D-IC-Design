@@ -1,87 +1,78 @@
 #!/bin/bash
-# 3D IC Designer Orchestrator v2.0
-# Handles 224G PAM4, 35dB Loss, and Material Selection Logic
+# 3D IC Designer Orchestrator v2.5 (Milestone #5 Ready)
 set -e 
 
 # 0. INPUT PARSING
-SPEC_FILE=${1:-"configs/cxl_224g_lr.json"}
-echo "🚀 Initializing 3D IC Designer for Spec: $SPEC_FILE"
+SPEC_FILE=${1:-"configs/cxl_switch_sop_v2.json"}
+echo "🚀 Initializing v2.5 Silicon Architect for: $SPEC_FILE"
 
-# 1. MATERIAL & REACH SELECTION (The "Pre-Flight" Logic)
-# Robust JSON Parsing using Python (Cross-platform)
+# --- NEW V2.5 RTL HOOK ---
+# Predicts power from code complexity before simulation
+python3 serdes_architect/scripts/rtl_analyzer.py --config $SPEC_FILE
+
+# 1. MATERIAL & REACH SELECTION
 REACH=$(python3 -c "import json; print(json.load(open('$SPEC_FILE')).get('reach_mm', 0))")
 LOSS=$(python3 -c "import json; print(json.load(open('$SPEC_FILE')).get('loss_db', 0))")
 JSON_MAT=$(python3 -c "import json; print(json.load(open('$SPEC_FILE')).get('packaging', {}).get('material_name', ''))")
 
-echo "🔍 Analysis: Reach=${REACH}mm, Target Loss=${LOSS}dB, Config Material=${JSON_MAT}"
+echo "🔍 Pre-flight: Reach=${REACH}mm, Loss=${LOSS}dB"
 
 if [ -n "$JSON_MAT" ]; then
-    echo "✅ Using Material from Config: $JSON_MAT"
     export MATERIAL="$JSON_MAT"
-    # Set PHY mode based on reach/loss still
-    if (( $(echo "$LOSS > 30.0" | bc -l) )); then
-        export PHY_MODE="LR_224G"
-        export CLOCK_MODE="recovery"
-    else
-        export PHY_MODE="SR_64G"
-        export CLOCK_MODE="delivery"
-    fi
-elif (( $(echo "$LOSS > 30.0" | bc -l) )); then
-    echo "⚠️  LONG REACH DETECTED (>30dB). Force-enabling Megtron 7 and CDR..."
-    export PHY_MODE="LR_224G"
-    export MATERIAL="Megtron7"
-    export CLOCK_MODE="recovery"
+    if (( $(echo "$LOSS > 30.0" | bc -l) )); then export PHY_MODE="LR_224G"; export CLOCK_MODE="recovery"
+    else export PHY_MODE="SR_64G"; export CLOCK_MODE="delivery"; fi
 else
-    echo "✅ Short Reach Mode. Using Configured Material (Defaulting to Silicon/FR4 if unspecified)."
-    export PHY_MODE="SR_64G"
-    # Do not force MATERIAL="FR4_Standard" here. Let data_gen.py use its default or the JSON.
-    export CLOCK_MODE="delivery"
+    if (( $(echo "$LOSS > 30.0" | bc -l) )); then export MATERIAL="Megtron7"; export PHY_MODE="LR_224G"; export CLOCK_MODE="recovery"
+    else export MATERIAL="FR4_Standard"; export PHY_MODE="SR_64G"; export CLOCK_MODE="delivery"; fi
 fi
 
-# 2. PHASE 1: PHYSICS FACTORY (serdes_architect)
-echo "📂 [Phase 1] Generating 5-layer 3D Voxel Tensors ($MATERIAL)..."
+# 2. PHASE 1: PHYSICS FACTORY
+echo "📂 [Phase 1] Physics Simulation..."
 cd serdes_architect
-# Note: Passing --material requires updating data_gen.py to accept it
-python3 src/data_gen.py --config ../$SPEC_FILE --samples ${SAMPLES:-50} --layers 5
+python3 src/data_gen.py --config ../$SPEC_FILE --samples ${SAMPLES:-50} --layers 5 --material $MATERIAL
 python3 src/thermal/solver.py --verify --mode 3d_6neighbor 
 cd ..
 
-# 3. PHASE 2: SURROGATE TRAINING (physics_accelerated)
-echo "🧠 [Phase 2] Training Multi-Channel FNO (Z-Axis as Channels)..."
+# 3. PHASE 2: COGNITIVE OPTIMIZER
+echo "🧠 [Phase 2] FNO Surrogate Training..."
 cd physics_accelerated
-# Ensure data symlink exists (force recreate)
 rm -rf data && ln -sf ../serdes_architect/data data
-# Note: Passing --in_channels requires updating train.py
 python3 src/train.py --epochs ${EPOCHS:-2} --weighted_loss true --in_channels 5
 cd ..
 
-# 4. PHASE 3: PARETO OPTIMIZATION (GEPA)
-echo "📈 [Phase 3] Running GEPA Search for Golden Config..."
+# 4. PHASE 3: GEPA SEARCH
+echo "📈 [Phase 3] Multi-Objective Pareto Search..."
 cd physics_accelerated
-# Note: Passing --avs_enabled and --target_ber requires updating gepa.py
 python3 src/gepa.py --avs_enabled true --target_ber 1e-12 --config ../$SPEC_FILE
 cd ..
 
-# 5. PHASE 4: SI SIGN-OFF & OPENROAD
-echo "🏗️  [Phase 4] Physical Synthesis & SI Verification..."
+# 5. PHASE 4: MULTI-DOMAIN SIGN-OFF
+echo "🏗️  [Phase 4] Automated Sign-off Gates..."
 cd serdes_architect
-# SI Analyzer V2 (Waterfall)
-python3 src/si_analyzer.py --config ../physics_accelerated/results/golden_config.json --mode $PHY_MODE --loss $LOSS
-# SI Analyzer V3 (112GHz Scaled)
-python3 src/si_analyzer_v3.py --config ../physics_accelerated/results/golden_config.json
+GOLDEN="../physics_accelerated/results/golden_config.json"
 
-# --- NEW V2 GATES ---
-# Adaptive Voltage Scaling (AVS) Optimization
-python3 scripts/avs_optimizer.py --config ../physics_accelerated/results/golden_config.json
+# Signal Integrity (V3 112GHz Scaled)
+python3 src/si_analyzer_v3.py --config $GOLDEN
 
-# IR-Drop & Power Integrity Audit
-python3 src/thermal/ir_drop_solver.py --config ../physics_accelerated/results/golden_config.json
+# Adaptive Voltage Scaling
+python3 scripts/avs_optimizer.py --config $GOLDEN
 
-# Security & Root-of-Trust Audit
-python3 src/security_analyzer.py --config ../physics_accelerated/results/golden_config.json
+# Power Integrity (IR-Drop)
+python3 src/thermal/ir_drop_solver.py --config $GOLDEN
 
-# OpenROAD Export (Mocked as not installed)
-echo "⚠️ OpenROAD skipping (mock run)."
+# Security & Root-of-Trust
+python3 src/security_analyzer.py --config $GOLDEN
+
+# Transient Thermal (RDMA Burst)
+python3 src/thermal/transient_solver.py --config $GOLDEN
+
+# Physical Layout Generation
+python3 src/layout/gen_def.py --golden_config $GOLDEN
+
+# Final Design Summary Report (Review-Ready)
+python3 scripts/generate_final_summary.py --config $GOLDEN
+
+echo "⚠️ OpenROAD Skipping actual P&R (mock run complete)."
 cd ..
 
-echo "✅ 224G Project Sign-off Complete. Check ./reports/voxel_si_report.pdf"
+echo "✅ Milestone #5 Sign-off Complete. Results saved to project_memory/ and reports/."

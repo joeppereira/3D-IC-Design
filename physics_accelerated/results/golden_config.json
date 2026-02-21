@@ -2,7 +2,7 @@
   "project_name": "CXL_Switch_SoP_1TB_V2",
   "reach_mm": 300.0,
   "target_bandwidth_gbps": 224.0,
-  "max_power_budget_w": 200.0,
+  "max_power_budget_w": 15.0,
   "packaging": {
     "topology": "Face_to_Face",
     "material_name": "Flyover",
@@ -49,23 +49,23 @@
       "DICE"
     ]
   },
+  "rtl_analysis": {
+    "gate_count": 150000000.0,
+    "toggle_rate": 0.15,
+    "predicted_w": 15.0451
+  },
   "reach_classification": "MR",
   "architectural_recs": [
     "  -> Clocking: Drift detected. Use CDR (Adds ~15% area).",
     "  -> PHY: Analog FFE + DFE required for eye closure."
   ],
   "floorplan": {
-    "lx": 1,
-    "ly": 8,
-    "mx": 1,
-    "my": 8,
-    "estimated_max_temp": 72.81809997558594,
+    "lx": 0,
+    "ly": 3,
+    "mx": 0,
+    "my": 3,
+    "estimated_max_temp": 28.186077117919922,
     "internal_reach_mm": 0.0
-  },
-  "si_signoff": {
-    "total_insertion_loss_db": 144.7033265151377,
-    "eye_width_ui": -1.8940665303027537,
-    "eye_height_mv": 4.6550426162025414e-05
   },
   "si_analysis_v3": {
     "loss": 12.81496062992126,

@@ -153,6 +153,10 @@ def run_gepa(args):
                 best_design['estimated_max_temp'] = max_t
                 best_design['internal_reach_mm'] = internal_reach_mm
 
+    if best_design is None:
+        print("❌ Optimization failed to find a valid design. Check model training.")
+        return
+
     print(f"  Best Design: Temp={best_design['estimated_max_temp']:.2f}C, Reach={best_design['internal_reach_mm']:.2f}mm")
 
     # Final Recommendation Logic
