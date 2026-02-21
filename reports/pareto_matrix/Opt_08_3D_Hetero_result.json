@@ -51,10 +51,10 @@
   ],
   "floorplan": {
     "lx": 6,
-    "ly": 8,
+    "ly": 5,
     "mx": 6,
-    "my": 8,
-    "estimated_max_temp": 40.163612365722656,
+    "my": 5,
+    "estimated_max_temp": 40.129432678222656,
     "internal_reach_mm": 0.0
   },
   "si_signoff": {
@@ -63,8 +63,8 @@
     "eye_height_mv": 1.6984723878988262e-07
   },
   "si_analysis_v3": {
-    "loss": 34.18683527367635,
-    "snr_margin_db": -4.686835273676351,
+    "loss": 35.18683527367635,
+    "snr_margin_db": -5.686835273676351,
     "eye_width_ui": 0.0,
     "status": "\u274c FAIL",
     "mod": "PAM4"

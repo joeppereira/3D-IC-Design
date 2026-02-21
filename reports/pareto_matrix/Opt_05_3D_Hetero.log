@@ -8,8 +8,8 @@ Generating 10 samples with 5 layers...
   [Solver] Built Face_to_Face Stack: ['Die', 'Hybrid_Bond', 'Die', 'C4_BGA', 'Package']
     Processed 0/10 samples...
   Saved x_physics.pt and y_spatial.pt to data/
-  Stats: Max Temp = 1040.08C, Avg Temp = 34.98C
-  Max Jitter Tax observed: 1.0151 UI
+  Stats: Max Temp = 1101.34C, Avg Temp = 34.53C
+  Max Jitter Tax observed: 1.0763 UI
   [Solver] Built Face_to_Face Stack: ['Die', 'Hybrid_Bond', 'Die', 'C4_BGA', 'Package']
 Running Nodal Laplacian Check...
   Topology: Face_to_Face
@@ -25,7 +25,7 @@ Running Nodal Laplacian Check...
 DEBUG: CWD is /Users/joepereira/code/3D-IC-Design/physics_accelerated
 DEBUG: Checking /Users/joepereira/code/3D-IC-Design/physics_accelerated/data
 DEBUG: Contents of data: ['x_physics.pt', 'y_spatial.pt']
-  Epoch 0/1 | Loss: 4.703104 | LR: 1.0e-03
+  Epoch 0/1 | Loss: 4.844288 | LR: 1.0e-03
 ✅ Training Complete in 0.05s
   Saved model and stats to results/
 📈 [Phase 3] Running GEPA Search for Golden Config...
@@ -36,7 +36,7 @@ DEBUG: Contents of data: ['x_physics.pt', 'y_spatial.pt']
   -> Budget: 25 dB Loss | 1.5 pJ/b
   -> Arch: FFE+DFE EQ | CDR Clocking
   Exploring design space: 50 candidates x 10 generations...
-  Best Design: Temp=39.34C, Reach=0.00mm
+  Best Design: Temp=39.33C, Reach=0.00mm
 
 ✅ Saved optimized configuration to results/golden_config.json
 🏗️  [Phase 4] Physical Synthesis & SI Verification...
@@ -57,9 +57,9 @@ DEBUG: Contents of data: ['x_physics.pt', 'y_spatial.pt']
 
 ✅ Sign-off report appended to golden_config.json
   🔍 SI Analysis: PAM4 | CDR | 10.04" on Megtron7
+    - Signaling:     Diff (XTK: 1.0dB)
     - DSP Gain:      +15.00 dB (224G ADC-DSP)
-    - CDR Active: 0 dB Skew Tax
 
-📢 Verdict: ✅ PASS | Loss: 23.7dB | Eye: 0.29 UI | Margin: 5.8dB
+📢 Verdict: ✅ PASS | Loss: 24.7dB | Eye: 0.24 UI | Margin: 4.8dB
 ⚠️ OpenROAD skipping (mock run).
 ✅ 224G Project Sign-off Complete. Check ./reports/voxel_si_report.pdf

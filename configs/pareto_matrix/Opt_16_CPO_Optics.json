@@ -17,16 +17,16 @@
       "name": "Logic",
       "type": "3nm",
       "size_mm": [
-        10,
-        10
+        15,
+        15
       ]
     },
     "die_1": {
       "name": "SRAM",
       "type": "Stacked",
       "size_mm": [
-        10,
-        10
+        15,
+        15
       ]
     }
   },

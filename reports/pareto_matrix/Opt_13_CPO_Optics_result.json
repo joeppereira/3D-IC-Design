@@ -17,16 +17,16 @@
       "name": "Logic",
       "type": "3nm",
       "size_mm": [
-        10,
-        10
+        15,
+        15
       ]
     },
     "die_1": {
       "name": "SRAM",
       "type": "Stacked",
       "size_mm": [
-        10,
-        10
+        15,
+        15
       ]
     }
   },
@@ -54,17 +54,17 @@
     "ly": 7,
     "mx": 7,
     "my": 7,
-    "estimated_max_temp": 45.94607162475586,
+    "estimated_max_temp": 40.35678482055664,
     "internal_reach_mm": 0.0
   },
   "si_signoff": {
-    "total_insertion_loss_db": 307.65751005833545,
-    "eye_width_ui": -5.153150201166709,
-    "eye_height_mv": 3.3129469688137504e-13
+    "total_insertion_loss_db": 307.63385826771656,
+    "eye_width_ui": -5.152677165354331,
+    "eye_height_mv": 3.3219804601367054e-13
   },
   "si_analysis_v3": {
-    "loss": 51.58611630680991,
-    "snr_margin_db": -22.086116306809913,
+    "loss": 52.58611630680991,
+    "snr_margin_db": -23.086116306809913,
     "eye_width_ui": 0.0,
     "status": "\u274c FAIL",
     "mod": "PAM4"

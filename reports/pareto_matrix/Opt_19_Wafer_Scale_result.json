@@ -17,16 +17,16 @@
       "name": "Logic",
       "type": "3nm",
       "size_mm": [
-        10,
-        10
+        25,
+        25
       ]
     },
     "die_1": {
       "name": "SRAM",
       "type": "Stacked",
       "size_mm": [
-        10,
-        10
+        25,
+        25
       ]
     }
   },
@@ -50,21 +50,21 @@
     "  -> PHY: ADC-based DSP mandatory for heavy equalization."
   ],
   "floorplan": {
-    "lx": 10,
-    "ly": 6,
-    "mx": 10,
-    "my": 6,
-    "estimated_max_temp": 57.01141357421875,
+    "lx": 3,
+    "ly": 3,
+    "mx": 3,
+    "my": 3,
+    "estimated_max_temp": 50.9677734375,
     "internal_reach_mm": 0.0
   },
   "si_signoff": {
-    "total_insertion_loss_db": 444.94201762282,
-    "eye_width_ui": -7.8988403524564,
-    "eye_height_mv": 4.528862192438232e-20
+    "total_insertion_loss_db": 444.79092661940206,
+    "eye_width_ui": -7.895818532388041,
+    "eye_height_mv": 4.608330900900658e-20
   },
   "si_analysis_v3": {
-    "loss": 99.99606299212599,
-    "snr_margin_db": -70.49606299212599,
+    "loss": 100.99606299212599,
+    "snr_margin_db": -71.49606299212599,
     "eye_width_ui": 0.0,
     "status": "\u274c FAIL",
     "mod": "PAM4"

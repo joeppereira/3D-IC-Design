@@ -17,16 +17,16 @@
       "name": "Logic",
       "type": "3nm",
       "size_mm": [
-        10,
-        10
+        12,
+        12
       ]
     },
     "die_1": {
       "name": "SRAM",
       "type": "Stacked",
       "size_mm": [
-        10,
-        10
+        12,
+        12
       ]
     }
   },
@@ -50,11 +50,11 @@
     "  -> PHY: Analog FFE + DFE required for eye closure."
   ],
   "floorplan": {
-    "lx": 8,
-    "ly": 6,
-    "mx": 8,
-    "my": 6,
-    "estimated_max_temp": 40.00225067138672,
+    "lx": 2,
+    "ly": 4,
+    "mx": 2,
+    "my": 4,
+    "estimated_max_temp": 40.301910400390625,
     "internal_reach_mm": 0.0
   },
   "si_signoff": {
@@ -63,9 +63,9 @@
     "eye_height_mv": 0.006265960095768891
   },
   "si_analysis_v3": {
-    "loss": 20.26741044716951,
-    "snr_margin_db": 9.23258955283049,
-    "eye_width_ui": 0.4616294776415245,
+    "loss": 21.26741044716951,
+    "snr_margin_db": 8.23258955283049,
+    "eye_width_ui": 0.4116294776415245,
     "status": "\u2705 PASS",
     "mod": "PAM4"
   }

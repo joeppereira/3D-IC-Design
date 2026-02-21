@@ -45,36 +45,44 @@ def visualize_pareto(csv_path, output_html):
 
     # Generate Summary HTML
     summary_html = f"""
-    <div style="font-family: sans-serif; padding: 20px; background: #f4f4f9; border-radius: 10px; margin-top: 20px;">
-        <h2 style="color: #2c3e50;">🏆 Architectural Selection Summary</h2>
-        <table style="width: 100%; border-collapse: collapse;">
-            <tr style="background: #34495e; color: white;">
-                <th style="padding: 10px; text-align: left;">Category</th>
-                <th style="padding: 10px; text-align: left;">Selected Design</th>
-                <th style="padding: 10px; text-align: left;">Package / Interposer</th>
-                <th style="padding: 10px; text-align: left;">Key Metric</th>
+    <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 20px; background: #ffffff; border: 1px solid #dfe6e9; border-radius: 8px; margin-top: 30px;">
+        <h2 style="color: #2d3436; border-bottom: 2px solid #0984e3; padding-bottom: 10px;">Architectural Selection Summary</h2>
+        <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
+            <tr style="background: #f1f2f6; color: #2d3436; font-weight: bold;">
+                <th style="padding: 12px; text-align: left; border-bottom: 2px solid #dfe6e9;">Category</th>
+                <th style="padding: 12px; text-align: left; border-bottom: 2px solid #dfe6e9;">Design ID</th>
+                <th style="padding: 12px; text-align: left; border-bottom: 2px solid #dfe6e9;">Package Topology</th>
+                <th style="padding: 12px; text-align: left; border-bottom: 2px solid #dfe6e9;">Area (mm²)</th>
+                <th style="padding: 12px; text-align: left; border-bottom: 2px solid #dfe6e9;">Efficiency (pJ/b)</th>
+                <th style="padding: 12px; text-align: left; border-bottom: 2px solid #dfe6e9;">Margin (UI)</th>
             </tr>
             <tr>
-                <td style="padding: 10px; border-bottom: 1px solid #ddd;"><b>Power Optimized</b></td>
-                <td style="padding: 10px; border-bottom: 1px solid #ddd;">{power_opt['design_name']}</td>
-                <td style="padding: 10px; border-bottom: 1px solid #ddd;">{power_opt['package_type']} / {power_opt['interposer']}</td>
-                <td style="padding: 10px; border-bottom: 1px solid #ddd;">{power_opt['power_efficiency_pjb']} pJ/b</td>
+                <td style="padding: 12px; border-bottom: 1px solid #dfe6e9;"><b>Power Champion</b></td>
+                <td style="padding: 12px; border-bottom: 1px solid #dfe6e9;">{power_opt['design_name']}</td>
+                <td style="padding: 12px; border-bottom: 1px solid #dfe6e9;">{power_opt['package_type']}</td>
+                <td style="padding: 12px; border-bottom: 1px solid #dfe6e9;">{power_opt['die_area_mm2']}</td>
+                <td style="padding: 12px; border-bottom: 1px solid #dfe6e9; color: #00b894;"><b>{power_opt['power_efficiency_pjb']}</b></td>
+                <td style="padding: 12px; border-bottom: 1px solid #dfe6e9;">{power_opt['link_eye_margin_ui']}</td>
             </tr>
-            <tr style="background: #fff;">
-                <td style="padding: 10px; border-bottom: 1px solid #ddd;"><b>Performance Optimized</b></td>
-                <td style="padding: 10px; border-bottom: 1px solid #ddd;">{perf_opt['design_name']}</td>
-                <td style="padding: 10px; border-bottom: 1px solid #ddd;">{perf_opt['package_type']} / {perf_opt['interposer']}</td>
-                <td style="padding: 10px; border-bottom: 1px solid #ddd;">{perf_opt['link_eye_margin_ui']} UI Margin</td>
+            <tr style="background: #f9f9f9;">
+                <td style="padding: 12px; border-bottom: 1px solid #dfe6e9;"><b>Performance Champion</b></td>
+                <td style="padding: 12px; border-bottom: 1px solid #dfe6e9;">{perf_opt['design_name']}</td>
+                <td style="padding: 12px; border-bottom: 1px solid #dfe6e9;">{perf_opt['package_type']}</td>
+                <td style="padding: 12px; border-bottom: 1px solid #dfe6e9;">{perf_opt['die_area_mm2']}</td>
+                <td style="padding: 12px; border-bottom: 1px solid #dfe6e9;">{perf_opt['power_efficiency_pjb']}</td>
+                <td style="padding: 12px; border-bottom: 1px solid #dfe6e9; color: #0984e3;"><b>{perf_opt['link_eye_margin_ui']}</b></td>
             </tr>
             <tr>
-                <td style="padding: 10px; border-bottom: 1px solid #ddd;"><b>Density Optimized</b></td>
-                <td style="padding: 10px; border-bottom: 1px solid #ddd;">{density_opt['design_name']}</td>
-                <td style="padding: 10px; border-bottom: 1px solid #ddd;">{density_opt['package_type']} / {density_opt['interposer']}</td>
-                <td style="padding: 10px; border-bottom: 1px solid #ddd;">{density_opt['die_area_mm2']} mm²</td>
+                <td style="padding: 12px; border-bottom: 1px solid #dfe6e9;"><b>Density Champion</b></td>
+                <td style="padding: 12px; border-bottom: 1px solid #dfe6e9;">{density_opt['design_name']}</td>
+                <td style="padding: 12px; border-bottom: 1px solid #dfe6e9;">{density_opt['package_type']}</td>
+                <td style="padding: 12px; border-bottom: 1px solid #dfe6e9; color: #d63031;"><b>{density_opt['die_area_mm2']}</b></td>
+                <td style="padding: 12px; border-bottom: 1px solid #dfe6e9;">{density_opt['power_efficiency_pjb']}</td>
+                <td style="padding: 12px; border-bottom: 1px solid #dfe6e9;">{density_opt['link_eye_margin_ui']}</td>
             </tr>
         </table>
-        <div style="margin-top: 20px; font-size: 0.9em; color: #7f8c8d;">
-            <i>Note: "Performance Optimized" chooses maximum SNR headroom for 224G/112G reliability. "Power Optimized" favors XSR/UCIe links with minimal EQ.</i>
+        <div style="margin-top: 15px; font-size: 0.85em; color: #636e72;">
+            <i>Calibration Note: Performance metrics based on 112GHz Nyquist scaling. Area inclusive of SerDes beachfront and Logic Core.</i>
         </div>
     </div>
     """

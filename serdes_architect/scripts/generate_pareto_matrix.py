@@ -13,18 +13,25 @@ os.makedirs(configs_dir, exist_ok=True)
 
 def generate_config(option_id, group_name, pkg_type, interconnect, interposer, pdn, cooling="Passive"):
     # Base params
-    reach = 5.0 + (option_id * 50.0) # Varies from 5mm to 1000mm
+    reach = 5.0 + (option_id * 50.0) 
     bw = 112.0
-    if option_id > 15: bw = 224.0 # Top tier speed
+    if option_id > 15: bw = 224.0
     
-    # Heuristic for IO Efficiency (pJ/b) based on complexity
+    # 1. Differentiate Die Size (Fixes Area Congestion)
+    if "CoWoS" in group_name: side = 12 # 144 mm2
+    elif "3D_Hetero" in group_name: side = 10 # 100 mm2
+    elif "SoP" in group_name: side = 8 # 64 mm2 (Dense)
+    elif "CPO" in group_name: side = 15 # 225 mm2
+    elif "Wafer_Scale" in group_name: side = 25 # 625 mm2
+    else: side = 10
+    
+    # Heuristic for IO Efficiency (pJ/b)
     if reach < 10: pjb = 0.3
     elif reach < 100: pjb = 0.8
     elif reach < 500: pjb = 1.5
     else: pjb = 2.5
     
-    # Power for Thermal (Logic)
-    # Higher options have more compute power
+    # Power for Thermal
     logic_pwr = 50.0 + (option_id * 5.0) 
     
     cfg = {
@@ -32,7 +39,7 @@ def generate_config(option_id, group_name, pkg_type, interconnect, interposer, p
         "reach_mm": reach,
         "target_bandwidth_gbps": bw,
         "max_power_budget_w": logic_pwr,
-        "io_efficiency_pjb": pjb, # New field for correct reporting
+        "io_efficiency_pjb": pjb,
         "packaging": {
             "topology": pkg_type,
             "interconnect": interconnect,
@@ -42,8 +49,8 @@ def generate_config(option_id, group_name, pkg_type, interconnect, interposer, p
             "material_name": "Megtron7"
         },
         "die_hierarchy": {
-            "die_0": {"name": "Logic", "type": "3nm", "size_mm": [10, 10]},
-            "die_1": {"name": "SRAM", "type": "Stacked", "size_mm": [10, 10]}
+            "die_0": {"name": "Logic", "type": "3nm", "size_mm": [side, side]},
+            "die_1": {"name": "SRAM", "type": "Stacked", "size_mm": [side, side]}
         },
         "voxel_stack_params": {
             "layers": 5, "grid_size": 16,

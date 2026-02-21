@@ -8,8 +8,8 @@ Generating 10 samples with 5 layers...
   [Solver] Built Wafer_Scale_Integration Stack: ['Die', 'Metal_Stack', 'C4_BGA', 'Package', 'PCB_Board']
     Processed 0/10 samples...
   Saved x_physics.pt and y_spatial.pt to data/
-  Stats: Max Temp = 1944.11C, Avg Temp = 44.56C
-  Max Jitter Tax observed: 1.9191 UI
+  Stats: Max Temp = 1828.83C, Avg Temp = 43.43C
+  Max Jitter Tax observed: 1.8038 UI
   [Solver] Built Face_to_Face Stack: ['Die', 'Hybrid_Bond', 'Die', 'C4_BGA', 'Package']
 Running Nodal Laplacian Check...
   Topology: Face_to_Face
@@ -25,7 +25,7 @@ Running Nodal Laplacian Check...
 DEBUG: CWD is /Users/joepereira/code/3D-IC-Design/physics_accelerated
 DEBUG: Checking /Users/joepereira/code/3D-IC-Design/physics_accelerated/data
 DEBUG: Contents of data: ['x_physics.pt', 'y_spatial.pt']
-  Epoch 0/1 | Loss: 4.831587 | LR: 1.0e-03
+  Epoch 0/1 | Loss: 4.781145 | LR: 1.0e-03
 ✅ Training Complete in 0.05s
   Saved model and stats to results/
 📈 [Phase 3] Running GEPA Search for Golden Config...
@@ -36,7 +36,7 @@ DEBUG: Contents of data: ['x_physics.pt', 'y_spatial.pt']
   -> Budget: 36 dB Loss | 2.5 pJ/b
   -> Arch: ADC-DSP EQ | CDR Clocking
   Exploring design space: 50 candidates x 10 generations...
-  Best Design: Temp=47.06C, Reach=0.00mm
+  Best Design: Temp=47.48C, Reach=0.00mm
 
 ✅ Saved optimized configuration to results/golden_config.json
 🏗️  [Phase 4] Physical Synthesis & SI Verification...
@@ -46,9 +46,9 @@ DEBUG: Contents of data: ['x_physics.pt', 'y_spatial.pt']
   [2] PCB Trace:    413.31 dB (35.63")
   [3] Connectors:   2.50 dB
   [4] XTK (SNR):    2.50 dB
-  [5] Thermal:      0.55 dB
+  [5] Thermal:      0.56 dB
   ---------------------------
-  Total IL:         421.86 dB @ Nyquist
+  Total IL:         421.87 dB @ Nyquist
 
 🔍 Sign-off Metrics (Target >0.45 UI, >40mV):
   Eye Width:  -7.437 UI
@@ -57,9 +57,9 @@ DEBUG: Contents of data: ['x_physics.pt', 'y_spatial.pt']
 
 ✅ Sign-off report appended to golden_config.json
   🔍 SI Analysis: PAM4 | CDR | 35.63" on Megtron7
+    - Signaling:     Diff (XTK: 1.0dB)
     - DSP Gain:      +15.00 dB (224G ADC-DSP)
-    - CDR Active: 0 dB Skew Tax
 
-📢 Verdict: ❌ FAIL | Loss: 95.1dB | Eye: 0.00 UI | Margin: -65.6dB
+📢 Verdict: ❌ FAIL | Loss: 96.1dB | Eye: 0.00 UI | Margin: -66.6dB
 ⚠️ OpenROAD skipping (mock run).
 ✅ 224G Project Sign-off Complete. Check ./reports/voxel_si_report.pdf

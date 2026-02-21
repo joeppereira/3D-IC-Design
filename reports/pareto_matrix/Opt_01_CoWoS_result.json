@@ -17,16 +17,16 @@
       "name": "Logic",
       "type": "3nm",
       "size_mm": [
-        10,
-        10
+        12,
+        12
       ]
     },
     "die_1": {
       "name": "SRAM",
       "type": "Stacked",
       "size_mm": [
-        10,
-        10
+        12,
+        12
       ]
     }
   },
@@ -49,11 +49,11 @@
     "  -> Clocking: Use Forwarded Clock (Low Power/Latency)."
   ],
   "floorplan": {
-    "lx": 2,
-    "ly": 5,
-    "mx": 2,
-    "my": 5,
-    "estimated_max_temp": 33.824737548828125,
+    "lx": 8,
+    "ly": 10,
+    "mx": 8,
+    "my": 10,
+    "estimated_max_temp": 35.079795837402344,
     "internal_reach_mm": 0.0
   },
   "si_signoff": {
@@ -62,9 +62,9 @@
     "eye_height_mv": 16.67955559250272
   },
   "si_analysis_v3": {
-    "loss": 9.827841827289381,
-    "snr_margin_db": 7.672158172710617,
-    "eye_width_ui": 0.38360790863553085,
+    "loss": 10.827841827289381,
+    "snr_margin_db": 18.672158172710617,
+    "eye_width_ui": 0.9336079086355309,
     "status": "\u2705 PASS",
     "mod": "PAM4"
   }

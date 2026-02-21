@@ -1,19 +1,32 @@
 {
-  "project_name": "Test_XSR_Fwd_Gain",
-  "reach_mm": 20.0,
-  "loss_db": 2.0,
-  "target_bandwidth_gbps": 112.0,
+  "project_name": "Opt_20_Wafer_Scale",
+  "reach_mm": 1005.0,
+  "target_bandwidth_gbps": 224.0,
+  "max_power_budget_w": 150.0,
+  "io_efficiency_pjb": 2.5,
   "packaging": {
-    "topology": "Face_to_Face",
+    "topology": "Wafer_Scale_Integration",
+    "interconnect": "RDL",
+    "interposer": "Silicon",
+    "pdn_strategy": "Dual-Side",
+    "cooling": "Passive",
     "material_name": "Megtron7"
   },
   "die_hierarchy": {
     "die_0": {
-      "name": "Test",
+      "name": "Logic",
       "type": "3nm",
       "size_mm": [
-        5,
-        5
+        25,
+        25
+      ]
+    },
+    "die_1": {
+      "name": "SRAM",
+      "type": "Stacked",
+      "size_mm": [
+        25,
+        25
       ]
     }
   },
@@ -22,37 +35,38 @@
     "grid_size": 16,
     "k_map": {
       "Die": 140.0,
+      "Interposer": 140.0,
       "Package": 0.3
     }
   },
   "constraints": {
-    "min_isolation_db": 40,
+    "min_isolation_db": 35,
     "modulation": "PAM4",
-    "clock_mode": "Forwarded",
-    "fec_preference": "none"
+    "fec_preference": "inner"
   },
-  "reach_classification": "VSR",
+  "reach_classification": "VLR",
   "architectural_recs": [
-    "  -> Clocking: Use Forwarded Clock (Low Power/Latency)."
+    "  -> Clocking: Drift detected. Use CDR (Adds ~15% area).",
+    "  -> PHY: ADC-based DSP mandatory for heavy equalization."
   ],
   "floorplan": {
-    "lx": 7,
-    "ly": 6,
-    "mx": 7,
-    "my": 6,
-    "estimated_max_temp": 26.636646270751953,
+    "lx": 0,
+    "ly": 9,
+    "mx": 0,
+    "my": 9,
+    "estimated_max_temp": 49.40894317626953,
     "internal_reach_mm": 0.0
   },
   "si_signoff": {
-    "total_insertion_loss_db": 16.133858267716533,
-    "eye_width_ui": 0.6773228346456693,
-    "eye_height_mv": 124.85245132347156
+    "total_insertion_loss_db": 467.5866015321626,
+    "eye_width_ui": -8.351732030643252,
+    "eye_height_mv": 3.3401033911968724e-21
   },
   "si_analysis_v3": {
-    "loss": 8.391942482650684,
-    "snr_margin_db": 7.608057517349316,
-    "eye_width_ui": 0.3804028758674658,
-    "status": "\u2705 PASS",
+    "loss": 105.91732283464566,
+    "snr_margin_db": -76.41732283464566,
+    "eye_width_ui": 0.0,
+    "status": "\u274c FAIL",
     "mod": "PAM4"
   }
 }
