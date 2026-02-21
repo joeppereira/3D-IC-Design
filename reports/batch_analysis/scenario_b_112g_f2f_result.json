@@ -1,0 +1,56 @@
+{
+  "project_name": "Scenario_B_3D_Hotspot",
+  "reach_mm": 10.0,
+  "loss_db": 4.0,
+  "target_bandwidth_gbps": 112.0,
+  "packaging": {
+    "topology": "Face_to_Face",
+    "material_name": "FR4"
+  },
+  "die_hierarchy": {
+    "die_0": {
+      "name": "Logic_112G",
+      "type": "3nm",
+      "size_mm": [
+        12,
+        12
+      ]
+    }
+  },
+  "voxel_stack_params": {
+    "layers": 5,
+    "grid_size": 16,
+    "k_map": {
+      "Die": 140.0,
+      "Package": 0.3
+    }
+  },
+  "constraints": {
+    "min_isolation_db": 35,
+    "modulation": "PAM4"
+  },
+  "reach_classification": "XSR",
+  "architectural_recs": [
+    "  -> Clocking: Use Forwarded Clock (Low Power/Latency)."
+  ],
+  "floorplan": {
+    "lx": 11,
+    "ly": 8,
+    "mx": 11,
+    "my": 8,
+    "estimated_max_temp": 26.49683380126953,
+    "internal_reach_mm": 0.0
+  },
+  "si_signoff": {
+    "total_insertion_loss_db": 13.066929133858267,
+    "eye_width_ui": 0.7386614173228347,
+    "eye_height_mv": 177.72295690483526
+  },
+  "si_analysis_v3": {
+    "loss": 9.783884965301368,
+    "snr_margin_db": 4.216115034698632,
+    "eye_width_ui": 0.2108057517349316,
+    "status": "\u2705 PASS",
+    "mod": "PAM4"
+  }
+}

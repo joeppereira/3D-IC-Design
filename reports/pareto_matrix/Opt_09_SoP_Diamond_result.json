@@ -1,0 +1,72 @@
+{
+  "project_name": "Opt_09_SoP_Diamond",
+  "reach_mm": 455.0,
+  "target_bandwidth_gbps": 112.0,
+  "max_power_budget_w": 95.0,
+  "io_efficiency_pjb": 1.5,
+  "packaging": {
+    "topology": "Face_to_Face",
+    "interconnect": "Hybrid_Bond",
+    "interposer": "Diamond",
+    "pdn_strategy": "Backside",
+    "cooling": "Passive_BSPDN",
+    "material_name": "Megtron7"
+  },
+  "die_hierarchy": {
+    "die_0": {
+      "name": "Logic",
+      "type": "3nm",
+      "size_mm": [
+        10,
+        10
+      ]
+    },
+    "die_1": {
+      "name": "SRAM",
+      "type": "Stacked",
+      "size_mm": [
+        10,
+        10
+      ]
+    }
+  },
+  "voxel_stack_params": {
+    "layers": 5,
+    "grid_size": 16,
+    "k_map": {
+      "Die": 140.0,
+      "Interposer": 2000.0,
+      "Package": 10.0
+    }
+  },
+  "constraints": {
+    "min_isolation_db": 35,
+    "modulation": "PAM4",
+    "fec_preference": "inner"
+  },
+  "reach_classification": "MR",
+  "architectural_recs": [
+    "  -> Clocking: Drift detected. Use CDR (Adds ~15% area).",
+    "  -> PHY: Analog FFE + DFE required for eye closure."
+  ],
+  "floorplan": {
+    "lx": 11,
+    "ly": 10,
+    "mx": 11,
+    "my": 10,
+    "estimated_max_temp": 40.80656433105469,
+    "internal_reach_mm": 0.0
+  },
+  "si_signoff": {
+    "total_insertion_loss_db": 216.2952755905512,
+    "eye_width_ui": -3.3259055118110243,
+    "eye_height_mv": 1.2255363790689129e-08
+  },
+  "si_analysis_v3": {
+    "loss": 37.66669148030307,
+    "snr_margin_db": -8.166691480303072,
+    "eye_width_ui": 0.0,
+    "status": "\u274c FAIL",
+    "mod": "PAM4"
+  }
+}

@@ -1,0 +1,60 @@
+{
+  "project_name": "LinkSweep_224G_PAM4",
+  "reach_mm": 500.0,
+  "loss_db": 12.0,
+  "target_bandwidth_gbps": 224.0,
+  "max_power_budget_w": 40.96,
+  "packaging": {
+    "topology": "Side_by_Side_2.5D",
+    "material_name": "Flyover"
+  },
+  "die_hierarchy": {
+    "die_0": {
+      "name": "Test_Die",
+      "type": "5nm",
+      "size_mm": [
+        5,
+        5
+      ]
+    }
+  },
+  "voxel_stack_params": {
+    "layers": 5,
+    "grid_size": 16,
+    "k_map": {
+      "Die": 140.0,
+      "Package": 0.3
+    }
+  },
+  "constraints": {
+    "min_isolation_db": 30,
+    "modulation": "PAM4",
+    "fec_preference": "none",
+    "clock_mode": "CDR"
+  },
+  "reach_classification": "MR",
+  "architectural_recs": [
+    "  -> Clocking: Drift detected. Use CDR (Adds ~15% area).",
+    "  -> PHY: Analog FFE + DFE required for eye closure."
+  ],
+  "floorplan": {
+    "lx": 5,
+    "ly": 7,
+    "mx": 5,
+    "my": 7,
+    "estimated_max_temp": 31.092145919799805,
+    "internal_reach_mm": 0.0
+  },
+  "si_signoff": {
+    "total_insertion_loss_db": 239.3464566929134,
+    "eye_width_ui": -3.7869291338582682,
+    "eye_height_mv": 8.625159845057807e-10
+  },
+  "si_analysis_v3": {
+    "loss": 15.858267716535433,
+    "snr_margin_db": 10.141732283464563,
+    "eye_width_ui": 0.5070866141732282,
+    "status": "\u2705 PASS",
+    "mod": "PAM4"
+  }
+}

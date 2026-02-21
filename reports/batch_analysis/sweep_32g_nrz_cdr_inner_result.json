@@ -1,0 +1,58 @@
+{
+  "project_name": "LinkSweep_32G_NRZ",
+  "reach_mm": 100.0,
+  "loss_db": 10.0,
+  "target_bandwidth_gbps": 32.0,
+  "packaging": {
+    "topology": "Side_by_Side_2.5D",
+    "material_name": "FR4"
+  },
+  "die_hierarchy": {
+    "die_0": {
+      "name": "Test_Die",
+      "type": "5nm",
+      "size_mm": [
+        5,
+        5
+      ]
+    }
+  },
+  "voxel_stack_params": {
+    "layers": 5,
+    "grid_size": 16,
+    "k_map": {
+      "Die": 140.0,
+      "Package": 0.3
+    }
+  },
+  "constraints": {
+    "min_isolation_db": 30,
+    "modulation": "NRZ",
+    "fec_preference": "inner",
+    "clock_mode": "CDR"
+  },
+  "reach_classification": "VSR",
+  "architectural_recs": [
+    "  -> Clocking: Use Forwarded Clock (Low Power/Latency)."
+  ],
+  "floorplan": {
+    "lx": 10,
+    "ly": 0,
+    "mx": 10,
+    "my": 0,
+    "estimated_max_temp": 26.48287582397461,
+    "internal_reach_mm": 0.0
+  },
+  "si_signoff": {
+    "total_insertion_loss_db": 56.669291338582674,
+    "eye_width_ui": -0.13338582677165345,
+    "eye_height_mv": 1.1738846401211076
+  },
+  "si_analysis_v3": {
+    "loss": 21.8804910633554,
+    "snr_margin_db": 10.6195089366446,
+    "eye_width_ui": 0.53097544683223,
+    "status": "\u2705 PASS",
+    "mod": "NRZ"
+  }
+}

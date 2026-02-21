@@ -1,0 +1,47 @@
+{
+  "project_name": "Opt_14_CPO_Optics",
+  "reach_mm": 705.0,
+  "target_bandwidth_gbps": 112.0,
+  "max_power_budget_w": 120.0,
+  "io_efficiency_pjb": 2.5,
+  "packaging": {
+    "topology": "Side_by_Side_2.5D",
+    "interconnect": "Photonics",
+    "interposer": "Glass",
+    "pdn_strategy": "Frontside",
+    "cooling": "Passive",
+    "material_name": "Megtron7"
+  },
+  "die_hierarchy": {
+    "die_0": {
+      "name": "Logic",
+      "type": "3nm",
+      "size_mm": [
+        10,
+        10
+      ]
+    },
+    "die_1": {
+      "name": "SRAM",
+      "type": "Stacked",
+      "size_mm": [
+        10,
+        10
+      ]
+    }
+  },
+  "voxel_stack_params": {
+    "layers": 5,
+    "grid_size": 16,
+    "k_map": {
+      "Die": 140.0,
+      "Interposer": 1.2,
+      "Package": 0.3
+    }
+  },
+  "constraints": {
+    "min_isolation_db": 35,
+    "modulation": "PAM4",
+    "fec_preference": "inner"
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "project_name": "CXL_Switch_SoP_1TB_V2",
+  "intent": "1TB CXL 3.1 Switch, 3D SRAM KV-Cache, 16x 224G RDMA links",
+  "standards": ["UCIe 2.0", "CXL 3.1", "PCIe 7.0"],
+  "target_bandwidth_gbps": 224.0,
+  "max_power_budget_w": 190.0,
+  "thermal_cap_c": 105.0,
+  "target_pj_bit": 6.0,
+  "die_hierarchy": {
+    "die_0": {"name": "CXL_Switch_Logic", "type": "3nm_GAA", "size_mm": [15, 15]},
+    "die_1": {"name": "SRAM_KV_Cache", "type": "Stacked_SRAM", "size_mm": [12, 12]}
+  },
+  "packaging": {
+    "topology": "Face_to_Face",
+    "interconnect": "Hybrid_Bond",
+    "pitch_um": 5.0,
+    "material_name": "Megtron7",
+    "cooling": "BSPDN_Liquid"
+  },
+  "voxel_stack_params": {
+    "layers": 5,
+    "grid_size": 16,
+    "k_map": {
+      "Die": 140.0,
+      "Metal_Stack": 380.0,
+      "C4_BGA": 50.0,
+      "Package": 100.0,
+      "PCB": 0.3
+    }
+  },
+  "constraints": {
+    "min_isolation_db": 40,
+    "reliability_years": 10,
+    "fec_preference": "inner",
+    "modulation": "PAM4",
+    "clock_mode": "CDR"
+  }
+}

@@ -1,0 +1,71 @@
+{
+  "project_name": "Opt_11_SoP_Glass",
+  "reach_mm": 50.0,
+  "loss_db": 10.0,
+  "target_bandwidth_gbps": 112.0,
+  "max_power_budget_w": 100.0,
+  "packaging": {
+    "topology": "Face_to_Face",
+    "interconnect": "Hybrid_Bond",
+    "interposer": "Glass",
+    "pdn_strategy": "Backside",
+    "cooling": "Passive_BSPDN",
+    "material_name": "Megtron7"
+  },
+  "die_hierarchy": {
+    "die_0": {
+      "name": "Logic_Core",
+      "type": "3nm",
+      "size_mm": [
+        10,
+        10
+      ]
+    },
+    "die_1": {
+      "name": "Memory_HBM",
+      "type": "Stacked_DRAM",
+      "size_mm": [
+        10,
+        10
+      ]
+    }
+  },
+  "voxel_stack_params": {
+    "layers": 5,
+    "grid_size": 16,
+    "k_map": {
+      "Die": 140.0,
+      "Interposer": 140.0,
+      "Package": 0.3
+    }
+  },
+  "constraints": {
+    "min_isolation_db": 35,
+    "modulation": "PAM4",
+    "fec_preference": "inner"
+  },
+  "reach_classification": "VSR",
+  "architectural_recs": [
+    "  -> Clocking: Use Forwarded Clock (Low Power/Latency)."
+  ],
+  "floorplan": {
+    "lx": 11,
+    "ly": 8,
+    "mx": 11,
+    "my": 8,
+    "estimated_max_temp": 39.895347595214844,
+    "internal_reach_mm": 0.0
+  },
+  "si_signoff": {
+    "total_insertion_loss_db": 31.334645669291337,
+    "eye_width_ui": 0.3733070866141732,
+    "eye_height_mv": 21.694902541930787
+  },
+  "si_analysis_v3": {
+    "loss": 9.47985620662671,
+    "snr_margin_db": 8.020143793373293,
+    "eye_width_ui": 0.40100718966866467,
+    "status": "\u2705 PASS",
+    "mod": "PAM4"
+  }
+}

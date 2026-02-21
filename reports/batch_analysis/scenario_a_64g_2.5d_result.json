@@ -1,0 +1,56 @@
+{
+  "project_name": "Scenario_A_Baseline",
+  "reach_mm": 50.0,
+  "loss_db": 5.0,
+  "target_bandwidth_gbps": 64.0,
+  "packaging": {
+    "topology": "Side_by_Side_2.5D",
+    "material_name": "FR4"
+  },
+  "die_hierarchy": {
+    "die_0": {
+      "name": "Logic_64G",
+      "type": "5nm",
+      "size_mm": [
+        10,
+        10
+      ]
+    }
+  },
+  "voxel_stack_params": {
+    "layers": 5,
+    "grid_size": 16,
+    "k_map": {
+      "Die": 140.0,
+      "Package": 0.3
+    }
+  },
+  "constraints": {
+    "min_isolation_db": 30,
+    "modulation": "PAM4"
+  },
+  "reach_classification": "VSR",
+  "architectural_recs": [
+    "  -> Clocking: Use Forwarded Clock (Low Power/Latency)."
+  ],
+  "floorplan": {
+    "lx": 9,
+    "ly": 2,
+    "mx": 9,
+    "my": 2,
+    "estimated_max_temp": 26.514705657958984,
+    "internal_reach_mm": 0.0
+  },
+  "si_signoff": {
+    "total_insertion_loss_db": 33.83464566929133,
+    "eye_width_ui": 0.3233070866141733,
+    "eye_height_mv": 16.26888178822588
+  },
+  "si_analysis_v3": {
+    "loss": 17.522096138284425,
+    "snr_margin_db": 1.4779038617155749,
+    "eye_width_ui": 0.07389519308577874,
+    "status": "\u274c FAIL",
+    "mod": "PAM4"
+  }
+}

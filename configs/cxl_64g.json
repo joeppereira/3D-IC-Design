@@ -1,0 +1,39 @@
+{
+  "project_name": "CXL_3D_Memory_Stack",
+  "target_bandwidth_gbps": 64.0,
+  "max_power_budget_w": 8.0,
+  "reach_mm": 1.5,
+  "die_hierarchy": {
+    "die_0": {"name": "Switch_Logic", "type": "3nm_FinFET", "size_mm": [12, 12]},
+    "die_1": {"name": "Memory_Array", "type": "Stacked_DRAM", "size_mm": [12, 12]}
+  },
+  "packaging": {
+    "topology": "Face_to_Face",
+    "options": ["Face_to_Face", "Back_to_Face", "Side_by_Side_2.5D"],
+    "interposer": "Active_Silicon",
+    "interposer_components": ["Retimer_x16", "Decoupling_Caps"],
+    "material_properties": {
+      "Hybrid_Bond": 3.0,
+      "Microbump": 50.0,
+      "Silicon_Interposer": 140.0,
+      "Organic_Interposer": 0.5
+    }
+  },
+  "voxel_stack_params": {
+    "layers": 5,
+    "grid_size": 16,
+    "k_map": {
+      "Die": 148.0,
+      "Metal_Stack": 401.0,
+      "C4_BGA": 50.0,
+      "Package": 0.08,
+      "PCB_Board": 134.0
+    }
+  },
+  "constraints": {
+    "min_isolation_db": 30,
+    "reliability_years": 10,
+    "fec_preference": "inner_only",
+    "modulation": "PAM4"
+  }
+}

@@ -1,0 +1,118 @@
+{
+  "die_size": [
+    15,
+    15
+  ],
+  "edges": {
+    "TOP": [
+      {
+        "type": "RDMA/PCIe",
+        "id": 0
+      },
+      {
+        "type": "RDMA/PCIe",
+        "id": 1
+      },
+      {
+        "type": "RDMA/PCIe",
+        "id": 2
+      },
+      {
+        "type": "RDMA/PCIe",
+        "id": 3
+      },
+      {
+        "type": "RDMA/PCIe",
+        "id": 4
+      },
+      {
+        "type": "RDMA/PCIe",
+        "id": 5
+      },
+      {
+        "type": "RDMA/PCIe",
+        "id": 6
+      },
+      {
+        "type": "RDMA/PCIe",
+        "id": 7
+      }
+    ],
+    "BOTTOM": [
+      {
+        "type": "RDMA/PCIe",
+        "id": 8
+      },
+      {
+        "type": "RDMA/PCIe",
+        "id": 9
+      },
+      {
+        "type": "RDMA/PCIe",
+        "id": 10
+      },
+      {
+        "type": "RDMA/PCIe",
+        "id": 11
+      },
+      {
+        "type": "RDMA/PCIe",
+        "id": 12
+      },
+      {
+        "type": "RDMA/PCIe",
+        "id": 13
+      },
+      {
+        "type": "RDMA/PCIe",
+        "id": 14
+      },
+      {
+        "type": "RDMA/PCIe",
+        "id": 15
+      }
+    ],
+    "LEFT": [
+      {
+        "type": "DRAM_UCIe",
+        "id": 0
+      },
+      {
+        "type": "DRAM_UCIe",
+        "id": 1
+      },
+      {
+        "type": "DRAM_UCIe",
+        "id": 2
+      },
+      {
+        "type": "DRAM_UCIe",
+        "id": 3
+      }
+    ],
+    "RIGHT": [
+      {
+        "type": "DRAM_UCIe",
+        "id": 4
+      },
+      {
+        "type": "DRAM_UCIe",
+        "id": 5
+      },
+      {
+        "type": "DRAM_UCIe",
+        "id": 6
+      },
+      {
+        "type": "DRAM_UCIe",
+        "id": 7
+      }
+    ]
+  },
+  "center": {
+    "type": "Hybrid_Bond_Array",
+    "target": "SRAM_Search_Die",
+    "count": 8192,
+    "pitch_um": 5.0
+  }
+}

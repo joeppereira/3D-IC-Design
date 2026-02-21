@@ -1,0 +1,72 @@
+{
+  "project_name": "Opt_14_CPO_Optics",
+  "reach_mm": 705.0,
+  "target_bandwidth_gbps": 112.0,
+  "max_power_budget_w": 120.0,
+  "io_efficiency_pjb": 2.5,
+  "packaging": {
+    "topology": "Side_by_Side_2.5D",
+    "interconnect": "Photonics",
+    "interposer": "Glass",
+    "pdn_strategy": "Frontside",
+    "cooling": "Passive",
+    "material_name": "Megtron7"
+  },
+  "die_hierarchy": {
+    "die_0": {
+      "name": "Logic",
+      "type": "3nm",
+      "size_mm": [
+        10,
+        10
+      ]
+    },
+    "die_1": {
+      "name": "SRAM",
+      "type": "Stacked",
+      "size_mm": [
+        10,
+        10
+      ]
+    }
+  },
+  "voxel_stack_params": {
+    "layers": 5,
+    "grid_size": 16,
+    "k_map": {
+      "Die": 140.0,
+      "Interposer": 1.2,
+      "Package": 0.3
+    }
+  },
+  "constraints": {
+    "min_isolation_db": 35,
+    "modulation": "PAM4",
+    "fec_preference": "inner"
+  },
+  "reach_classification": "LR",
+  "architectural_recs": [
+    "  -> Clocking: Drift detected. Use CDR (Adds ~15% area).",
+    "  -> PHY: ADC-based DSP mandatory for heavy equalization."
+  ],
+  "floorplan": {
+    "lx": 7,
+    "ly": 1,
+    "mx": 8,
+    "my": 1,
+    "estimated_max_temp": 54.38030242919922,
+    "internal_reach_mm": 0.1
+  },
+  "si_signoff": {
+    "total_insertion_loss_db": 330.70301149773786,
+    "eye_width_ui": -5.614060229954757,
+    "eye_height_mv": 2.3331325470915063e-14
+  },
+  "si_analysis_v3": {
+    "loss": 55.06597251343662,
+    "snr_margin_db": -25.56597251343662,
+    "eye_width_ui": 0.0,
+    "status": "\u274c FAIL",
+    "mod": "PAM4"
+  }
+}

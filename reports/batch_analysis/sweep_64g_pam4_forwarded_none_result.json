@@ -1,0 +1,60 @@
+{
+  "project_name": "LinkSweep_64G_PAM4",
+  "reach_mm": 150.0,
+  "loss_db": 12.0,
+  "target_bandwidth_gbps": 64.0,
+  "max_power_budget_w": 20.48,
+  "packaging": {
+    "topology": "Side_by_Side_2.5D",
+    "material_name": "Megtron7"
+  },
+  "die_hierarchy": {
+    "die_0": {
+      "name": "Test_Die",
+      "type": "5nm",
+      "size_mm": [
+        5,
+        5
+      ]
+    }
+  },
+  "voxel_stack_params": {
+    "layers": 5,
+    "grid_size": 16,
+    "k_map": {
+      "Die": 140.0,
+      "Package": 0.3
+    }
+  },
+  "constraints": {
+    "min_isolation_db": 30,
+    "modulation": "PAM4",
+    "fec_preference": "none",
+    "clock_mode": "Forwarded"
+  },
+  "reach_classification": "MR",
+  "architectural_recs": [
+    "  -> Clocking: Drift detected. Use CDR (Adds ~15% area).",
+    "  -> PHY: Analog FFE + DFE required for eye closure."
+  ],
+  "floorplan": {
+    "lx": 6,
+    "ly": 1,
+    "mx": 7,
+    "my": 1,
+    "estimated_max_temp": 28.09516143798828,
+    "internal_reach_mm": 0.1
+  },
+  "si_signoff": {
+    "total_insertion_loss_db": 79.50393700787401,
+    "eye_width_ui": -0.5900787401574803,
+    "eye_height_mv": 0.08470189692505797
+  },
+  "si_analysis_v3": {
+    "loss": 14.891572103713319,
+    "snr_margin_db": -2.84432800922513,
+    "eye_width_ui": 0.0,
+    "status": "\u274c FAIL",
+    "mod": "PAM4"
+  }
+}

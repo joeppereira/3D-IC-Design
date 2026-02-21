@@ -1,0 +1,64 @@
+🚀 Initializing 3D IC Designer for Spec: configs/sweep_32g_pam2_cdr_none.json
+🔍 Analysis: Reach=100.0mm, Target Loss=10.0dB, Config Material=FR4
+✅ Using Material from Config: FR4
+📂 [Phase 1] Generating 5-layer 3D Voxel Tensors (FR4)...
+Generating 10 samples with 5 layers...
+  Creating random Power Maps...
+  Solving for Thermal Distribution (This may take a while)...
+  [Solver] Built Side_by_Side_2.5D Stack: ['Die', 'Microbump', 'Silicon_Interposer', 'C4_BGA', 'Package']
+    Processed 0/10 samples...
+  Saved x_physics.pt and y_spatial.pt to data/
+  Stats: Max Temp = 227.43C, Avg Temp = 27.17C
+  Max Jitter Tax observed: 0.2024 UI
+  [Solver] Built Face_to_Face Stack: ['Die', 'Hybrid_Bond', 'Die', 'C4_BGA', 'Package']
+Running Nodal Laplacian Check...
+  Topology: Face_to_Face
+  Test Hotspot (10W): Max T = 27.16C, Min T = 25.00C
+  Gradient Check: Layer 0 (27.16C) vs Layer 1 (25.48C)
+  ✅ Gradient Correct: Heat flowing from Source to Sink.
+🧠 [Phase 2] Training Multi-Channel FNO (Z-Axis as Channels)...
+/Users/joepereira/code/3D-IC-Design/physics_accelerated/src/train.py:75: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.detach().clone() or sourceTensor.detach().clone().requires_grad_(True), rather than torch.tensor(sourceTensor).
+  gridx = torch.tensor(torch.linspace(0, 1, size_x), dtype=torch.float)
+/Users/joepereira/code/3D-IC-Design/physics_accelerated/src/train.py:77: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.detach().clone() or sourceTensor.detach().clone().requires_grad_(True), rather than torch.tensor(sourceTensor).
+  gridy = torch.tensor(torch.linspace(0, 1, size_y), dtype=torch.float)
+🚀 Training FNO Surrogate on cpu...
+DEBUG: CWD is /Users/joepereira/code/3D-IC-Design/physics_accelerated
+DEBUG: Checking /Users/joepereira/code/3D-IC-Design/physics_accelerated/data
+DEBUG: Contents of data: ['x_physics.pt', 'y_spatial.pt']
+  Epoch 0/1 | Loss: 4.683100 | LR: 1.0e-03
+✅ Training Complete in 0.05s
+  Saved model and stats to results/
+📈 [Phase 3] Running GEPA Search for Golden Config...
+📈 Starting GEPA Multi-Objective Optimization...
+  Loaded Surrogate Model & Norm Stats.
+
+🌍 Reach Classification: VSR (100.0mm)
+  -> Budget: 10 dB Loss | 0.8 pJ/b
+  -> Arch: CTLE EQ | Forwarded Clocking
+  Exploring design space: 50 candidates x 10 generations...
+  Best Design: Temp=28.14C, Reach=0.00mm
+
+✅ Saved optimized configuration to results/golden_config.json
+🏗️  [Phase 4] Physical Synthesis & SI Verification...
+
+🌊 SI Loss Waterfall Analysis (Material: FR4)
+  [1] Pkg Escape:   3.00 dB
+  [2] PCB Trace:    45.67 dB (3.94")
+  [3] Connectors:   2.50 dB
+  [4] XTK (SNR):    5.00 dB
+  [5] Thermal:      0.50 dB
+  ---------------------------
+  Total IL:         56.67 dB @ Nyquist
+
+🔍 Sign-off Metrics (Target >0.45 UI, >40mV):
+  Eye Width:  -0.133 UI
+  Eye Height: 1.2 mV
+  ❌ FAILURE: Eye closure detected. Solution: High-Loss Material or better EQ.
+
+✅ Sign-off report appended to golden_config.json
+  🔍 SI Analysis: PAM2 | CDR | 3.94" on FR4
+    - Signaling:     SE (XTK: 6.0dB)
+
+📢 Verdict: ❌ FAIL | Loss: 26.9dB | Eye: 0.11 UI | Margin: 2.1dB
+⚠️ OpenROAD skipping (mock run).
+✅ 224G Project Sign-off Complete. Check ./reports/voxel_si_report.pdf

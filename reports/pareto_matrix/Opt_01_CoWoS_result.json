@@ -1,0 +1,71 @@
+{
+  "project_name": "Opt_01_CoWoS",
+  "reach_mm": 55.0,
+  "target_bandwidth_gbps": 112.0,
+  "max_power_budget_w": 55.0,
+  "io_efficiency_pjb": 0.8,
+  "packaging": {
+    "topology": "Side_by_Side_2.5D",
+    "interconnect": "Microbumps",
+    "interposer": "Silicon",
+    "pdn_strategy": "Frontside",
+    "cooling": "Passive",
+    "material_name": "Megtron7"
+  },
+  "die_hierarchy": {
+    "die_0": {
+      "name": "Logic",
+      "type": "3nm",
+      "size_mm": [
+        10,
+        10
+      ]
+    },
+    "die_1": {
+      "name": "SRAM",
+      "type": "Stacked",
+      "size_mm": [
+        10,
+        10
+      ]
+    }
+  },
+  "voxel_stack_params": {
+    "layers": 5,
+    "grid_size": 16,
+    "k_map": {
+      "Die": 140.0,
+      "Interposer": 140.0,
+      "Package": 0.3
+    }
+  },
+  "constraints": {
+    "min_isolation_db": 35,
+    "modulation": "PAM4",
+    "fec_preference": "inner"
+  },
+  "reach_classification": "VSR",
+  "architectural_recs": [
+    "  -> Clocking: Use Forwarded Clock (Low Power/Latency)."
+  ],
+  "floorplan": {
+    "lx": 2,
+    "ly": 5,
+    "mx": 2,
+    "my": 5,
+    "estimated_max_temp": 33.824737548828125,
+    "internal_reach_mm": 0.0
+  },
+  "si_signoff": {
+    "total_insertion_loss_db": 33.618110236220474,
+    "eye_width_ui": 0.32763779527559056,
+    "eye_height_mv": 16.67955559250272
+  },
+  "si_analysis_v3": {
+    "loss": 9.827841827289381,
+    "snr_margin_db": 7.672158172710617,
+    "eye_width_ui": 0.38360790863553085,
+    "status": "\u2705 PASS",
+    "mod": "PAM4"
+  }
+}

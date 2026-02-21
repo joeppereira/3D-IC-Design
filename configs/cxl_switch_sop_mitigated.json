@@ -1,0 +1,47 @@
+{
+  "project_name": "CXL_Switch_SoP_Mitigated",
+  "reach_mm": 300.0,
+  "loss_db": 18.0,
+  "target_bandwidth_gbps": 224.0,
+  "max_power_budget_w": 200.0,
+  "packaging": {
+    "topology": "Face_to_Face",
+    "material_name": "Megtron7",
+    "interposer": "Silicon_Interposer",
+    "cooling": "BSPDN_Liquid"
+  },
+  "die_hierarchy": {
+    "die_0": {
+      "name": "CXL_Switch_Logic",
+      "type": "3nm_FinFET",
+      "size_mm": [
+        15,
+        15
+      ]
+    },
+    "die_1": {
+      "name": "SRAM_Search_Die",
+      "type": "Stacked_SRAM",
+      "size_mm": [
+        12,
+        12
+      ]
+    }
+  },
+  "voxel_stack_params": {
+    "layers": 5,
+    "grid_size": 16,
+    "k_map": {
+      "Die": 140.0,
+      "Metal_Stack": 380.0,
+      "C4_BGA": 50.0,
+      "Package": 100.0
+    }
+  },
+  "constraints": {
+    "min_isolation_db": 40,
+    "reliability_years": 10,
+    "fec_preference": "inner",
+    "modulation": "PAM4"
+  }
+}

@@ -1,0 +1,57 @@
+{
+  "project_name": "Scenario_D_Material_Fix",
+  "reach_mm": 800.0,
+  "loss_db": 12.0,
+  "target_bandwidth_gbps": 224.0,
+  "packaging": {
+    "topology": "Side_by_Side_2.5D",
+    "material_name": "Flyover"
+  },
+  "die_hierarchy": {
+    "die_0": {
+      "name": "Switch_224G",
+      "type": "3nm",
+      "size_mm": [
+        15,
+        15
+      ]
+    }
+  },
+  "voxel_stack_params": {
+    "layers": 5,
+    "grid_size": 16,
+    "k_map": {
+      "Die": 140.0,
+      "Package": 0.3
+    }
+  },
+  "constraints": {
+    "min_isolation_db": 40,
+    "modulation": "PAM4"
+  },
+  "reach_classification": "LR",
+  "architectural_recs": [
+    "  -> Clocking: Drift detected. Use CDR (Adds ~15% area).",
+    "  -> PHY: ADC-based DSP mandatory for heavy equalization."
+  ],
+  "floorplan": {
+    "lx": 1,
+    "ly": 3,
+    "mx": 1,
+    "my": 3,
+    "estimated_max_temp": 26.521528244018555,
+    "internal_reach_mm": 0.0
+  },
+  "si_signoff": {
+    "total_insertion_loss_db": 372.3543307086614,
+    "eye_width_ui": -6.4470866141732275,
+    "eye_height_mv": 1.9291831124031653e-16
+  },
+  "si_analysis_v3": {
+    "loss": 21.173228346456696,
+    "snr_margin_db": 4.826771653543304,
+    "eye_width_ui": 0.2413385826771652,
+    "status": "\u2705 PASS",
+    "mod": "PAM4"
+  }
+}

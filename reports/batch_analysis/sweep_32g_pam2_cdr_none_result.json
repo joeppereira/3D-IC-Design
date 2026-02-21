@@ -1,0 +1,59 @@
+{
+  "project_name": "LinkSweep_32G_PAM2",
+  "reach_mm": 100.0,
+  "loss_db": 10.0,
+  "target_bandwidth_gbps": 32.0,
+  "max_power_budget_w": 16.384,
+  "packaging": {
+    "topology": "Side_by_Side_2.5D",
+    "material_name": "FR4"
+  },
+  "die_hierarchy": {
+    "die_0": {
+      "name": "Test_Die",
+      "type": "5nm",
+      "size_mm": [
+        5,
+        5
+      ]
+    }
+  },
+  "voxel_stack_params": {
+    "layers": 5,
+    "grid_size": 16,
+    "k_map": {
+      "Die": 140.0,
+      "Package": 0.3
+    }
+  },
+  "constraints": {
+    "min_isolation_db": 30,
+    "modulation": "PAM2",
+    "fec_preference": "none",
+    "clock_mode": "CDR"
+  },
+  "reach_classification": "VSR",
+  "architectural_recs": [
+    "  -> Clocking: Use Forwarded Clock (Low Power/Latency)."
+  ],
+  "floorplan": {
+    "lx": 7,
+    "ly": 0,
+    "mx": 7,
+    "my": 0,
+    "estimated_max_temp": 28.136552810668945,
+    "internal_reach_mm": 0.0
+  },
+  "si_signoff": {
+    "total_insertion_loss_db": 56.669291338582674,
+    "eye_width_ui": -0.13338582677165345,
+    "eye_height_mv": 1.1738846401211076
+  },
+  "si_analysis_v3": {
+    "loss": 26.8804910633554,
+    "snr_margin_db": 2.1195089366446,
+    "eye_width_ui": 0.10597544683223,
+    "status": "\u274c FAIL",
+    "mod": "PAM2"
+  }
+}

@@ -1,0 +1,58 @@
+{
+  "project_name": "Test_XSR_Fwd_Gain",
+  "reach_mm": 20.0,
+  "loss_db": 2.0,
+  "target_bandwidth_gbps": 112.0,
+  "packaging": {
+    "topology": "Face_to_Face",
+    "material_name": "Megtron7"
+  },
+  "die_hierarchy": {
+    "die_0": {
+      "name": "Test",
+      "type": "3nm",
+      "size_mm": [
+        5,
+        5
+      ]
+    }
+  },
+  "voxel_stack_params": {
+    "layers": 5,
+    "grid_size": 16,
+    "k_map": {
+      "Die": 140.0,
+      "Package": 0.3
+    }
+  },
+  "constraints": {
+    "min_isolation_db": 40,
+    "modulation": "PAM4",
+    "clock_mode": "Forwarded",
+    "fec_preference": "none"
+  },
+  "reach_classification": "VSR",
+  "architectural_recs": [
+    "  -> Clocking: Use Forwarded Clock (Low Power/Latency)."
+  ],
+  "floorplan": {
+    "lx": 7,
+    "ly": 6,
+    "mx": 7,
+    "my": 6,
+    "estimated_max_temp": 26.636646270751953,
+    "internal_reach_mm": 0.0
+  },
+  "si_signoff": {
+    "total_insertion_loss_db": 16.133858267716533,
+    "eye_width_ui": 0.6773228346456693,
+    "eye_height_mv": 124.85245132347156
+  },
+  "si_analysis_v3": {
+    "loss": 8.391942482650684,
+    "snr_margin_db": 7.608057517349316,
+    "eye_width_ui": 0.3804028758674658,
+    "status": "\u2705 PASS",
+    "mod": "PAM4"
+  }
+}

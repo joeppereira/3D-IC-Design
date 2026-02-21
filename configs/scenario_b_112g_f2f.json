@@ -1,0 +1,32 @@
+{
+  "project_name": "Scenario_B_3D_Hotspot",
+  "reach_mm": 10.0,
+  "loss_db": 4.0,
+  "target_bandwidth_gbps": 112.0,
+  "packaging": {
+    "topology": "Face_to_Face",
+    "material_name": "FR4"
+  },
+  "die_hierarchy": {
+    "die_0": {
+      "name": "Logic_112G",
+      "type": "3nm",
+      "size_mm": [
+        12,
+        12
+      ]
+    }
+  },
+  "voxel_stack_params": {
+    "layers": 5,
+    "grid_size": 16,
+    "k_map": {
+      "Die": 140.0,
+      "Package": 0.3
+    }
+  },
+  "constraints": {
+    "min_isolation_db": 35,
+    "modulation": "PAM4"
+  }
+}

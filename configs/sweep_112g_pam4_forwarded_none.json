@@ -1,0 +1,35 @@
+{
+  "project_name": "LinkSweep_112G_PAM4",
+  "reach_mm": 100.0,
+  "loss_db": 15.0,
+  "target_bandwidth_gbps": 112.0,
+  "max_power_budget_w": 32.768,
+  "packaging": {
+    "topology": "Side_by_Side_2.5D",
+    "material_name": "Megtron7"
+  },
+  "die_hierarchy": {
+    "die_0": {
+      "name": "Test_Die",
+      "type": "5nm",
+      "size_mm": [
+        5,
+        5
+      ]
+    }
+  },
+  "voxel_stack_params": {
+    "layers": 5,
+    "grid_size": 16,
+    "k_map": {
+      "Die": 140.0,
+      "Package": 0.3
+    }
+  },
+  "constraints": {
+    "min_isolation_db": 30,
+    "modulation": "PAM4",
+    "fec_preference": "none",
+    "clock_mode": "Forwarded"
+  }
+}
