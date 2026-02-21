@@ -4,8 +4,8 @@
 
 set -e
 
-# Detect Intent
-INTENT=$(echo "$1" | jq -r '.intent // empty')
+# Detect Intent using Python (Cross-platform)
+INTENT=$(python3 -c "import sys, json; data=json.load(sys.stdin); print(data.get('intent', ''))" <<< "$1")
 
 if [[ "$INTENT" == *"Train"* || "$INTENT" == *"Fine-tune"* ]]; then
     echo "🧠 [AfterAgent] Starting Local Learning Session..." >&2
