@@ -71,11 +71,19 @@ class AdvancedSIAnalyzer:
             else: clock_impact_db = -(distance_in - 2.0) * 0.5
         eff_snr += clock_impact_db
 
-        # 5. Result
+        # 5. Evaluate
         req_snr = self.mod_specs.get(mod, {"snr_req": 24.0})["snr_req"]
         net_margin_db = eff_snr - req_snr
-        eye_width_ui = max(0.0, min(1.0, net_margin_db * 0.05))
-        status = "✅ PASS" if net_margin_db > 2.0 and eye_width_ui > 0.15 else "❌ FAIL"
+        
+        # Physical Realism: Even with infinite SNR, jitter caps the eye
+        # Residual Jitter Floor: 0.15 UI
+        max_theoretical_eye = 0.75
+        eye_width_ui = max(0.0, min(max_theoretical_eye, net_margin_db * 0.05))
+        
+        # Deduct residual thermal jitter
+        eye_width_ui = max(0.0, eye_width_ui - 0.05) 
+        
+        status = "✅ PASS" if net_margin_db > 2.0 and eye_width_ui > 0.20 else "❌ FAIL"
             
         return {"loss": total_loss, "snr_margin_db": net_margin_db, "eye_width_ui": eye_width_ui, "status": status}
 

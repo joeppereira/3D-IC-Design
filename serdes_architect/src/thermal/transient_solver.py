@@ -47,14 +47,14 @@ class TransientThermalSolver:
             laplacian = d2T_dx2 + d2T_dy2 + d2T_dz2
             
             # Update: T_new = T + dt * (alpha * Laplacian + Source)
-            T = T + self.diffusivity * (laplacian + (power_map * PHYSICAL_SCALE / self.k_tensor))
+            # Increased source term impact for transient spikes
+            T = T + self.diffusivity * (laplacian + (power_map * 2000.0 / self.k_tensor))
             
             # Boundary Conditions (Heatsinks)
-            T[:, 4, :, :] = T[:, 4, :, :] * 0.98 + 25.0 * 0.02 # Board
-            T[:, 0, :, :] = T[:, 0, :, :] * 0.95 + 25.0 * 0.05 # Top Cooler
+            T[:, 4, :, :] = T[:, 4, :, :] * 0.99 + 25.0 * 0.01 
+            T[:, 0, :, :] = T[:, 0, :, :] * 0.98 + 25.0 * 0.02
             
-            if i % 5 == 0:
-                T_history.append(T.max().item())
+            T_history.append(T.max().item())
                 
         return T, T_history
 

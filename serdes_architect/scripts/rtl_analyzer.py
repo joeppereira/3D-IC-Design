@@ -13,10 +13,10 @@ def analyze_rtl(config_path):
     toggle_rate = 0.15 # 15% activity
     
     # Static Power (Leakage) + Dynamic Power (CV^2f)
-    # Calibrated for 3nm node
-    leakage_pwr = 15.0 # 15W Base Leakage
-    dynamic_pwr = logic_gates * 1e-9 * toggle_rate * 2.0 
-    sram_pwr = sram_bits * 1e-12 * 0.1 
+    # Calibrated for 3nm node: ~0.5W to 1.0W per Million Gates at 2GHz
+    leakage_pwr = 40.0 # 40W Base Leakage for 1TB Switch
+    dynamic_pwr = (logic_gates / 1e6) * 0.8 # 0.8W per Million gates
+    sram_pwr = (sram_bits / 1e9) * 20.0 # 20W per Gb of SRAM active
     
     total_predicted_pwr = leakage_pwr + dynamic_pwr + sram_pwr
     

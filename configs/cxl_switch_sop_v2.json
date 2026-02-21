@@ -2,7 +2,7 @@
   "project_name": "CXL_Switch_SoP_1TB_V2",
   "reach_mm": 300.0,
   "target_bandwidth_gbps": 224.0,
-  "max_power_budget_w": 15.0,
+  "max_power_budget_w": 180.0,
   "packaging": {
     "topology": "Face_to_Face",
     "material_name": "Flyover",
@@ -51,6 +51,6 @@
   "rtl_analysis": {
     "gate_count": 150000000.0,
     "toggle_rate": 0.15,
-    "predicted_w": 15.0451
+    "predicted_w": 180.0
   }
 }
