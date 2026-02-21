@@ -20,26 +20,38 @@ Using this tool, we autonomously converged on a **3D-Stacked SRAM-on-Logic** arc
 ## 1. Overall Product Goal
 The goal of this platform is to provide an end-to-end autonomous environment where Silicon Architects can input high-level "Intent" and receive a "GDS-Ready" sign-off report that is physically guaranteed to survive the thermal and electrical stresses of 3nm/3D integration.
 
+---
+
+## 2. The User Experience (Foreground)
+
 ### Phase 1: Intent to Formal Specification
 Converts natural language architectural goals into machine-readable JSON specs with validated physical constraints.
-*   **Inputs**: Performance targets, lane counts, material preferences.
-*   **Output**: `configs/formal_spec.json`.
+*   **User Action**: Define performance targets, lane counts, and material preferences via CLI.
+*   **Result**: A validated `configs/formal_spec.json` ready for the cognitive engine.
 
-### Phase 2: Pareto Surface Generation & Selection
-Executes a massive sweep of package variations to identify the "Golden Options."
-*   **Architectures**: CoWoS-S, 3D Heterogeneous, Stacked SoP (Diamond/Glass), Co-Packaged Optics (CPO), Wafer-Scale.
-*   **Optimizer**: Uses Gradient-Enhanced Pareto Acceleration (GEPA) to navigate the trade-offs between Thermal Jitter, Area, and Manufacturing Cost.
-*   **Output**: `reports/pareto_dashboard.html`.
-
-### Phase 3: Detailed Design & Sign-off
-Performs high-fidelity physics validation on the selected optimal design.
-*   **Thermal**: 3D Finite Difference Method (FDM) solver handles the "Thermal Chimney" effect and models Backside PDN (BSPDN) / Liquid Cooling.
-*   **Signal Integrity**: 112GHz Nyquist scaling for 224G PAM4 BER sign-off, accounting for Material Permittivity (Flyover/Megtron 7) and DSP Gain.
-*   **Layout**: Exports a validated floorplan Tcl script for OpenROAD synthesis.
+### Phase 4: Sign-off, Layout & Iteration
+The final user-facing gate where the design is visualized and exported for manufacturing.
+*   **Visual Output**: Interactive Parallel Coordinates dashboard and Eye Diagrams (224G/112G).
+*   **Physical Output**: GDS-ready floorplan Tcl script for OpenROAD.
+*   **Self-Learning**: The user reviews the "Golden Point" recommendations and iterates if physical margins are tight.
 
 ---
 
-## 3. V2 Autonomous Framework (Self-Learning)
+## 3. The Cognitive Engine (Background Training)
+
+### Phase 2: Pareto Surface Training (Accelerated Optimizer)
+The backend engine executes a massive sweep of 20+ package variations (CoWoS, 3D Hybrid, Diamond, etc.).
+*   **Process**: Trains a Multi-Channel Fourier Neural Operator (FNO) surrogate to predict physics in milliseconds.
+*   **Optimization**: Uses Gradient-Enhanced Pareto Acceleration (GEPA) to find the "Knee of the Curve."
+
+### Phase 3: High-Fidelity Physics Verification
+Validates the AI's predictions using heavy-duty numerical solvers.
+*   **Thermal**: 3D Finite Difference Method (FDM) verifies the "Thermal Chimney" at 200W loads.
+*   **Signal Integrity**: 112GHz Nyquist scaling models the exact loss waterfall for PCIe 7.0 / 224G links.
+
+---
+
+## 4. V2 Autonomous Framework (Self-Learning)
 Version 2 implements a **Reinforcement Learning from Physical Feedback (RLPF)** loop.
 *   **The Controller**: Gemini CLI acts as the architect.
 *   **The Environment**: The physics engines (`serdes_architect`) and surrogate models (`physics_accelerated`).
