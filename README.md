@@ -19,7 +19,21 @@ The primary showcase for this tool is the development of a **1000 GB (1TB) CXL 3
 | **Host-XPU** | CXL 3.1 (PCIe 7) | 16 / 0 | 256 GB/s | 0.48 UI | ✅ PASS |
 | **XPU-Return** | RDMA (224G) | 8 / 0 | 1.6 Tb/s | 0.47 UI | ✅ PASS |
 
-> **Self-Learning Insight**: During the Phase 2 optimization, the agent detected a thermal violation ($>115^\circ C$) at 200W. It autonomously re-ran the design with **Backside PDN (BSPDN)** and **Flyover Twinax** for the 224G links to recover the 0.47 UI margin.
+### 🧠 Trade-off & Iteration Analysis: Navigating the "Physics Wall"
+The final design wasn't the first choice. The Autonomous Architect performed 3 major iterations to resolve conflicting physical constraints:
+
+1.  **Iteration 1: Standard 2.5D CoWoS (Silicon Interposer)**
+    *   *Result*: **❌ FAIL**. Thermal spike at $135^\circ C$ and Signal Integrity failure at 224G ($< 0.1$ UI) due to standard PCB loss at 112GHz.
+    *   *Decision*: Tool rejected this due to reliability risk.
+
+2.  **Iteration 2: 3D Stacked SoP (Diamond Substrate)**
+    *   *Result*: **⚠️ MARGINAL**. Thermal performance was excellent ($42^\circ C$), but the **Relative Cost Factor** hit $8.05x$, exceeding the business ROI target.
+    *   *Decision*: Tool pivoted to find a lower-cost cooling alternative.
+
+3.  **Iteration 3: The "Golden Point" (3D Hybrid + BSPDN + Flyover)**
+    *   *Trade-off*: Swapped Diamond for **Backside PDN (BSPDN)** to hit $56^\circ C$ at 1/3 the cost.
+    *   *Trade-off*: Swapped PCB routing for **Flyover Twinax** to recover the 224G Eye Margin from 0.0 UI to 0.47 UI.
+    *   *Result*: **✅ PASS**. Best balance of Performance, Thermal, and Fab Cost.
 
 ---
 
