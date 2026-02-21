@@ -1,15 +1,23 @@
 {
-  "project_name": "ProtocolSweep_PCIe5_32G",
-  "reach_mm": 100.0,
+  "project_name": "PCIe5_32G_Std",
+  "reach_mm": 500.0,
   "target_bandwidth_gbps": 32.0,
   "max_power_budget_w": 131.072,
   "packaging": {
     "topology": "Side_by_Side_2.5D",
-    "material_name": "FR4"
+    "material_name": "Megtron7",
+    "termination": 100,
+    "vddq_v": 1.0
+  },
+  "constraints": {
+    "modulation": "NRZ",
+    "signaling": "Diff",
+    "fec_preference": "none",
+    "protocol": "PCIe5"
   },
   "die_hierarchy": {
     "die_0": {
-      "name": "Proto_Die",
+      "name": "Logic",
       "type": "3nm",
       "size_mm": [
         10,
@@ -24,12 +32,5 @@
       "Die": 140.0,
       "Package": 0.3
     }
-  },
-  "constraints": {
-    "min_isolation_db": 30,
-    "modulation": "NRZ",
-    "fec_preference": "none",
-    "clock_mode": "Forwarded",
-    "protocol": "PCIe5"
   }
 }

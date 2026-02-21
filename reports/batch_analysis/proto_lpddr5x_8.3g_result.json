@@ -1,0 +1,60 @@
+{
+  "project_name": "LPDDR5X_8.3G_Std",
+  "reach_mm": 25.0,
+  "target_bandwidth_gbps": 8.3,
+  "max_power_budget_w": 10.19904,
+  "packaging": {
+    "topology": "Face_to_Face",
+    "material_name": "FR4",
+    "termination": 48,
+    "vddq_v": 0.3
+  },
+  "constraints": {
+    "modulation": "PAM2",
+    "signaling": "SE",
+    "fec_preference": "none",
+    "protocol": "LPDDR5X"
+  },
+  "die_hierarchy": {
+    "die_0": {
+      "name": "Logic",
+      "type": "3nm",
+      "size_mm": [
+        10,
+        10
+      ]
+    }
+  },
+  "voxel_stack_params": {
+    "layers": 5,
+    "grid_size": 16,
+    "k_map": {
+      "Die": 140.0,
+      "Package": 0.3
+    }
+  },
+  "reach_classification": "VSR",
+  "architectural_recs": [
+    "  -> Clocking: Use Forwarded Clock (Low Power/Latency)."
+  ],
+  "floorplan": {
+    "lx": 0,
+    "ly": 8,
+    "mx": 0,
+    "my": 8,
+    "estimated_max_temp": 29.110061645507812,
+    "internal_reach_mm": 0.0
+  },
+  "si_signoff": {
+    "total_insertion_loss_db": 22.417322834645667,
+    "eye_width_ui": 0.5516535433070866,
+    "eye_height_mv": 60.56529616385604
+  },
+  "si_analysis_v3": {
+    "loss": 13.894616560490983,
+    "snr_margin_db": 5.647808533902264,
+    "eye_width_ui": 0.2823904266951132,
+    "status": "\u2705 PASS",
+    "mod": "PAM2"
+  }
+}

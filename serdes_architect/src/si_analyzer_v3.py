@@ -23,10 +23,13 @@ class AdvancedSIAnalyzer:
             "NRZ":    {"snr_req": 14.0, "ui_penalty_factor": 1.0},
             "PAM2":   {"snr_req": 14.0, "ui_penalty_factor": 1.0},
             "PAM4":   {"snr_req": 24.0, "ui_penalty_factor": 3.0},
-            "PCIe5":  {"snr_req": 18.0, "ui_penalty_factor": 1.5}, # 32G NRZ optimized
-            "PCIe6":  {"snr_req": 22.0, "ui_penalty_factor": 2.5}, # 64G PAM4
-            "LPDDR5": {"snr_req": 12.0, "ui_penalty_factor": 0.8}, # SE parallel
-            "LPDDR6": {"snr_req": 15.0, "ui_penalty_factor": 1.2}  # High-speed SE
+            "PCIe5":  {"snr_req": 18.0, "ui_penalty_factor": 1.5},
+            "PCIe6":  {"snr_req": 22.0, "ui_penalty_factor": 2.5},
+            "PCIe7":  {"snr_req": 24.0, "ui_penalty_factor": 3.0},
+            "LPDDR5": {"snr_req": 12.0, "ui_penalty_factor": 0.8},
+            "LPDDR6": {"snr_req": 15.0, "ui_penalty_factor": 1.2},
+            "UALink128": {"snr_req": 22.0, "ui_penalty_factor": 2.5},
+            "UALink200": {"snr_req": 24.0, "ui_penalty_factor": 3.0}
         }
 
     def evaluate_link(self, distance_in, material_key, config):
@@ -59,9 +62,17 @@ class AdvancedSIAnalyzer:
         total_loss += xtk_db 
         
         # 3. Calculate SNR Margin
-        # Calibrated baseline for 2026-era high-speed SerDes
-        # 40dB is high-end, required for 224G stability at 35dB IL
-        tx_snr = 40.0 
+        # Calibrated baseline for 2026-era high-speed SerDes (1.0V ref)
+        tx_snr_base = 40.0 
+        
+        # Voltage Swing Penalty: SNR drops as VDDQ decreases
+        # SNR_delta = 20 * log10(V_actual / V_ref)
+        vddq = config.get('packaging', {}).get('vddq_v', 1.0)
+        voltage_penalty = 20 * np.log10(vddq / 1.0)
+        
+        tx_snr = tx_snr_base + voltage_penalty
+        print(f"    - VDDQ Swing:    {vddq:.2f}V (SNR Tax: {voltage_penalty:.2f} dB)")
+        
         eff_snr = tx_snr - total_loss
         
         # FEC Gain

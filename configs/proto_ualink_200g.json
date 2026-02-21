@@ -1,0 +1,36 @@
+{
+  "project_name": "UALink_200G_Std",
+  "reach_mm": 500.0,
+  "target_bandwidth_gbps": 200.0,
+  "max_power_budget_w": 819.2,
+  "packaging": {
+    "topology": "Side_by_Side_2.5D",
+    "material_name": "Flyover",
+    "termination": 100,
+    "vddq_v": 1.0
+  },
+  "constraints": {
+    "modulation": "PAM4",
+    "signaling": "Diff",
+    "fec_preference": "both",
+    "protocol": "UALink"
+  },
+  "die_hierarchy": {
+    "die_0": {
+      "name": "Logic",
+      "type": "3nm",
+      "size_mm": [
+        10,
+        10
+      ]
+    }
+  },
+  "voxel_stack_params": {
+    "layers": 5,
+    "grid_size": 16,
+    "k_map": {
+      "Die": 140.0,
+      "Package": 0.3
+    }
+  }
+}

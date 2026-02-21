@@ -1,15 +1,23 @@
 {
-  "project_name": "ProtocolSweep_UCIe2.0_32G",
-  "reach_mm": 100.0,
+  "project_name": "UCIe2.0_32G_Std",
+  "reach_mm": 10.0,
   "target_bandwidth_gbps": 32.0,
-  "max_power_budget_w": 131.072,
+  "max_power_budget_w": 39.3216,
   "packaging": {
-    "topology": "Side_by_Side_2.5D",
-    "material_name": "FR4"
+    "topology": "Face_to_Face",
+    "material_name": "FR4",
+    "termination": 0,
+    "vddq_v": 0.4
+  },
+  "constraints": {
+    "modulation": "NRZ",
+    "signaling": "SE",
+    "fec_preference": "none",
+    "protocol": "UCIe2.0"
   },
   "die_hierarchy": {
     "die_0": {
-      "name": "Proto_Die",
+      "name": "Logic",
       "type": "3nm",
       "size_mm": [
         10,
@@ -24,12 +32,5 @@
       "Die": 140.0,
       "Package": 0.3
     }
-  },
-  "constraints": {
-    "min_isolation_db": 30,
-    "modulation": "PAM4",
-    "fec_preference": "none",
-    "clock_mode": "Forwarded",
-    "protocol": "UCIe2.0"
   }
 }

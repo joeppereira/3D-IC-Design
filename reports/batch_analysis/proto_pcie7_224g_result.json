@@ -1,15 +1,23 @@
 {
-  "project_name": "ProtocolSweep_PCIe7_224G",
-  "reach_mm": 500.0,
+  "project_name": "PCIe7_224G_Std",
+  "reach_mm": 1000.0,
   "target_bandwidth_gbps": 224.0,
   "max_power_budget_w": 917.504,
   "packaging": {
     "topology": "Side_by_Side_2.5D",
-    "material_name": "Flyover"
+    "material_name": "Flyover",
+    "termination": 100,
+    "vddq_v": 1.0
+  },
+  "constraints": {
+    "modulation": "PAM4",
+    "signaling": "Diff",
+    "fec_preference": "both",
+    "protocol": "PCIe7"
   },
   "die_hierarchy": {
     "die_0": {
-      "name": "Proto_Die",
+      "name": "Logic",
       "type": "3nm",
       "size_mm": [
         10,
@@ -25,36 +33,29 @@
       "Package": 0.3
     }
   },
-  "constraints": {
-    "min_isolation_db": 30,
-    "modulation": "PAM4",
-    "fec_preference": "inner",
-    "clock_mode": "CDR",
-    "protocol": "PCIe7"
-  },
-  "reach_classification": "MR",
+  "reach_classification": "LR",
   "architectural_recs": [
     "  -> Clocking: Drift detected. Use CDR (Adds ~15% area).",
-    "  -> PHY: Analog FFE + DFE required for eye closure.",
+    "  -> PHY: ADC-based DSP mandatory for heavy equalization.",
     "  -> \ud83d\udd25 THERMAL ALERT: Material Wall reached. Switch to GaAs."
   ],
   "floorplan": {
     "lx": 0,
-    "ly": 3,
-    "mx": 3,
-    "my": 3,
-    "estimated_max_temp": 179.48727416992188,
-    "internal_reach_mm": 0.30000000000000004
+    "ly": 0,
+    "mx": 10,
+    "my": 10,
+    "estimated_max_temp": 313.9119567871094,
+    "internal_reach_mm": 2.0
   },
   "si_signoff": {
-    "total_insertion_loss_db": 242.70863854716143,
-    "eye_width_ui": -3.8541727709432285,
-    "eye_height_mv": 5.856768521420935e-10
+    "total_insertion_loss_db": 474.41571230550454,
+    "eye_width_ui": -8.488314246110091,
+    "eye_height_mv": 1.5216135664841364e-21
   },
   "si_analysis_v3": {
-    "loss": 15.858267716535433,
-    "snr_margin_db": 21.641732283464563,
-    "eye_width_ui": 1.0,
+    "loss": 24.716535433070867,
+    "snr_margin_db": 12.783464566929133,
+    "eye_width_ui": 0.6391732283464567,
     "status": "\u2705 PASS",
     "mod": "PAM4"
   }

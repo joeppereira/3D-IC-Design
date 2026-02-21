@@ -1,15 +1,22 @@
 {
-  "project_name": "ProtocolSweep_LPDDR6_64G",
-  "reach_mm": 150.0,
+  "project_name": "LPDDR6_64G_Std",
+  "reach_mm": 20,
   "target_bandwidth_gbps": 64.0,
-  "max_power_budget_w": 262.144,
+  "max_power_budget_w": 131.072,
   "packaging": {
-    "topology": "Side_by_Side_2.5D",
-    "material_name": "Megtron7"
+    "topology": "Face_to_Face",
+    "material_name": "Megtron7",
+    "termination": 40
+  },
+  "constraints": {
+    "modulation": "PAM2",
+    "signaling": "SE",
+    "fec_preference": "none",
+    "protocol": "LPDDR6"
   },
   "die_hierarchy": {
     "die_0": {
-      "name": "Proto_Die",
+      "name": "Logic",
       "type": "3nm",
       "size_mm": [
         10,
@@ -25,35 +32,27 @@
       "Package": 0.3
     }
   },
-  "constraints": {
-    "min_isolation_db": 30,
-    "modulation": "PAM2",
-    "fec_preference": "inner",
-    "clock_mode": "CDR",
-    "protocol": "LPDDR6"
-  },
-  "reach_classification": "MR",
+  "reach_classification": "VSR",
   "architectural_recs": [
-    "  -> Clocking: Drift detected. Use CDR (Adds ~15% area).",
-    "  -> PHY: Analog FFE + DFE required for eye closure."
+    "  -> Clocking: Use Forwarded Clock (Low Power/Latency)."
   ],
   "floorplan": {
-    "lx": 10,
-    "ly": 1,
-    "mx": 10,
-    "my": 1,
-    "estimated_max_temp": 72.40534973144531,
-    "internal_reach_mm": 0.0
+    "lx": 5,
+    "ly": 0,
+    "mx": 1,
+    "my": 0,
+    "estimated_max_temp": 73.80309295654297,
+    "internal_reach_mm": 0.4
   },
   "si_signoff": {
-    "total_insertion_loss_db": 80.18907075116014,
-    "eye_width_ui": -0.6037814150232028,
-    "eye_height_mv": 0.07827741034386582
+    "total_insertion_loss_db": 20.85393559163011,
+    "eye_width_ui": 0.5829212881673979,
+    "eye_height_mv": 72.50921567134169
   },
   "si_analysis_v3": {
-    "loss": 19.89157210371332,
-    "snr_margin_db": 19.608427896286685,
-    "eye_width_ui": 0.9804213948143343,
+    "loss": 13.052209613828442,
+    "snr_margin_db": 16.947790386171558,
+    "eye_width_ui": 0.847389519308578,
     "status": "\u2705 PASS",
     "mod": "PAM2"
   }

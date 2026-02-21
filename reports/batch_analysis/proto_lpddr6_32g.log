@@ -1,15 +1,15 @@
 🚀 Initializing 3D IC Designer for Spec: configs/proto_lpddr6_32g.json
-🔍 Analysis: Reach=100.0mm, Target Loss=0dB, Config Material=FR4
-✅ Using Material from Config: FR4
-📂 [Phase 1] Generating 5-layer 3D Voxel Tensors (FR4)...
-Generating 10 samples with 5 layers...
+🔍 Analysis: Reach=20mm, Target Loss=0dB, Config Material=Megtron7
+✅ Using Material from Config: Megtron7
+📂 [Phase 1] Generating 5-layer 3D Voxel Tensors (Megtron7)...
+Generating 50 samples with 5 layers...
   Creating random Power Maps...
   Solving for Thermal Distribution (This may take a while)...
-  [Solver] Built Side_by_Side_2.5D Stack: ['Die', 'Microbump', 'Silicon_Interposer', 'C4_BGA', 'Package']
-    Processed 0/10 samples...
+  [Solver] Built Face_to_Face Stack: ['Die', 'Hybrid_Bond', 'Die', 'C4_BGA', 'Package']
+    Processed 0/50 samples...
   Saved x_physics.pt and y_spatial.pt to data/
-  Stats: Max Temp = 1716.89C, Avg Temp = 43.51C
-  Max Jitter Tax observed: 1.6919 UI
+  Stats: Max Temp = 1336.78C, Avg Temp = 34.23C
+  Max Jitter Tax observed: 1.3118 UI
   [Solver] Built Face_to_Face Stack: ['Die', 'Hybrid_Bond', 'Die', 'C4_BGA', 'Package']
 Running Nodal Laplacian Check...
   Topology: Face_to_Face
@@ -25,42 +25,41 @@ Running Nodal Laplacian Check...
 DEBUG: CWD is /Users/joepereira/code/3D-IC-Design/physics_accelerated
 DEBUG: Checking /Users/joepereira/code/3D-IC-Design/physics_accelerated/data
 DEBUG: Contents of data: ['x_physics.pt', 'y_spatial.pt']
-  Epoch 0/1 | Loss: 4.746483 | LR: 1.0e-03
-✅ Training Complete in 0.04s
+  Epoch 0/5 | Loss: 4.788590 | LR: 1.0e-03
+✅ Training Complete in 0.44s
   Saved model and stats to results/
 📈 [Phase 3] Running GEPA Search for Golden Config...
 📈 Starting GEPA Multi-Objective Optimization...
   Loaded Surrogate Model & Norm Stats.
 
-🌍 Reach Classification: VSR (100.0mm)
+🌍 Reach Classification: VSR (20mm)
   -> Budget: 10 dB Loss | 0.8 pJ/b
   -> Arch: CTLE EQ | Forwarded Clocking
   Exploring design space: 50 candidates x 10 generations...
-  Best Design: Temp=49.84C, Reach=0.00mm
+  Best Design: Temp=45.45C, Reach=0.00mm
 
 ✅ Saved optimized configuration to results/golden_config.json
 🏗️  [Phase 4] Physical Synthesis & SI Verification...
 
-🌊 SI Loss Waterfall Analysis (Material: FR4)
+🌊 SI Loss Waterfall Analysis (Material: Megtron7)
   [1] Pkg Escape:   3.00 dB
-  [2] PCB Trace:    45.67 dB (3.94")
+  [2] PCB Trace:    9.13 dB (0.79")
   [3] Connectors:   2.50 dB
   [4] XTK (SNR):    5.00 dB
-  [5] Thermal:      0.62 dB
+  [5] Thermal:      0.51 dB
   ---------------------------
-  Total IL:         56.79 dB @ Nyquist
+  Total IL:         20.15 dB @ Nyquist
 
 🔍 Sign-off Metrics (Target >0.45 UI, >40mV):
-  Eye Width:  -0.136 UI
-  Eye Height: 1.2 mV
-  ❌ FAILURE: Eye closure detected. Solution: High-Loss Material or better EQ.
+  Eye Width:  0.597 UI
+  Eye Height: 78.7 mV
+  ✅ PASSED: Design within 2026 Sign-off margins.
 
 ✅ Sign-off report appended to golden_config.json
-  [DEBUG] SI Analyzer V3: BW=32.0 Gbps, Material Config=FR4
-  🔍 SI Analysis: PAM2 | Forwarded | 3.94" on FR4
+  [DEBUG] SI Analyzer V3: BW=32.0 Gbps, Material Config=Megtron7
+  🔍 SI Analysis: PAM2 | CDR | 0.79" on Megtron7
     - Signaling:     SE (XTK: 6.0dB)
-    - Fwd Clock Tax:  -0.97 dB
 
-📢 Verdict: ✅ PASS | Loss: 26.9dB | Eye: 0.408 UI
+📢 Verdict: ✅ PASS | Loss: 12.7dB | Eye: 0.863 UI
 ⚠️ OpenROAD skipping (mock run).
 ✅ 224G Project Sign-off Complete. Check ./reports/voxel_si_report.pdf

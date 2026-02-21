@@ -2,14 +2,14 @@
 🔍 Analysis: Reach=100.0mm, Target Loss=10.0dB, Config Material=FR4
 ✅ Using Material from Config: FR4
 📂 [Phase 1] Generating 5-layer 3D Voxel Tensors (FR4)...
-Generating 10 samples with 5 layers...
+Generating 50 samples with 5 layers...
   Creating random Power Maps...
   Solving for Thermal Distribution (This may take a while)...
   [Solver] Built Side_by_Side_2.5D Stack: ['Die', 'Microbump', 'Silicon_Interposer', 'C4_BGA', 'Package']
-    Processed 0/10 samples...
+    Processed 0/50 samples...
   Saved x_physics.pt and y_spatial.pt to data/
-  Stats: Max Temp = 128.59C, Avg Temp = 26.17C
-  Max Jitter Tax observed: 0.1036 UI
+  Stats: Max Temp = 148.71C, Avg Temp = 26.09C
+  Max Jitter Tax observed: 0.1237 UI
   [Solver] Built Face_to_Face Stack: ['Die', 'Hybrid_Bond', 'Die', 'C4_BGA', 'Package']
 Running Nodal Laplacian Check...
   Topology: Face_to_Face
@@ -25,8 +25,8 @@ Running Nodal Laplacian Check...
 DEBUG: CWD is /Users/joepereira/code/3D-IC-Design/physics_accelerated
 DEBUG: Checking /Users/joepereira/code/3D-IC-Design/physics_accelerated/data
 DEBUG: Contents of data: ['x_physics.pt', 'y_spatial.pt']
-  Epoch 0/1 | Loss: 4.746865 | LR: 1.0e-03
-✅ Training Complete in 0.03s
+  Epoch 0/5 | Loss: 4.880482 | LR: 1.0e-03
+✅ Training Complete in 0.51s
   Saved model and stats to results/
 📈 [Phase 3] Running GEPA Search for Golden Config...
 📈 Starting GEPA Multi-Objective Optimization...
@@ -36,7 +36,7 @@ DEBUG: Contents of data: ['x_physics.pt', 'y_spatial.pt']
   -> Budget: 10 dB Loss | 0.8 pJ/b
   -> Arch: CTLE EQ | Forwarded Clocking
   Exploring design space: 50 candidates x 10 generations...
-  Best Design: Temp=26.81C, Reach=0.00mm
+  Best Design: Temp=26.78C, Reach=0.00mm
 
 ✅ Saved optimized configuration to results/golden_config.json
 🏗️  [Phase 4] Physical Synthesis & SI Verification...
@@ -59,6 +59,7 @@ DEBUG: Contents of data: ['x_physics.pt', 'y_spatial.pt']
   [DEBUG] SI Analyzer V3: BW=32.0 Gbps, Material Config=FR4
   🔍 SI Analysis: NRZ | CDR | 3.94" on FR4
     - Signaling:     Diff (XTK: 1.0dB)
+    - VDDQ Swing:    1.00V (SNR Tax: 0.00 dB)
 
 📢 Verdict: ✅ PASS | Loss: 21.9dB | Eye: 0.881 UI
 ⚠️ OpenROAD skipping (mock run).

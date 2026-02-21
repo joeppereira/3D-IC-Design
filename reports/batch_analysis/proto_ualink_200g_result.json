@@ -1,0 +1,62 @@
+{
+  "project_name": "UALink_200G_Std",
+  "reach_mm": 500.0,
+  "target_bandwidth_gbps": 200.0,
+  "max_power_budget_w": 819.2,
+  "packaging": {
+    "topology": "Side_by_Side_2.5D",
+    "material_name": "Flyover",
+    "termination": 100,
+    "vddq_v": 1.0
+  },
+  "constraints": {
+    "modulation": "PAM4",
+    "signaling": "Diff",
+    "fec_preference": "both",
+    "protocol": "UALink"
+  },
+  "die_hierarchy": {
+    "die_0": {
+      "name": "Logic",
+      "type": "3nm",
+      "size_mm": [
+        10,
+        10
+      ]
+    }
+  },
+  "voxel_stack_params": {
+    "layers": 5,
+    "grid_size": 16,
+    "k_map": {
+      "Die": 140.0,
+      "Package": 0.3
+    }
+  },
+  "reach_classification": "MR",
+  "architectural_recs": [
+    "  -> Clocking: Drift detected. Use CDR (Adds ~15% area).",
+    "  -> PHY: Analog FFE + DFE required for eye closure.",
+    "  -> \ud83d\udd25 THERMAL ALERT: Material Wall reached. Switch to GaAs."
+  ],
+  "floorplan": {
+    "lx": 0,
+    "ly": 0,
+    "mx": 4,
+    "my": 9,
+    "estimated_max_temp": 231.34774780273438,
+    "internal_reach_mm": 1.3
+  },
+  "si_signoff": {
+    "total_insertion_loss_db": 244.00515038798176,
+    "eye_width_ui": -3.880103007759635,
+    "eye_height_mv": 5.044666581650465e-10
+  },
+  "si_analysis_v3": {
+    "loss": 15.370276223137413,
+    "snr_margin_db": 22.12972377686259,
+    "eye_width_ui": 1.0,
+    "status": "\u2705 PASS",
+    "mod": "PAM4"
+  }
+}

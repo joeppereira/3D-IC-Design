@@ -1,15 +1,22 @@
 {
-  "project_name": "ProtocolSweep_LPDDR5_32G",
-  "reach_mm": 100.0,
+  "project_name": "LPDDR5_32G_Std",
+  "reach_mm": 25,
   "target_bandwidth_gbps": 32.0,
-  "max_power_budget_w": 131.072,
+  "max_power_budget_w": 65.536,
   "packaging": {
-    "topology": "Side_by_Side_2.5D",
-    "material_name": "FR4"
+    "topology": "Face_to_Face",
+    "material_name": "Megtron7",
+    "termination": 48
+  },
+  "constraints": {
+    "modulation": "PAM2",
+    "signaling": "SE",
+    "fec_preference": "none",
+    "protocol": "LPDDR5"
   },
   "die_hierarchy": {
     "die_0": {
-      "name": "Proto_Die",
+      "name": "Logic",
       "type": "3nm",
       "size_mm": [
         10,
@@ -25,34 +32,27 @@
       "Package": 0.3
     }
   },
-  "constraints": {
-    "min_isolation_db": 30,
-    "modulation": "PAM2",
-    "fec_preference": "none",
-    "clock_mode": "Forwarded",
-    "protocol": "LPDDR5"
-  },
   "reach_classification": "VSR",
   "architectural_recs": [
     "  -> Clocking: Use Forwarded Clock (Low Power/Latency)."
   ],
   "floorplan": {
-    "lx": 0,
-    "ly": 0,
-    "mx": 0,
-    "my": 0,
-    "estimated_max_temp": 46.49422836303711,
+    "lx": 3,
+    "ly": 2,
+    "mx": 3,
+    "my": 2,
+    "estimated_max_temp": 46.96156311035156,
     "internal_reach_mm": 0.0
   },
   "si_signoff": {
-    "total_insertion_loss_db": 56.7066470476586,
-    "eye_width_ui": -0.13413294095317196,
-    "eye_height_mv": 1.1688469141574849
+    "total_insertion_loss_db": 22.466361912404455,
+    "eye_width_ui": 0.5506727617519109,
+    "eye_height_mv": 60.22431810638265
   },
   "si_analysis_v3": {
-    "loss": 26.8804910633554,
-    "snr_margin_db": 8.151004999636726,
-    "eye_width_ui": 0.4075502499818363,
+    "loss": 12.930030691459713,
+    "snr_margin_db": 17.069969308540287,
+    "eye_width_ui": 0.8534984654270144,
     "status": "\u2705 PASS",
     "mod": "PAM2"
   }

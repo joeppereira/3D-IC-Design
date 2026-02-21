@@ -1,15 +1,23 @@
 {
-  "project_name": "ProtocolSweep_PCIe7_224G",
-  "reach_mm": 500.0,
+  "project_name": "PCIe7_224G_Std",
+  "reach_mm": 1000.0,
   "target_bandwidth_gbps": 224.0,
   "max_power_budget_w": 917.504,
   "packaging": {
     "topology": "Side_by_Side_2.5D",
-    "material_name": "Flyover"
+    "material_name": "Flyover",
+    "termination": 100,
+    "vddq_v": 1.0
+  },
+  "constraints": {
+    "modulation": "PAM4",
+    "signaling": "Diff",
+    "fec_preference": "both",
+    "protocol": "PCIe7"
   },
   "die_hierarchy": {
     "die_0": {
-      "name": "Proto_Die",
+      "name": "Logic",
       "type": "3nm",
       "size_mm": [
         10,
@@ -24,12 +32,5 @@
       "Die": 140.0,
       "Package": 0.3
     }
-  },
-  "constraints": {
-    "min_isolation_db": 30,
-    "modulation": "PAM4",
-    "fec_preference": "inner",
-    "clock_mode": "CDR",
-    "protocol": "PCIe7"
   }
 }

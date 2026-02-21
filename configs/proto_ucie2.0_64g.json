@@ -1,15 +1,23 @@
 {
-  "project_name": "ProtocolSweep_UCIe2.0_64G",
-  "reach_mm": 150.0,
+  "project_name": "UCIe2.0_64G_Std",
+  "reach_mm": 10.0,
   "target_bandwidth_gbps": 64.0,
   "max_power_budget_w": 262.144,
   "packaging": {
-    "topology": "Side_by_Side_2.5D",
-    "material_name": "Megtron7"
+    "topology": "Face_to_Face",
+    "material_name": "Silicon",
+    "termination": 100,
+    "vddq_v": 0.4
+  },
+  "constraints": {
+    "modulation": "PAM4",
+    "signaling": "Diff",
+    "fec_preference": "none",
+    "protocol": "UCIe2.0"
   },
   "die_hierarchy": {
     "die_0": {
-      "name": "Proto_Die",
+      "name": "Logic",
       "type": "3nm",
       "size_mm": [
         10,
@@ -24,12 +32,5 @@
       "Die": 140.0,
       "Package": 0.3
     }
-  },
-  "constraints": {
-    "min_isolation_db": 30,
-    "modulation": "PAM4",
-    "fec_preference": "inner",
-    "clock_mode": "CDR",
-    "protocol": "UCIe2.0"
   }
 }

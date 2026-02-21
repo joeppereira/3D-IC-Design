@@ -1,15 +1,23 @@
 {
-  "project_name": "ProtocolSweep_PCIe6_64G",
-  "reach_mm": 150.0,
+  "project_name": "PCIe6_64G_Std",
+  "reach_mm": 500.0,
   "target_bandwidth_gbps": 64.0,
   "max_power_budget_w": 262.144,
   "packaging": {
     "topology": "Side_by_Side_2.5D",
-    "material_name": "Megtron7"
+    "material_name": "Megtron7",
+    "termination": 100,
+    "vddq_v": 1.0
+  },
+  "constraints": {
+    "modulation": "PAM4",
+    "signaling": "Diff",
+    "fec_preference": "inner",
+    "protocol": "PCIe6"
   },
   "die_hierarchy": {
     "die_0": {
-      "name": "Proto_Die",
+      "name": "Logic",
       "type": "3nm",
       "size_mm": [
         10,
@@ -25,36 +33,29 @@
       "Package": 0.3
     }
   },
-  "constraints": {
-    "min_isolation_db": 30,
-    "modulation": "PAM4",
-    "fec_preference": "inner",
-    "clock_mode": "CDR",
-    "protocol": "PCIe6"
-  },
   "reach_classification": "MR",
   "architectural_recs": [
     "  -> Clocking: Drift detected. Use CDR (Adds ~15% area).",
     "  -> PHY: Analog FFE + DFE required for eye closure."
   ],
   "floorplan": {
-    "lx": 9,
-    "ly": 6,
-    "mx": 9,
-    "my": 6,
-    "estimated_max_temp": 66.03083801269531,
-    "internal_reach_mm": 0.0
+    "lx": 0,
+    "ly": 11,
+    "mx": 1,
+    "my": 2,
+    "estimated_max_temp": 85.0403060913086,
+    "internal_reach_mm": 1.0
   },
   "si_signoff": {
-    "total_insertion_loss_db": 80.0297079581914,
-    "eye_width_ui": -0.600594159163828,
-    "eye_height_mv": 0.07972684698607495
+    "total_insertion_loss_db": 240.3474643451961,
+    "eye_width_ui": -3.8069492869039223,
+    "eye_height_mv": 7.686290063256874e-10
   },
   "si_analysis_v3": {
-    "loss": 14.891572103713319,
-    "snr_margin_db": 8.608427896286685,
-    "eye_width_ui": 0.4304213948143343,
-    "status": "\u2705 PASS",
+    "loss": 33.30524034571106,
+    "snr_margin_db": -3.805240345711063,
+    "eye_width_ui": 0.0,
+    "status": "\u274c FAIL",
     "mod": "PAM4"
   }
 }

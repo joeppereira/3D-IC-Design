@@ -1,15 +1,23 @@
 {
-  "project_name": "ProtocolSweep_PCIe5_32G",
-  "reach_mm": 100.0,
+  "project_name": "PCIe5_32G_Std",
+  "reach_mm": 500.0,
   "target_bandwidth_gbps": 32.0,
   "max_power_budget_w": 131.072,
   "packaging": {
     "topology": "Side_by_Side_2.5D",
-    "material_name": "FR4"
+    "material_name": "Megtron7",
+    "termination": 100,
+    "vddq_v": 1.0
+  },
+  "constraints": {
+    "modulation": "NRZ",
+    "signaling": "Diff",
+    "fec_preference": "none",
+    "protocol": "PCIe5"
   },
   "die_hierarchy": {
     "die_0": {
-      "name": "Proto_Die",
+      "name": "Logic",
       "type": "3nm",
       "size_mm": [
         10,
@@ -25,34 +33,28 @@
       "Package": 0.3
     }
   },
-  "constraints": {
-    "min_isolation_db": 30,
-    "modulation": "NRZ",
-    "fec_preference": "none",
-    "clock_mode": "Forwarded",
-    "protocol": "PCIe5"
-  },
-  "reach_classification": "VSR",
+  "reach_classification": "MR",
   "architectural_recs": [
-    "  -> Clocking: Use Forwarded Clock (Low Power/Latency)."
+    "  -> Clocking: Drift detected. Use CDR (Adds ~15% area).",
+    "  -> PHY: Analog FFE + DFE required for eye closure."
   ],
   "floorplan": {
-    "lx": 9,
-    "ly": 4,
-    "mx": 9,
-    "my": 4,
-    "estimated_max_temp": 48.47727966308594,
-    "internal_reach_mm": 0.0
+    "lx": 7,
+    "ly": 11,
+    "mx": 11,
+    "my": 11,
+    "estimated_max_temp": 63.346214294433594,
+    "internal_reach_mm": 0.4
   },
   "si_signoff": {
-    "total_insertion_loss_db": 56.75622333015982,
-    "eye_width_ui": -0.13512446660319632,
-    "eye_height_mv": 1.1621945124249924
+    "total_insertion_loss_db": 239.80511205027423,
+    "eye_width_ui": -3.7961022410054843,
+    "eye_height_mv": 8.181527311407471e-10
   },
   "si_analysis_v3": {
-    "loss": 21.8804910633554,
-    "snr_margin_db": 13.151004999636726,
-    "eye_width_ui": 0.6575502499818363,
+    "loss": 25.600613829194252,
+    "snr_margin_db": 10.399386170805748,
+    "eye_width_ui": 0.5199693085402874,
     "status": "\u2705 PASS",
     "mod": "NRZ"
   }

@@ -2,14 +2,14 @@
 🔍 Analysis: Reach=300.0mm, Target Loss=0dB, Config Material=Flyover
 ✅ Using Material from Config: Flyover
 📂 [Phase 1] Generating 5-layer 3D Voxel Tensors (Flyover)...
-Generating 10 samples with 5 layers...
+Generating 50 samples with 5 layers...
   Creating random Power Maps...
   Solving for Thermal Distribution (This may take a while)...
   [Solver] Built Face_to_Face Stack: ['Die', 'Hybrid_Bond', 'Die', 'C4_BGA', 'Package']
-    Processed 0/10 samples...
+    Processed 0/50 samples...
   Saved x_physics.pt and y_spatial.pt to data/
-  Stats: Max Temp = 3554.93C, Avg Temp = 50.10C
-  Max Jitter Tax observed: 3.5299 UI
+  Stats: Max Temp = 2825.84C, Avg Temp = 50.43C
+  Max Jitter Tax observed: 2.8008 UI
   [Solver] Built Face_to_Face Stack: ['Die', 'Hybrid_Bond', 'Die', 'C4_BGA', 'Package']
 Running Nodal Laplacian Check...
   Topology: Face_to_Face
@@ -25,8 +25,8 @@ Running Nodal Laplacian Check...
 DEBUG: CWD is /Users/joepereira/code/3D-IC-Design/physics_accelerated
 DEBUG: Checking /Users/joepereira/code/3D-IC-Design/physics_accelerated/data
 DEBUG: Contents of data: ['x_physics.pt', 'y_spatial.pt']
-  Epoch 0/1 | Loss: 4.757701 | LR: 1.0e-03
-✅ Training Complete in 0.04s
+  Epoch 0/5 | Loss: 4.870230 | LR: 1.0e-03
+✅ Training Complete in 0.49s
   Saved model and stats to results/
 📈 [Phase 3] Running GEPA Search for Golden Config...
 📈 Starting GEPA Multi-Objective Optimization...
@@ -36,7 +36,7 @@ DEBUG: Contents of data: ['x_physics.pt', 'y_spatial.pt']
   -> Budget: 25 dB Loss | 1.5 pJ/b
   -> Arch: FFE+DFE EQ | CDR Clocking
   Exploring design space: 50 candidates x 10 generations...
-  Best Design: Temp=56.82C, Reach=0.00mm
+  Best Design: Temp=75.63C, Reach=0.80mm
 
 ✅ Saved optimized configuration to results/golden_config.json
 🏗️  [Phase 4] Physical Synthesis & SI Verification...
@@ -46,12 +46,12 @@ DEBUG: Contents of data: ['x_physics.pt', 'y_spatial.pt']
   [2] PCB Trace:    137.01 dB (11.81")
   [3] Connectors:   2.50 dB
   [4] XTK (SNR):    1.00 dB
-  [5] Thermal:      0.80 dB
+  [5] Thermal:      1.27 dB
   ---------------------------
-  Total IL:         144.30 dB @ Nyquist
+  Total IL:         144.77 dB @ Nyquist
 
 🔍 Sign-off Metrics (Target >0.45 UI, >40mV):
-  Eye Width:  -1.886 UI
+  Eye Width:  -1.895 UI
   Eye Height: 0.0 mV
   ❌ FAILURE: Eye closure detected. Solution: High-Loss Material or better EQ.
 
@@ -59,6 +59,7 @@ DEBUG: Contents of data: ['x_physics.pt', 'y_spatial.pt']
   [DEBUG] SI Analyzer V3: BW=224.0 Gbps, Material Config=Flyover
   🔍 SI Analysis: PAM4 | CDR | 11.81" on Flyover
     - Signaling:     Diff (XTK: 1.0dB)
+    - VDDQ Swing:    1.00V (SNR Tax: 0.00 dB)
     - DSP Gain:      +18.00 dB (224G Ultra-DSP)
 
 📢 Verdict: ✅ PASS | Loss: 12.3dB | Eye: 1.000 UI

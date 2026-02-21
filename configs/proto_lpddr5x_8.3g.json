@@ -1,0 +1,36 @@
+{
+  "project_name": "LPDDR5X_8.3G_Std",
+  "reach_mm": 25.0,
+  "target_bandwidth_gbps": 8.3,
+  "max_power_budget_w": 10.19904,
+  "packaging": {
+    "topology": "Face_to_Face",
+    "material_name": "FR4",
+    "termination": 48,
+    "vddq_v": 0.3
+  },
+  "constraints": {
+    "modulation": "PAM2",
+    "signaling": "SE",
+    "fec_preference": "none",
+    "protocol": "LPDDR5X"
+  },
+  "die_hierarchy": {
+    "die_0": {
+      "name": "Logic",
+      "type": "3nm",
+      "size_mm": [
+        10,
+        10
+      ]
+    }
+  },
+  "voxel_stack_params": {
+    "layers": 5,
+    "grid_size": 16,
+    "k_map": {
+      "Die": 140.0,
+      "Package": 0.3
+    }
+  }
+}
