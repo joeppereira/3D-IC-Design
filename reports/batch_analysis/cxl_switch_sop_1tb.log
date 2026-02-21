@@ -8,8 +8,8 @@ Generating 50 samples with 5 layers...
   [Solver] Built Face_to_Face Stack: ['Die', 'Hybrid_Bond', 'Die', 'C4_BGA', 'Package']
     Processed 0/50 samples...
   Saved x_physics.pt and y_spatial.pt to data/
-  Stats: Max Temp = 3046.10C, Avg Temp = 52.04C
-  Max Jitter Tax observed: 3.0211 UI
+  Stats: Max Temp = 3156.76C, Avg Temp = 52.64C
+  Max Jitter Tax observed: 3.1318 UI
   [Solver] Built Face_to_Face Stack: ['Die', 'Hybrid_Bond', 'Die', 'C4_BGA', 'Package']
 Running Nodal Laplacian Check...
   Topology: Face_to_Face
@@ -25,8 +25,8 @@ Running Nodal Laplacian Check...
 DEBUG: CWD is /Users/joepereira/code/3D-IC-Design/physics_accelerated
 DEBUG: Checking /Users/joepereira/code/3D-IC-Design/physics_accelerated/data
 DEBUG: Contents of data: ['x_physics.pt', 'y_spatial.pt']
-  Epoch 0/5 | Loss: 4.914778 | LR: 1.0e-03
-✅ Training Complete in 0.51s
+  Epoch 0/5 | Loss: 4.744858 | LR: 1.0e-03
+✅ Training Complete in 0.44s
   Saved model and stats to results/
 📈 [Phase 3] Running GEPA Search for Golden Config...
 📈 Starting GEPA Multi-Objective Optimization...
@@ -36,7 +36,7 @@ DEBUG: Contents of data: ['x_physics.pt', 'y_spatial.pt']
   -> Budget: 25 dB Loss | 1.5 pJ/b
   -> Arch: FFE+DFE EQ | CDR Clocking
   Exploring design space: 50 candidates x 10 generations...
-  Best Design: Temp=78.52C, Reach=0.00mm
+  Best Design: Temp=107.79C, Reach=1.40mm
 
 ✅ Saved optimized configuration to results/golden_config.json
 🏗️  [Phase 4] Physical Synthesis & SI Verification...
@@ -46,22 +46,15 @@ DEBUG: Contents of data: ['x_physics.pt', 'y_spatial.pt']
   [2] PCB Trace:    137.01 dB (11.81")
   [3] Connectors:   2.50 dB
   [4] XTK (SNR):    1.00 dB
-  [5] Thermal:      1.34 dB
+  [5] Thermal:      2.07 dB
   ---------------------------
-  Total IL:         144.85 dB @ Nyquist
+  Total IL:         145.58 dB @ Nyquist
 
 🔍 Sign-off Metrics (Target >0.45 UI, >40mV):
-  Eye Width:  -1.897 UI
+  Eye Width:  -1.912 UI
   Eye Height: 0.0 mV
   ❌ FAILURE: Eye closure detected. Solution: High-Loss Material or better EQ.
 
 ✅ Sign-off report appended to golden_config.json
-  [DEBUG] SI Analyzer V3: BW=224.0 Gbps, Material Config=Megtron7
-  🔍 SI Analysis: PAM4 | CDR | 11.81" on Megtron7
-    - Signaling:     Diff (XTK: 1.0dB)
-    - VDDQ Swing:    1.00V (SNR Tax: 0.00 dB)
-    - DSP Gain:      +18.00 dB (224G Ultra-DSP)
-
-📢 Verdict: ❌ FAIL | Loss: 36.5dB | Eye: 0.049 UI
 ⚠️ OpenROAD skipping (mock run).
 ✅ 224G Project Sign-off Complete. Check ./reports/voxel_si_report.pdf

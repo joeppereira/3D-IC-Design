@@ -5,7 +5,7 @@
   "max_power_budget_w": 524.288,
   "packaging": {
     "topology": "Side_by_Side_2.5D",
-    "material_name": "Megtron7",
+    "material_name": "Flyover",
     "termination": 100,
     "vddq_v": 1.0
   },

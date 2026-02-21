@@ -42,21 +42,20 @@
   "floorplan": {
     "lx": 0,
     "ly": 0,
-    "mx": 10,
-    "my": 10,
-    "estimated_max_temp": 313.9119567871094,
-    "internal_reach_mm": 2.0
+    "mx": 11,
+    "my": 3,
+    "estimated_max_temp": 284.51690673828125,
+    "internal_reach_mm": 1.4000000000000001
   },
   "si_signoff": {
-    "total_insertion_loss_db": 474.41571230550454,
-    "eye_width_ui": -8.488314246110091,
-    "eye_height_mv": 1.5216135664841364e-21
+    "total_insertion_loss_db": 473.6808360542838,
+    "eye_width_ui": -8.473616721085676,
+    "eye_height_mv": 1.6559536786884636e-21
   },
   "si_analysis_v3": {
-    "loss": 24.716535433070867,
-    "snr_margin_db": 12.783464566929133,
-    "eye_width_ui": 0.6391732283464567,
-    "status": "\u2705 PASS",
-    "mod": "PAM4"
+    "loss": 25.216535433070867,
+    "snr_margin_db": 14.283464566929133,
+    "eye_width_ui": 0.7141732283464567,
+    "status": "\u2705 PASS"
   }
 }

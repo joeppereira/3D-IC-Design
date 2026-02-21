@@ -65,11 +65,19 @@ cd ..
 # 5. PHASE 4: SI SIGN-OFF & OPENROAD
 echo "🏗️  [Phase 4] Physical Synthesis & SI Verification..."
 cd serdes_architect
-# Note: Passing --mode and --loss requires updating si_analyzer.py
+# SI Analyzer V2 (Waterfall)
 python3 src/si_analyzer.py --config ../physics_accelerated/results/golden_config.json --mode $PHY_MODE --loss $LOSS
+# SI Analyzer V3 (112GHz Scaled)
 python3 src/si_analyzer_v3.py --config ../physics_accelerated/results/golden_config.json
+
+# --- NEW V2 GATES ---
+# Adaptive Voltage Scaling (AVS) Optimization
+python3 scripts/avs_optimizer.py --config ../physics_accelerated/results/golden_config.json
+
+# Security & Root-of-Trust Audit
+python3 src/security_analyzer.py --config ../physics_accelerated/results/golden_config.json
+
 # OpenROAD Export (Mocked as not installed)
-# openroad -no_gui scripts/place_and_route_3d.tcl
 echo "⚠️ OpenROAD skipping (mock run)."
 cd ..
 

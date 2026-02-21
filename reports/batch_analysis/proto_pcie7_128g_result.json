@@ -5,7 +5,7 @@
   "max_power_budget_w": 524.288,
   "packaging": {
     "topology": "Side_by_Side_2.5D",
-    "material_name": "Megtron7",
+    "material_name": "Flyover",
     "termination": 100,
     "vddq_v": 1.0
   },
@@ -40,23 +40,22 @@
     "  -> \ud83d\udd25 THERMAL ALERT: Material Wall reached. Switch to GaAs."
   ],
   "floorplan": {
-    "lx": 2,
-    "ly": 9,
-    "mx": 2,
-    "my": 9,
-    "estimated_max_temp": 143.81993103027344,
-    "internal_reach_mm": 0.0
+    "lx": 10,
+    "ly": 11,
+    "mx": 8,
+    "my": 6,
+    "estimated_max_temp": 258.5256042480469,
+    "internal_reach_mm": 0.7000000000000001
   },
   "si_signoff": {
-    "total_insertion_loss_db": 378.8248289844182,
-    "eye_width_ui": -6.5764965796883645,
-    "eye_height_mv": 9.159010096601859e-17
+    "total_insertion_loss_db": 381.6924708148626,
+    "eye_width_ui": -6.6338494162972514,
+    "eye_height_mv": 6.583645624904746e-17
   },
   "si_analysis_v3": {
-    "loss": 66.5219642534216,
-    "snr_margin_db": -29.0219642534216,
-    "eye_width_ui": 0.0,
-    "status": "\u274c FAIL",
-    "mod": "PAM4"
+    "loss": 17.07948474290496,
+    "snr_margin_db": 22.42051525709504,
+    "eye_width_ui": 1.0,
+    "status": "\u2705 PASS"
   }
 }

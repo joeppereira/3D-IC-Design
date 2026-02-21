@@ -36,26 +36,26 @@
   "reach_classification": "MR",
   "architectural_recs": [
     "  -> Clocking: Drift detected. Use CDR (Adds ~15% area).",
-    "  -> PHY: Analog FFE + DFE required for eye closure."
+    "  -> PHY: Analog FFE + DFE required for eye closure.",
+    "  -> \ud83d\udd25 THERMAL ALERT: Material Wall reached. Switch to GaAs."
   ],
   "floorplan": {
-    "lx": 0,
-    "ly": 11,
-    "mx": 1,
-    "my": 2,
-    "estimated_max_temp": 85.0403060913086,
-    "internal_reach_mm": 1.0
+    "lx": 5,
+    "ly": 0,
+    "mx": 10,
+    "my": 4,
+    "estimated_max_temp": 107.42766571044922,
+    "internal_reach_mm": 0.9
   },
   "si_signoff": {
-    "total_insertion_loss_db": 240.3474643451961,
-    "eye_width_ui": -3.8069492869039223,
-    "eye_height_mv": 7.686290063256874e-10
+    "total_insertion_loss_db": 240.90714833567463,
+    "eye_width_ui": -3.8181429667134923,
+    "eye_height_mv": 7.20663572414545e-10
   },
   "si_analysis_v3": {
-    "loss": 33.30524034571106,
-    "snr_margin_db": -3.805240345711063,
-    "eye_width_ui": 0.0,
-    "status": "\u274c FAIL",
-    "mod": "PAM4"
+    "loss": 27.975224173524825,
+    "snr_margin_db": 3.5247758264751745,
+    "eye_width_ui": 0.17623879132375875,
+    "status": "\u2705 PASS"
   }
 }

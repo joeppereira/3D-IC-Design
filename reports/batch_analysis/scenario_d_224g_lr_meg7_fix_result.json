@@ -36,11 +36,11 @@
     "  -> PHY: ADC-based DSP mandatory for heavy equalization."
   ],
   "floorplan": {
-    "lx": 1,
-    "ly": 3,
-    "mx": 1,
-    "my": 3,
-    "estimated_max_temp": 27.615713119506836,
+    "lx": 8,
+    "ly": 4,
+    "mx": 8,
+    "my": 4,
+    "estimated_max_temp": 27.781248092651367,
     "internal_reach_mm": 0.0
   },
   "si_signoff": {
@@ -49,10 +49,9 @@
     "eye_height_mv": 1.9291831124031653e-16
   },
   "si_analysis_v3": {
-    "loss": 21.173228346456696,
-    "snr_margin_db": 16.326771653543304,
-    "eye_width_ui": 0.8163385826771652,
-    "status": "\u2705 PASS",
-    "mod": "PAM4"
+    "loss": 21.673228346456696,
+    "snr_margin_db": 17.826771653543304,
+    "eye_width_ui": 0.8913385826771653,
+    "status": "\u2705 PASS"
   }
 }

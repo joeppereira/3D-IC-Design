@@ -39,23 +39,22 @@
     "  -> PHY: Analog FFE + DFE required for eye closure."
   ],
   "floorplan": {
-    "lx": 7,
-    "ly": 11,
-    "mx": 11,
-    "my": 11,
-    "estimated_max_temp": 63.346214294433594,
-    "internal_reach_mm": 0.4
+    "lx": 11,
+    "ly": 4,
+    "mx": 6,
+    "my": 4,
+    "estimated_max_temp": 73.71600341796875,
+    "internal_reach_mm": 0.5
   },
   "si_signoff": {
-    "total_insertion_loss_db": 239.80511205027423,
-    "eye_width_ui": -3.7961022410054843,
-    "eye_height_mv": 8.181527311407471e-10
+    "total_insertion_loss_db": 240.06435677836262,
+    "eye_width_ui": -3.801287135567253,
+    "eye_height_mv": 7.940944269004618e-10
   },
   "si_analysis_v3": {
-    "loss": 25.600613829194252,
-    "snr_margin_db": 10.399386170805748,
-    "eye_width_ui": 0.5199693085402874,
-    "status": "\u2705 PASS",
-    "mod": "NRZ"
+    "loss": 20.103978926609937,
+    "snr_margin_db": 17.896021073390063,
+    "eye_width_ui": 0.8948010536695032,
+    "status": "\u2705 PASS"
   }
 }
