@@ -8,8 +8,8 @@ Generating 10 samples with 5 layers...
   [Solver] Built Side_by_Side_2.5D Stack: ['Die', 'Microbump', 'Silicon_Interposer', 'C4_BGA', 'Package']
     Processed 0/10 samples...
   Saved x_physics.pt and y_spatial.pt to data/
-  Stats: Max Temp = 452.67C, Avg Temp = 29.51C
-  Max Jitter Tax observed: 0.4277 UI
+  Stats: Max Temp = 436.06C, Avg Temp = 29.46C
+  Max Jitter Tax observed: 0.4111 UI
   [Solver] Built Face_to_Face Stack: ['Die', 'Hybrid_Bond', 'Die', 'C4_BGA', 'Package']
 Running Nodal Laplacian Check...
   Topology: Face_to_Face
@@ -25,8 +25,8 @@ Running Nodal Laplacian Check...
 DEBUG: CWD is /Users/joepereira/code/3D-IC-Design/physics_accelerated
 DEBUG: Checking /Users/joepereira/code/3D-IC-Design/physics_accelerated/data
 DEBUG: Contents of data: ['x_physics.pt', 'y_spatial.pt']
-  Epoch 0/1 | Loss: 4.736169 | LR: 1.0e-03
-✅ Training Complete in 0.05s
+  Epoch 0/1 | Loss: 4.825548 | LR: 1.0e-03
+✅ Training Complete in 0.04s
   Saved model and stats to results/
 📈 [Phase 3] Running GEPA Search for Golden Config...
 📈 Starting GEPA Multi-Objective Optimization...
@@ -36,7 +36,7 @@ DEBUG: Contents of data: ['x_physics.pt', 'y_spatial.pt']
   -> Budget: 10 dB Loss | 0.8 pJ/b
   -> Arch: CTLE EQ | Forwarded Clocking
   Exploring design space: 50 candidates x 10 generations...
-  Best Design: Temp=32.25C, Reach=0.00mm
+  Best Design: Temp=31.76C, Reach=0.00mm
 
 ✅ Saved optimized configuration to results/golden_config.json
 🏗️  [Phase 4] Physical Synthesis & SI Verification...
@@ -56,11 +56,12 @@ DEBUG: Contents of data: ['x_physics.pt', 'y_spatial.pt']
   ❌ FAILURE: Eye closure detected. Solution: High-Loss Material or better EQ.
 
 ✅ Sign-off report appended to golden_config.json
+  [DEBUG] SI Analyzer V3: BW=112.0 Gbps, Material Config=Megtron7
   🔍 SI Analysis: PAM4 | Forwarded | 3.94" on Megtron7
     - Signaling:     Diff (XTK: 1.0dB)
-    - DSP Gain:      +15.00 dB (224G ADC-DSP)
+    - DSP Gain:      +18.00 dB (224G Ultra-DSP)
     - Fwd Clock Tax:  -0.97 dB
 
-📢 Verdict: ✅ PASS | Loss: 14.0dB | Eye: 0.55 UI | Margin: 11.1dB
+📢 Verdict: ✅ PASS | Loss: 14.0dB | Eye: 0.954 UI
 ⚠️ OpenROAD skipping (mock run).
 ✅ 224G Project Sign-off Complete. Check ./reports/voxel_si_report.pdf

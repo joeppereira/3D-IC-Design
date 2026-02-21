@@ -1,7 +1,6 @@
 {
   "project_name": "Scenario_D_Material_Fix",
   "reach_mm": 800.0,
-  "loss_db": 12.0,
   "target_bandwidth_gbps": 224.0,
   "packaging": {
     "topology": "Side_by_Side_2.5D",
@@ -27,6 +26,8 @@
   },
   "constraints": {
     "min_isolation_db": 40,
-    "modulation": "PAM4"
+    "modulation": "PAM4",
+    "fec_preference": "inner",
+    "protocol": "PCIe7"
   }
 }

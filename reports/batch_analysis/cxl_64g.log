@@ -8,8 +8,8 @@ Generating 10 samples with 5 layers...
   [Solver] Built Face_to_Face Stack: ['Die', 'Hybrid_Bond', 'Die', 'C4_BGA', 'Package']
     Processed 0/10 samples...
   Saved x_physics.pt and y_spatial.pt to data/
-  Stats: Max Temp = 63.03C, Avg Temp = 25.36C
-  Max Jitter Tax observed: 0.0380 UI
+  Stats: Max Temp = 60.08C, Avg Temp = 25.37C
+  Max Jitter Tax observed: 0.0351 UI
   [Solver] Built Face_to_Face Stack: ['Die', 'Hybrid_Bond', 'Die', 'C4_BGA', 'Package']
 Running Nodal Laplacian Check...
   Topology: Face_to_Face
@@ -25,8 +25,8 @@ Running Nodal Laplacian Check...
 DEBUG: CWD is /Users/joepereira/code/3D-IC-Design/physics_accelerated
 DEBUG: Checking /Users/joepereira/code/3D-IC-Design/physics_accelerated/data
 DEBUG: Contents of data: ['x_physics.pt', 'y_spatial.pt']
-  Epoch 0/1 | Loss: 4.758807 | LR: 1.0e-03
-✅ Training Complete in 0.05s
+  Epoch 0/1 | Loss: 4.752586 | LR: 1.0e-03
+✅ Training Complete in 0.03s
   Saved model and stats to results/
 📈 [Phase 3] Running GEPA Search for Golden Config...
 📈 Starting GEPA Multi-Objective Optimization...
@@ -36,7 +36,7 @@ DEBUG: Contents of data: ['x_physics.pt', 'y_spatial.pt']
   -> Budget: 3 dB Loss | 0.3 pJ/b
   -> Arch: None EQ | Forwarded Clocking
   Exploring design space: 50 candidates x 10 generations...
-  Best Design: Temp=25.45C, Reach=0.10mm
+  Best Design: Temp=25.46C, Reach=0.00mm
 
 ✅ Saved optimized configuration to results/golden_config.json
 🏗️  [Phase 4] Physical Synthesis & SI Verification...
@@ -56,9 +56,10 @@ DEBUG: Contents of data: ['x_physics.pt', 'y_spatial.pt']
   ✅ PASSED: Design within 2026 Sign-off margins.
 
 ✅ Sign-off report appended to golden_config.json
+  [DEBUG] SI Analyzer V3: BW=64.0 Gbps, Material Config=Megtron7
   🔍 SI Analysis: PAM4 | CDR | 0.06" on Megtron7
     - Signaling:     Diff (XTK: 1.0dB)
 
-📢 Verdict: ✅ PASS | Loss: 7.1dB | Eye: 0.52 UI | Margin: 10.4dB
+📢 Verdict: ✅ PASS | Loss: 7.1dB | Eye: 0.821 UI
 ⚠️ OpenROAD skipping (mock run).
 ✅ 224G Project Sign-off Complete. Check ./reports/voxel_si_report.pdf

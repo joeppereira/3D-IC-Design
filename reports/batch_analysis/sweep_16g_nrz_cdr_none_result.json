@@ -37,11 +37,11 @@
     "  -> Clocking: Use Forwarded Clock (Low Power/Latency)."
   ],
   "floorplan": {
-    "lx": 9,
-    "ly": 5,
-    "mx": 9,
-    "my": 5,
-    "estimated_max_temp": 27.94967269897461,
+    "lx": 10,
+    "ly": 7,
+    "mx": 10,
+    "my": 7,
+    "estimated_max_temp": 27.266504287719727,
     "internal_reach_mm": 0.0
   },
   "si_signoff": {
@@ -51,8 +51,8 @@
   },
   "si_analysis_v3": {
     "loss": 17.522096138284425,
-    "snr_margin_db": 11.477903861715575,
-    "eye_width_ui": 0.5738951930857787,
+    "snr_margin_db": 18.477903861715575,
+    "eye_width_ui": 0.9238951930857788,
     "status": "\u2705 PASS",
     "mod": "NRZ"
   }

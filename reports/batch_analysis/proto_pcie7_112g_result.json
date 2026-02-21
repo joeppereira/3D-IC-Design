@@ -1,0 +1,60 @@
+{
+  "project_name": "ProtocolSweep_PCIe7_112G",
+  "reach_mm": 150.0,
+  "target_bandwidth_gbps": 112.0,
+  "max_power_budget_w": 458.752,
+  "packaging": {
+    "topology": "Side_by_Side_2.5D",
+    "material_name": "Megtron7"
+  },
+  "die_hierarchy": {
+    "die_0": {
+      "name": "Proto_Die",
+      "type": "3nm",
+      "size_mm": [
+        10,
+        10
+      ]
+    }
+  },
+  "voxel_stack_params": {
+    "layers": 5,
+    "grid_size": 16,
+    "k_map": {
+      "Die": 140.0,
+      "Package": 0.3
+    }
+  },
+  "constraints": {
+    "min_isolation_db": 30,
+    "modulation": "PAM4",
+    "fec_preference": "inner",
+    "clock_mode": "CDR",
+    "protocol": "PCIe7"
+  },
+  "reach_classification": "MR",
+  "architectural_recs": [
+    "  -> Clocking: Drift detected. Use CDR (Adds ~15% area).",
+    "  -> PHY: Analog FFE + DFE required for eye closure."
+  ],
+  "floorplan": {
+    "lx": 3,
+    "ly": 2,
+    "mx": 3,
+    "my": 1,
+    "estimated_max_temp": 99.71776580810547,
+    "internal_reach_mm": 0.1
+  },
+  "si_signoff": {
+    "total_insertion_loss_db": 80.87188115307666,
+    "eye_width_ui": -0.617437623061533,
+    "eye_height_mv": 0.07235956199538801
+  },
+  "si_analysis_v3": {
+    "loss": 17.43956861988013,
+    "snr_margin_db": 20.060431380119866,
+    "eye_width_ui": 1.0,
+    "status": "\u2705 PASS",
+    "mod": "PAM4"
+  }
+}

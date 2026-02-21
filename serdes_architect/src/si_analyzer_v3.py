@@ -20,9 +20,13 @@ class AdvancedSIAnalyzer:
         
         # Modulation Physics (Required SNR)
         self.mod_specs = {
-            "NRZ":  {"snr_req": 14.0, "ui_penalty_factor": 1.0},
-            "PAM2": {"snr_req": 14.0, "ui_penalty_factor": 1.0},
-            "PAM4": {"snr_req": 24.0, "ui_penalty_factor": 3.0} 
+            "NRZ":    {"snr_req": 14.0, "ui_penalty_factor": 1.0},
+            "PAM2":   {"snr_req": 14.0, "ui_penalty_factor": 1.0},
+            "PAM4":   {"snr_req": 24.0, "ui_penalty_factor": 3.0},
+            "PCIe5":  {"snr_req": 18.0, "ui_penalty_factor": 1.5}, # 32G NRZ optimized
+            "PCIe6":  {"snr_req": 22.0, "ui_penalty_factor": 2.5}, # 64G PAM4
+            "LPDDR5": {"snr_req": 12.0, "ui_penalty_factor": 0.8}, # SE parallel
+            "LPDDR6": {"snr_req": 15.0, "ui_penalty_factor": 1.2}  # High-speed SE
         }
 
     def evaluate_link(self, distance_in, material_key, config):

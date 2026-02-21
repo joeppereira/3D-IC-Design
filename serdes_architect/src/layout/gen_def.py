@@ -66,6 +66,17 @@ def generate_def(args):
         f.write("\n# Signal Integrity: G-S-G Routing Tracks for 224G lanes\n")
         f.write("make_tracks Metal7 -x_offset 0.2 -x_pitch 0.4 -y_offset 0.2 -y_pitch 0.4\n")
         
+        # 6. Clock Tree Synthesis (CTS) Awareness
+        f.write("\n# Clock Tree Synthesis (CTS): H-Tree topology for unified clock distribution\n")
+        f.write("create_clock -name sys_clk -period 0.5 [get_ports clk_in]\n")
+        f.write("set_clock_tree_exceptions -exclude [get_pins Caliptra_RoT/clk]\n")
+        f.write("set_max_skew 0.05 [get_clocks sys_clk]\n")
+        
+        # 7. Protocol-Specific Routing Constraints
+        f.write("\n# Protocol Routing: Differential pairs for PCIe7/RDMA, SE for LPDDR6\n")
+        f.write("set_net_routing_rule [get_nets -hier *serdes*] -rule diff_pair_rule\n")
+        f.write("set_net_routing_rule [get_nets -hier *lpddr*] -rule single_ended_rule\n")
+        
     print(f"  ✅ Generated PI/SI-Aware floorplan: {output_tcl}")
 
 if __name__ == "__main__":

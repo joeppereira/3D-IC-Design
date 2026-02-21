@@ -1,0 +1,59 @@
+{
+  "project_name": "ProtocolSweep_PCIe5_32G",
+  "reach_mm": 100.0,
+  "target_bandwidth_gbps": 32.0,
+  "max_power_budget_w": 131.072,
+  "packaging": {
+    "topology": "Side_by_Side_2.5D",
+    "material_name": "FR4"
+  },
+  "die_hierarchy": {
+    "die_0": {
+      "name": "Proto_Die",
+      "type": "3nm",
+      "size_mm": [
+        10,
+        10
+      ]
+    }
+  },
+  "voxel_stack_params": {
+    "layers": 5,
+    "grid_size": 16,
+    "k_map": {
+      "Die": 140.0,
+      "Package": 0.3
+    }
+  },
+  "constraints": {
+    "min_isolation_db": 30,
+    "modulation": "NRZ",
+    "fec_preference": "none",
+    "clock_mode": "Forwarded",
+    "protocol": "PCIe5"
+  },
+  "reach_classification": "VSR",
+  "architectural_recs": [
+    "  -> Clocking: Use Forwarded Clock (Low Power/Latency)."
+  ],
+  "floorplan": {
+    "lx": 9,
+    "ly": 4,
+    "mx": 9,
+    "my": 4,
+    "estimated_max_temp": 48.47727966308594,
+    "internal_reach_mm": 0.0
+  },
+  "si_signoff": {
+    "total_insertion_loss_db": 56.75622333015982,
+    "eye_width_ui": -0.13512446660319632,
+    "eye_height_mv": 1.1621945124249924
+  },
+  "si_analysis_v3": {
+    "loss": 21.8804910633554,
+    "snr_margin_db": 13.151004999636726,
+    "eye_width_ui": 0.6575502499818363,
+    "status": "\u2705 PASS",
+    "mod": "NRZ"
+  }
+}

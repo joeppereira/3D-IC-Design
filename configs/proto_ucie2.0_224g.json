@@ -1,0 +1,35 @@
+{
+  "project_name": "ProtocolSweep_UCIe2.0_224G",
+  "reach_mm": 500.0,
+  "target_bandwidth_gbps": 224.0,
+  "max_power_budget_w": 917.504,
+  "packaging": {
+    "topology": "Side_by_Side_2.5D",
+    "material_name": "Flyover"
+  },
+  "die_hierarchy": {
+    "die_0": {
+      "name": "Proto_Die",
+      "type": "3nm",
+      "size_mm": [
+        10,
+        10
+      ]
+    }
+  },
+  "voxel_stack_params": {
+    "layers": 5,
+    "grid_size": 16,
+    "k_map": {
+      "Die": 140.0,
+      "Package": 0.3
+    }
+  },
+  "constraints": {
+    "min_isolation_db": 30,
+    "modulation": "PAM4",
+    "fec_preference": "inner",
+    "clock_mode": "CDR",
+    "protocol": "UCIe2.0"
+  }
+}

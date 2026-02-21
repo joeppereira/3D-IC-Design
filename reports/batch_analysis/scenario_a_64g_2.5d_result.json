@@ -1,7 +1,6 @@
 {
   "project_name": "Scenario_A_Baseline",
   "reach_mm": 50.0,
-  "loss_db": 5.0,
   "target_bandwidth_gbps": 64.0,
   "packaging": {
     "topology": "Side_by_Side_2.5D",
@@ -12,8 +11,8 @@
       "name": "Logic_64G",
       "type": "5nm",
       "size_mm": [
-        10,
-        10
+        12,
+        12
       ]
     }
   },
@@ -27,18 +26,19 @@
   },
   "constraints": {
     "min_isolation_db": 30,
-    "modulation": "PAM4"
+    "modulation": "PAM4",
+    "protocol": "PCIe6"
   },
   "reach_classification": "VSR",
   "architectural_recs": [
     "  -> Clocking: Use Forwarded Clock (Low Power/Latency)."
   ],
   "floorplan": {
-    "lx": 9,
+    "lx": 0,
     "ly": 2,
-    "mx": 9,
+    "mx": 0,
     "my": 2,
-    "estimated_max_temp": 26.514705657958984,
+    "estimated_max_temp": 26.330394744873047,
     "internal_reach_mm": 0.0
   },
   "si_signoff": {
@@ -48,9 +48,9 @@
   },
   "si_analysis_v3": {
     "loss": 17.522096138284425,
-    "snr_margin_db": 1.4779038617155749,
-    "eye_width_ui": 0.07389519308577874,
-    "status": "\u274c FAIL",
+    "snr_margin_db": 8.477903861715575,
+    "eye_width_ui": 0.4238951930857788,
+    "status": "\u2705 PASS",
     "mod": "PAM4"
   }
 }

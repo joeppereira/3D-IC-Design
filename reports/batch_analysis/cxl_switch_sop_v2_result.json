@@ -1,0 +1,76 @@
+{
+  "project_name": "CXL_Switch_SoP_1TB_V2",
+  "reach_mm": 300.0,
+  "target_bandwidth_gbps": 224.0,
+  "max_power_budget_w": 200.0,
+  "packaging": {
+    "topology": "Face_to_Face",
+    "material_name": "Flyover",
+    "interposer": "Silicon_Interposer",
+    "cooling": "BSPDN_Liquid"
+  },
+  "die_hierarchy": {
+    "die_0": {
+      "name": "CXL_Switch_Logic",
+      "type": "3nm_FinFET",
+      "size_mm": [
+        15,
+        15
+      ]
+    },
+    "die_1": {
+      "name": "SRAM_Search_Die",
+      "type": "Stacked_SRAM",
+      "size_mm": [
+        12,
+        12
+      ]
+    }
+  },
+  "voxel_stack_params": {
+    "layers": 5,
+    "grid_size": 16,
+    "k_map": {
+      "Die": 140.0,
+      "Metal_Stack": 380.0,
+      "C4_BGA": 50.0,
+      "Package": 100.0
+    }
+  },
+  "constraints": {
+    "min_isolation_db": 40,
+    "modulation": "PAM4",
+    "fec_preference": "inner",
+    "clock_mode": "CDR",
+    "protocol": "CXL3.1",
+    "security": [
+      "SPDM",
+      "DICE"
+    ]
+  },
+  "reach_classification": "MR",
+  "architectural_recs": [
+    "  -> Clocking: Drift detected. Use CDR (Adds ~15% area).",
+    "  -> PHY: Analog FFE + DFE required for eye closure."
+  ],
+  "floorplan": {
+    "lx": 10,
+    "ly": 4,
+    "mx": 10,
+    "my": 4,
+    "estimated_max_temp": 56.820072174072266,
+    "internal_reach_mm": 0.0
+  },
+  "si_signoff": {
+    "total_insertion_loss_db": 144.30337582009983,
+    "eye_width_ui": -1.8860675164019964,
+    "eye_height_mv": 4.8744003464823256e-05
+  },
+  "si_analysis_v3": {
+    "loss": 12.31496062992126,
+    "snr_margin_db": 25.18503937007874,
+    "eye_width_ui": 1.0,
+    "status": "\u2705 PASS",
+    "mod": "PAM4"
+  }
+}

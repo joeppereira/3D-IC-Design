@@ -1,2 +1,6 @@
 {"instruction": "Calculate keep-out zone for Caliptra RoT near 224G lanes.", "response": "Based on EM interference profiles, a 250µm keep-out zone is required to protect secure keys from side-channel leakage."}
 {"instruction": "Select material for 800mm reach at 112GHz Nyquist.", "response": "Standard PCB materials like Megtron 7 fail at 35dB. Recommendation: Flyover Twinax cables (+15dB DSP credit) to achieve 0.47 UI margin."}
+{"instruction": "What is the SPDM requirement for CXL 3.1 fabric?", "response": "CXL 3.1 requires SPDM 1.2+ for authentication and measurement exchange between host and pooled memory devices."}
+{"instruction": "Compare LPDDR5X vs LPDDR6 for AI SoP.", "response": "LPDDR5X (8.5 Gbps) is mature but power-limited. LPDDR6 targets 12.8+ Gbps with improved pJ/bit, essential for 1TB/s CXL memory pools."}
+{"instruction": "How to implement CTS for 224G SerDes clusters in OpenROAD?", "response": "Use an H-Tree topology with balanced skew buffers. Ensure clock tracks are shielded via G-S-G Metal7 routing to minimize jitter."}
+{"instruction": "Describe RDMA over CXL 3.1 data flow.", "response": "RDMA engine encapsulates pooled DRAM blocks into CXL.mem flits, bypassing the CPU for direct GPU-to-Memory injection at 224G speeds."}

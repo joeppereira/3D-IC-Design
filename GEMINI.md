@@ -1,65 +1,52 @@
-# 🚀 Living Spec: 1TB CXL "Search-Switch" (v2 Hybrid Expert)
+# 🚀 Living Spec: Data Center "Search-Switch" (v2 Unified Expert)
 
-This file serves as the **anchor** for autonomous reasoning, ensuring design iterations respect Caliptra security, CXL 3.1 pooling, and 3D-IC physics.
+This file anchors the autonomous reasoning for a unified Data Center architecture, ensuring multi-protocol compliance and physical sign-off.
 
-## 🏗️ Repository Taxonomy
-*   **/agent**: The Hybrid Expert Brain (12-layer JEPA + 4-bit LLM Reasoning).
-*   **/modules/security/caliptra**: Git Submodule for Root-of-Trust.
-*   **/modules/fabric**: Protocol logic for CXL 3.1, UALink 128G/200G, and RDMA.
-*   **/engines/serdes_architect**: High-fidelity 3D FDM Physics Solver (Ground Truth).
-*   **/project_memory**: Persistent Design Embeddings (Vector Store) & Session Checkpoints.
-
----
-
-## 🎯 Architectural Constraints (The "Guardrails")
-
-### 1. Security: Root-of-Trust (RoT)
-*   **Hardware Identity**: All 1TB DRAM accesses must be validated via Caliptra-DICE attestation.
-*   **Confidential Computing**: Implement CXL-TSP (Trusted Security Protocol) for TVM trust boundaries.
-*   **Physical Isolation**: Caliptra Key Vault macros require a **250µm keep-out zone** from 224G SerDes lanes to mitigate EM side-channel attacks.
-
-### 2. Fabric: High-Speed I/O
-*   **Internal Link**: UCIe 2.0 (x16) to 8x DRAM Expanders.
-*   **Linear Density Target**: >50 Gbps/mm (25µm pitch).
-*   **External Link**: PCIe 7.0 (128G) and UALink 128G/200G.
-*   **Loss Budget**: Max 35 dB. Force Megtron 7 material if channel >30 dB.
-*   **Eye Margin**: Min 0.20 UI at $10^{-12}$ BER.
-
-### 3. Physical & Thermal (3D-SoP)
-*   **Thermal Chimney**: SRAM KV-Cache stacked on Switch Die via Hybrid Bonding ($10m$).
-*   **Thermal Cap**: Max $T_j = 105°C$.
-*   **PDN Strategy**: Mandatory **Backside PDN (BSPDN)** for the Switch Die to resolve $200W$ power density fail-points.
+## 🏗️ Expert Domains
+*   **IO Fabric**: PCIe Gen 5/6/7, CXL 3.1, UCIe 2.0 (XSR/USR).
+*   **Memory**: LPDDR5, LPDDR5X, LPDDR6.
+*   **Data Path**: RDMA over NVMe, RDMA over CXL 3.1.
+*   **Security**: SPDM (Security Protocol & Data Model), DICE (Device Identifier Composition Engine), Caliptra RoT.
+*   **Physical Design**: OpenROAD (Floorplan, CTS, Global/Detail Route), 3D-FDM Thermal.
 
 ---
 
-## 🔄 Self-Learning Execution Loop
+## 🎯 Protocol Guardrails
 
-### Phase #1: Intent-to-Spec
-*   Ingest text request via Gemini CLI.
-*   Pull RTL from `/modules/security/caliptra` and `/modules/fabric`.
-*   Output `formal_spec.json`.
+### 1. Security & Identity (SPDM/DICE)
+*   **Attestation**: Mandatory SPDM 1.2+ measurement exchange for all CXL fabric devices.
+*   **DICE**: Unique Device Secret (UDS) derivation required for each 3D-stacked die layer.
+*   **Isolation**: SPDM control logic must be physically isolated from high-toggle RDMA engines.
 
-### Phase #2: JEPA Optimization
-*   Map `formal_spec.json` into the 12-layer Voxel Grid.
-*   Execute a 24-point Pareto Sweep across package variations (CoWoS-S vs. Hybrid Bond).
-*   **Reward Function**: Maximize $(\text{Throughput} / \text{Power})$ while $T_j < 105°C$.
+### 2. High-Speed Physics (PCIe 7 / UALink)
+*   **Reach**: Support XSR (<10mm), MR (<500mm), and LR (>1m with Flyover).
+*   **Power**: Max link power targets: PCIe 7 (128G) < 8.0 pJ/bit; LPDDR6 < 1.2 pJ/bit.
+*   **Clocking**: Unified support for Forwarded Clock (UCIe) and CDR (PCIe/RDMA).
 
-### Phase #3: OpenROAD Layout & Sign-off
-*   Generate `.tcl` placement scripts for OpenROAD.
-*   Perform Multi-Corner Multi-Mode (MCMM) tracking for CTS across PVT.
-*   Verify final Eye Margins via `si_analyzer`.
+### 3. Physical Synthesis (OpenROAD Aware)
+*   **CTS**: Balanced H-tree for high-speed SerDes clock distribution.
+*   **Routing**: Priority routing for 224G differential pairs with G-S-G shielding.
+*   **Density**: 25µm bump pitch for UCIe 2.0 lateral links.
+
+---
+
+## 🔄 Self-Learning Execution Loop (V2 Autonomous)
+*   **Phase #1**: Spec ingestion & Protocol Selection (PCIe vs CXL vs RDMA).
+*   **Phase #2**: Multi-Objective Pareto Sweep (Cost vs Latency vs Thermal).
+*   **Phase #3**: OpenROAD Layout (Floorplan -> CTS -> Route).
+*   **Phase #4**: Sign-off (SI BER check & Thermal MCMM).
 
 ---
 
 ## 🛠️ Tool Handshake Guidelines
-*   **No Hallucinations**: If the JEPA predicts a thermal fail, the Agent MUST propose a physical mitigation (e.g., Diamond substrate) before proceeding.
-*   **Stateless Recovery**: Save design "embeddings" to `/project_memory` after every successful run to enable continuous learning.
+*   **No Hallucinations**: Agent MUST propose physical mitigations for any predicted thermal/SI failures.
+*   **Stateless Recovery**: Save design "embeddings" to `/project_memory` after every successful run.
 *   **LaTeX Usage**: Use LaTeX for formal physics/math (e.g., Skin Depth $\delta = \sqrt{\frac{2\rho}{\omega\mu}}$).
 
 ---
 
-## 📊 Current Status: Ready for Milestone #3
-*   **Expert Fine-tuned**: Gemma 3 (4B) successfully trained on `secure_fabric_v1` adapter.
-*   **Security Anchored**: EM-aware keep-out zones ($250\mu m$) and Caliptra PQC thermal profiles integrated into JEPA-12L reasoning.
-*   **Geometry Locked**: Pin-Out Map generated for 32-macro CXL die.
+## 📊 Current Status: Ready for Milestone #4
+*   **Unified Expert**: Support added for PCIe 5-7, LPDDR5-6, and SPDM/DICE.
+*   **EDA Specialized**: Layout generator updated for CTS and Routing awareness.
+*   **Expert Fine-tuned**: Gemma 3 (4B) trained on `secure_fabric_v1`.
 *   **Qualification**: Regression Suite v1.0 PASSED.

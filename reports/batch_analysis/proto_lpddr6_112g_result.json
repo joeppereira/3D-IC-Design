@@ -1,0 +1,61 @@
+{
+  "project_name": "ProtocolSweep_LPDDR6_112G",
+  "reach_mm": 150.0,
+  "target_bandwidth_gbps": 112.0,
+  "max_power_budget_w": 458.752,
+  "packaging": {
+    "topology": "Side_by_Side_2.5D",
+    "material_name": "Megtron7"
+  },
+  "die_hierarchy": {
+    "die_0": {
+      "name": "Proto_Die",
+      "type": "3nm",
+      "size_mm": [
+        10,
+        10
+      ]
+    }
+  },
+  "voxel_stack_params": {
+    "layers": 5,
+    "grid_size": 16,
+    "k_map": {
+      "Die": 140.0,
+      "Package": 0.3
+    }
+  },
+  "constraints": {
+    "min_isolation_db": 30,
+    "modulation": "PAM2",
+    "fec_preference": "inner",
+    "clock_mode": "CDR",
+    "protocol": "LPDDR6"
+  },
+  "reach_classification": "MR",
+  "architectural_recs": [
+    "  -> Clocking: Drift detected. Use CDR (Adds ~15% area).",
+    "  -> PHY: Analog FFE + DFE required for eye closure.",
+    "  -> \ud83d\udd25 THERMAL ALERT: Material Wall reached. Switch to GaAs."
+  ],
+  "floorplan": {
+    "lx": 11,
+    "ly": 3,
+    "mx": 10,
+    "my": 3,
+    "estimated_max_temp": 116.1431884765625,
+    "internal_reach_mm": 0.1
+  },
+  "si_signoff": {
+    "total_insertion_loss_db": 81.28251671978808,
+    "eye_width_ui": -0.6256503343957616,
+    "eye_height_mv": 0.06901828300937038
+  },
+  "si_analysis_v3": {
+    "loss": 22.43956861988013,
+    "snr_margin_db": 25.060431380119866,
+    "eye_width_ui": 1.0,
+    "status": "\u2705 PASS",
+    "mod": "PAM2"
+  }
+}

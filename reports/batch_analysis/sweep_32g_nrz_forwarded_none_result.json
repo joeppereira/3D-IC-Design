@@ -37,10 +37,10 @@
   ],
   "floorplan": {
     "lx": 6,
-    "ly": 9,
+    "ly": 1,
     "mx": 6,
-    "my": 9,
-    "estimated_max_temp": 26.368825912475586,
+    "my": 1,
+    "estimated_max_temp": 26.410213470458984,
     "internal_reach_mm": 0.0
   },
   "si_signoff": {
@@ -50,8 +50,8 @@
   },
   "si_analysis_v3": {
     "loss": 21.8804910633554,
-    "snr_margin_db": 6.151004999636726,
-    "eye_width_ui": 0.30755024998183633,
+    "snr_margin_db": 13.151004999636726,
+    "eye_width_ui": 0.6575502499818363,
     "status": "\u2705 PASS",
     "mod": "NRZ"
   }

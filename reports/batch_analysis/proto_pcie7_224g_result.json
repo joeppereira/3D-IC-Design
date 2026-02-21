@@ -1,0 +1,61 @@
+{
+  "project_name": "ProtocolSweep_PCIe7_224G",
+  "reach_mm": 500.0,
+  "target_bandwidth_gbps": 224.0,
+  "max_power_budget_w": 917.504,
+  "packaging": {
+    "topology": "Side_by_Side_2.5D",
+    "material_name": "Flyover"
+  },
+  "die_hierarchy": {
+    "die_0": {
+      "name": "Proto_Die",
+      "type": "3nm",
+      "size_mm": [
+        10,
+        10
+      ]
+    }
+  },
+  "voxel_stack_params": {
+    "layers": 5,
+    "grid_size": 16,
+    "k_map": {
+      "Die": 140.0,
+      "Package": 0.3
+    }
+  },
+  "constraints": {
+    "min_isolation_db": 30,
+    "modulation": "PAM4",
+    "fec_preference": "inner",
+    "clock_mode": "CDR",
+    "protocol": "PCIe7"
+  },
+  "reach_classification": "MR",
+  "architectural_recs": [
+    "  -> Clocking: Drift detected. Use CDR (Adds ~15% area).",
+    "  -> PHY: Analog FFE + DFE required for eye closure.",
+    "  -> \ud83d\udd25 THERMAL ALERT: Material Wall reached. Switch to GaAs."
+  ],
+  "floorplan": {
+    "lx": 0,
+    "ly": 3,
+    "mx": 3,
+    "my": 3,
+    "estimated_max_temp": 179.48727416992188,
+    "internal_reach_mm": 0.30000000000000004
+  },
+  "si_signoff": {
+    "total_insertion_loss_db": 242.70863854716143,
+    "eye_width_ui": -3.8541727709432285,
+    "eye_height_mv": 5.856768521420935e-10
+  },
+  "si_analysis_v3": {
+    "loss": 15.858267716535433,
+    "snr_margin_db": 21.641732283464563,
+    "eye_width_ui": 1.0,
+    "status": "\u2705 PASS",
+    "mod": "PAM4"
+  }
+}
