@@ -49,11 +49,11 @@
     "  -> Clocking: Use Forwarded Clock (Low Power/Latency)."
   ],
   "floorplan": {
-    "lx": 7,
-    "ly": 11,
-    "mx": 7,
-    "my": 11,
-    "estimated_max_temp": 40.73692321777344,
+    "lx": 11,
+    "ly": 9,
+    "mx": 11,
+    "my": 9,
+    "estimated_max_temp": 41.21101379394531,
     "internal_reach_mm": 0.0
   },
   "si_signoff": {

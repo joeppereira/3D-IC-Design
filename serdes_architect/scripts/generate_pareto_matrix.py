@@ -31,6 +31,11 @@ def generate_config(option_id, group_name, pkg_type, interconnect, interposer, p
     elif reach < 500: pjb = 1.5
     else: pjb = 2.5
     
+    # 2. Material Selection (Fixes 0.0 Eye Margins)
+    material = "Megtron7"
+    if reach > 300 or bw >= 224:
+        material = "Flyover" # Use Twinax for "Speed Kings"
+    
     # Power for Thermal
     logic_pwr = 50.0 + (option_id * 5.0) 
     
@@ -46,7 +51,7 @@ def generate_config(option_id, group_name, pkg_type, interconnect, interposer, p
             "interposer": interposer,
             "pdn_strategy": pdn,
             "cooling": cooling,
-            "material_name": "Megtron7"
+            "material_name": material
         },
         "die_hierarchy": {
             "die_0": {"name": "Logic", "type": "3nm", "size_mm": [side, side]},

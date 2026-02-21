@@ -10,7 +10,7 @@
     "interposer": "Silicon",
     "pdn_strategy": "Backside",
     "cooling": "Passive_BSPDN",
-    "material_name": "Megtron7"
+    "material_name": "Flyover"
   },
   "die_hierarchy": {
     "die_0": {

@@ -10,7 +10,7 @@
     "interposer": "Silicon",
     "pdn_strategy": "Dual-Side",
     "cooling": "Passive",
-    "material_name": "Megtron7"
+    "material_name": "Flyover"
   },
   "die_hierarchy": {
     "die_0": {
@@ -50,23 +50,23 @@
     "  -> PHY: ADC-based DSP mandatory for heavy equalization."
   ],
   "floorplan": {
-    "lx": 0,
-    "ly": 9,
-    "mx": 0,
-    "my": 9,
-    "estimated_max_temp": 49.40894317626953,
+    "lx": 6,
+    "ly": 7,
+    "mx": 6,
+    "my": 7,
+    "estimated_max_temp": 52.20331573486328,
     "internal_reach_mm": 0.0
   },
   "si_signoff": {
-    "total_insertion_loss_db": 467.5866015321626,
-    "eye_width_ui": -8.351732030643252,
-    "eye_height_mv": 3.3401033911968724e-21
+    "total_insertion_loss_db": 467.65646084612746,
+    "eye_width_ui": -8.353129216922548,
+    "eye_height_mv": 3.3133471804786584e-21
   },
   "si_analysis_v3": {
-    "loss": 105.91732283464566,
-    "snr_margin_db": -76.41732283464566,
-    "eye_width_ui": 0.0,
-    "status": "\u274c FAIL",
+    "loss": 24.805118110236222,
+    "snr_margin_db": 4.694881889763778,
+    "eye_width_ui": 0.2347440944881889,
+    "status": "\u2705 PASS",
     "mod": "PAM4"
   }
 }

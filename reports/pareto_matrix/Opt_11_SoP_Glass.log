@@ -8,8 +8,8 @@ Generating 10 samples with 5 layers...
   [Solver] Built Face_to_Face Stack: ['Die', 'Hybrid_Bond', 'Die', 'C4_BGA', 'Package']
     Processed 0/10 samples...
   Saved x_physics.pt and y_spatial.pt to data/
-  Stats: Max Temp = 1802.70C, Avg Temp = 37.85C
-  Max Jitter Tax observed: 1.7777 UI
+  Stats: Max Temp = 1735.86C, Avg Temp = 38.18C
+  Max Jitter Tax observed: 1.7109 UI
   [Solver] Built Face_to_Face Stack: ['Die', 'Hybrid_Bond', 'Die', 'C4_BGA', 'Package']
 Running Nodal Laplacian Check...
   Topology: Face_to_Face
@@ -25,7 +25,7 @@ Running Nodal Laplacian Check...
 DEBUG: CWD is /Users/joepereira/code/3D-IC-Design/physics_accelerated
 DEBUG: Checking /Users/joepereira/code/3D-IC-Design/physics_accelerated/data
 DEBUG: Contents of data: ['x_physics.pt', 'y_spatial.pt']
-  Epoch 0/1 | Loss: 4.857347 | LR: 1.0e-03
+  Epoch 0/1 | Loss: 4.846405 | LR: 1.0e-03
 ✅ Training Complete in 0.05s
   Saved model and stats to results/
 📈 [Phase 3] Running GEPA Search for Golden Config...
@@ -36,7 +36,7 @@ DEBUG: Contents of data: ['x_physics.pt', 'y_spatial.pt']
   -> Budget: 10 dB Loss | 0.8 pJ/b
   -> Arch: CTLE EQ | Forwarded Clocking
   Exploring design space: 50 candidates x 10 generations...
-  Best Design: Temp=40.74C, Reach=0.00mm
+  Best Design: Temp=41.21C, Reach=0.00mm
 
 ✅ Saved optimized configuration to results/golden_config.json
 🏗️  [Phase 4] Physical Synthesis & SI Verification...

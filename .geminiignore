@@ -1,0 +1,28 @@
+# 3D-IC Designer Context Optimization
+# Ignore high-volume simulation and build artifacts
+
+# OpenROAD / Layout
+*.def
+*.lef
+*.gds
+*.odb
+*.rpt
+logs/
+reports/layout/
+
+# serdes_architect / Physics
+*.pt
+data/
+y_spatial.pt
+x_physics.pt
+
+# Caliptra / Fabric RTL Build
+build/
+obj_dir/
+*.vcd
+*.fst
+
+# Python / Environment
+.venv/
+__pycache__/
+*.pyc

@@ -10,7 +10,7 @@
     "interposer": "Silicon",
     "pdn_strategy": "Dual-Side",
     "cooling": "Passive",
-    "material_name": "Megtron7"
+    "material_name": "Flyover"
   },
   "die_hierarchy": {
     "die_0": {

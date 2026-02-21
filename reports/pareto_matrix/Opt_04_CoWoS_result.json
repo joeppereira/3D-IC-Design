@@ -51,10 +51,10 @@
   ],
   "floorplan": {
     "lx": 2,
-    "ly": 4,
+    "ly": 10,
     "mx": 2,
-    "my": 4,
-    "estimated_max_temp": 40.301910400390625,
+    "my": 10,
+    "estimated_max_temp": 39.19458770751953,
     "internal_reach_mm": 0.0
   },
   "si_signoff": {

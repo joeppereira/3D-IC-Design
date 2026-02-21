@@ -10,7 +10,7 @@
     "interposer": "Silicon",
     "pdn_strategy": "Backside",
     "cooling": "Passive_BSPDN",
-    "material_name": "Megtron7"
+    "material_name": "Flyover"
   },
   "die_hierarchy": {
     "die_0": {
@@ -50,11 +50,11 @@
     "  -> PHY: Analog FFE + DFE required for eye closure."
   ],
   "floorplan": {
-    "lx": 3,
-    "ly": 11,
-    "mx": 3,
-    "my": 11,
-    "estimated_max_temp": 42.190303802490234,
+    "lx": 9,
+    "ly": 4,
+    "mx": 9,
+    "my": 4,
+    "estimated_max_temp": 40.584285736083984,
     "internal_reach_mm": 0.0
   },
   "si_signoff": {
@@ -63,10 +63,10 @@
     "eye_height_mv": 2.3539149891629104e-06
   },
   "si_analysis_v3": {
-    "loss": 31.706979067049645,
-    "snr_margin_db": -2.2069790670496445,
-    "eye_width_ui": 0.0,
-    "status": "\u274c FAIL",
+    "loss": 11.447256232068936,
+    "snr_margin_db": 18.052743767931062,
+    "eye_width_ui": 0.9026371883965532,
+    "status": "\u2705 PASS",
     "mod": "PAM4"
   }
 }

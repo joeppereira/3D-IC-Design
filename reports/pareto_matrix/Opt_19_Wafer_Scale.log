@@ -1,15 +1,15 @@
 🚀 Initializing 3D IC Designer for Spec: configs/pareto_matrix/Opt_19_Wafer_Scale.json
-🔍 Analysis: Reach=955.0mm, Target Loss=0dB, Config Material=Megtron7
-✅ Using Material from Config: Megtron7
-📂 [Phase 1] Generating 5-layer 3D Voxel Tensors (Megtron7)...
+🔍 Analysis: Reach=955.0mm, Target Loss=0dB, Config Material=Flyover
+✅ Using Material from Config: Flyover
+📂 [Phase 1] Generating 5-layer 3D Voxel Tensors (Flyover)...
 Generating 10 samples with 5 layers...
   Creating random Power Maps...
   Solving for Thermal Distribution (This may take a while)...
   [Solver] Built Wafer_Scale_Integration Stack: ['Die', 'Metal_Stack', 'C4_BGA', 'Package', 'PCB_Board']
     Processed 0/10 samples...
   Saved x_physics.pt and y_spatial.pt to data/
-  Stats: Max Temp = 2061.31C, Avg Temp = 44.40C
-  Max Jitter Tax observed: 2.0363 UI
+  Stats: Max Temp = 2493.99C, Avg Temp = 45.90C
+  Max Jitter Tax observed: 2.4690 UI
   [Solver] Built Face_to_Face Stack: ['Die', 'Hybrid_Bond', 'Die', 'C4_BGA', 'Package']
 Running Nodal Laplacian Check...
   Topology: Face_to_Face
@@ -25,7 +25,7 @@ Running Nodal Laplacian Check...
 DEBUG: CWD is /Users/joepereira/code/3D-IC-Design/physics_accelerated
 DEBUG: Checking /Users/joepereira/code/3D-IC-Design/physics_accelerated/data
 DEBUG: Contents of data: ['x_physics.pt', 'y_spatial.pt']
-  Epoch 0/1 | Loss: 4.768729 | LR: 1.0e-03
+  Epoch 0/1 | Loss: 4.800755 | LR: 1.0e-03
 ✅ Training Complete in 0.05s
   Saved model and stats to results/
 📈 [Phase 3] Running GEPA Search for Golden Config...
@@ -36,30 +36,30 @@ DEBUG: Contents of data: ['x_physics.pt', 'y_spatial.pt']
   -> Budget: 36 dB Loss | 2.5 pJ/b
   -> Arch: ADC-DSP EQ | CDR Clocking
   Exploring design space: 50 candidates x 10 generations...
-  Best Design: Temp=50.97C, Reach=0.00mm
+  Best Design: Temp=46.53C, Reach=0.00mm
 
 ✅ Saved optimized configuration to results/golden_config.json
 🏗️  [Phase 4] Physical Synthesis & SI Verification...
 
-🌊 SI Loss Waterfall Analysis (Material: Megtron7)
+🌊 SI Loss Waterfall Analysis (Material: Flyover)
   [1] Pkg Escape:   3.00 dB
   [2] PCB Trace:    436.14 dB (37.60")
   [3] Connectors:   2.50 dB
   [4] XTK (SNR):    2.50 dB
-  [5] Thermal:      0.65 dB
+  [5] Thermal:      0.54 dB
   ---------------------------
-  Total IL:         444.79 dB @ Nyquist
+  Total IL:         444.68 dB @ Nyquist
 
 🔍 Sign-off Metrics (Target >0.45 UI, >40mV):
-  Eye Width:  -7.896 UI
+  Eye Width:  -7.894 UI
   Eye Height: 0.0 mV
   ❌ FAILURE: Eye closure detected. Solution: High-Loss Material or better EQ.
 
 ✅ Sign-off report appended to golden_config.json
-  🔍 SI Analysis: PAM4 | CDR | 37.60" on Megtron7
+  🔍 SI Analysis: PAM4 | CDR | 37.60" on Flyover
     - Signaling:     Diff (XTK: 1.0dB)
     - DSP Gain:      +15.00 dB (224G ADC-DSP)
 
-📢 Verdict: ❌ FAIL | Loss: 101.0dB | Eye: 0.00 UI | Margin: -71.5dB
+📢 Verdict: ✅ PASS | Loss: 23.9dB | Eye: 0.28 UI | Margin: 5.6dB
 ⚠️ OpenROAD skipping (mock run).
 ✅ 224G Project Sign-off Complete. Check ./reports/voxel_si_report.pdf
