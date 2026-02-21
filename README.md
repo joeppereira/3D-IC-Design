@@ -44,16 +44,24 @@ The goal of this platform is to provide an end-to-end autonomous environment whe
 
 ## 2. The User Experience (Foreground)
 
-### Phase 1: Intent to Formal Specification
-Converts natural language architectural goals into machine-readable JSON specs with validated physical constraints.
-*   **User Action**: Define performance targets, lane counts, and material preferences via CLI.
-*   **Result**: A validated `configs/formal_spec.json` ready for the cognitive engine.
+This tool is designed for **Human-in-the-Loop Transparency**. The user does not just receive a final layout; they witness the "physics-driven evolution" of the design.
 
-### Phase 4: Sign-off, Layout & Iteration
-The final user-facing gate where the design is visualized and exported for manufacturing.
-*   **Visual Output**: Interactive Parallel Coordinates dashboard and Eye Diagrams (224G/112G).
-*   **Physical Output**: GDS-ready floorplan Tcl script for OpenROAD.
-*   **Self-Learning**: The user reviews the "Golden Point" recommendations and iterates if physical margins are tight.
+### Phase 1: Intent to Formal Specification
+*   **The Experience**: The architect inputs a plain-text intent (e.g., "AI Switch, 1TB pool, 224G").
+*   **Explainability**: The tool parses this and instantly highlights "Conflict Zones"—for example, it will flag that 224G and 800mm are physically incompatible on standard PCB materials *before* running any simulations.
+*   **Result**: A validated `configs/formal_spec.json`.
+
+### Phase 4: Interactive Sign-off & Iteration
+*   **The Experience**: The user explores the **Pareto Dashboard** (`reports/pareto_dashboard.html`).
+*   **Transparency**: Every data point on the parallel coordinates plot is "Traceable." The user can see exactly which physical law (e.g., Nodal Laplacian Heat Flux or Skin Effect Loss) caused a design to fail.
+*   **Iteration Loop**: 
+    1.  **Review**: User sees that 224G links are marginal.
+    2.  **Adjust**: User tweaks the `fec_preference` or `spacing` in the spec.
+    3.  **Re-run**: The cognitive engine updates the surrogate model and re-optimizes.
+*   **Output**: 
+    *   **Design Reasoning Log**: A natural language explanation of "Why this design won" (`reports/design_reasoning.md`).
+    *   **OpenROAD Floorplan**: A ready-to-synthesize Tcl script.
+    *   **Validated Eye Diagrams**: Visual proof of BER stability.
 
 ---
 
