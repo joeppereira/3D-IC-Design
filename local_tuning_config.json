@@ -1,0 +1,9 @@
+{
+  "base_model": "gemma-3-4b",
+  "quantization": "nf4",
+  "vram_cap_gb": 9.0,
+  "adapter_name": "secure_fabric_v1",
+  "optimizer": "paged_adamw_32bit",
+  "jepa_head_vram_gb": 1.5,
+  "training_data": "project_memory/training_pairs.jsonl"
+}

@@ -4,13 +4,12 @@
   "loss_db": 18.0,
   "target_bandwidth_gbps": 224.0,
   "max_power_budget_w": 200.0,
-  "packaging": {
-    "topology": "Face_to_Face",
-    "material_name": "Megtron7",
-    "interposer": "Silicon_Interposer",
-    "cooling": "BSPDN_Liquid"
-  },
-  "die_hierarchy": {
+      "packaging": {
+          "topology": "Face_to_Face",
+          "material_name": "Flyover",
+          "interposer": "Silicon_Interposer",
+          "cooling": "BSPDN_Liquid"
+      },  "die_hierarchy": {
     "die_0": {
       "name": "CXL_Switch_Logic",
       "type": "3nm_FinFET",

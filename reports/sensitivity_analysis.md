@@ -4,10 +4,10 @@ This report identifies which architectural levers had the greatest impact on the
 
 | Architectural Lever | Sensitivity Impact | Direction |
 | :--- | :--- | :--- |
-| Power Efficiency Pjb | Medium (0.44) | Negative (Decrease to improve) |
-| Die Area Mm2 | Medium (nan) | Negative (Decrease to improve) |
-| Thermal Tj C | Medium (0.23) | Negative (Decrease to improve) |
-| Relative Cost | High (0.93) | Negative (Decrease to improve) |
+| Power Efficiency Pjb | Medium (0.49) | Negative (Decrease to improve) |
+| Die Area Mm2 | Medium (0.08) | Negative (Decrease to improve) |
+| Thermal Tj C | Medium (0.36) | Negative (Decrease to improve) |
+| Relative Cost | High (0.87) | Negative (Decrease to improve) |
 
 ## 💡 Key Architectural Takeaway
 For this project, **Relative Cost** was the dominant factor in achieving sign-off. Optimizing this variable first will yield the fastest convergence in future iterations.

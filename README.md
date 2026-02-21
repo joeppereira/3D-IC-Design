@@ -96,23 +96,17 @@ source .venv/bin/activate
 pip install torch numpy pandas matplotlib plotly
 ```
 
-### Run Full Design Cycle (Single Spec)
+### Regression & Qualification (v1.0)
+To qualify any architectural changes against the baseline physics and results:
 ```bash
-./run_full_cycle.sh configs/formal_spec.json
+./regression_suite/run_v1_qualification.sh
 ```
 
-### Run 20-Point Pareto Batch Analysis
-```bash
-./run_pareto_matrix.sh
-# Then generate report
-python3 serdes_architect/scripts/harvest_pareto_data.py
-python3 serdes_architect/src/pareto_visualizer.py
-```
-
-### Aggregate All Batch Results
-```bash
-python3 aggregate_results.py
-```
+### v2 Autonomous Training (Local fine-tuning)
+The tool supports local **QLoRA fine-tuning** of the Gemma 3 (4B) expert on 10GB VRAM hardware.
+*   **Trigger**: Use the keyword "Train" or "Fine-tune" in your CLI prompt.
+*   **Orchestrator**: `.gemini/hooks/train-logic.sh` manages VRAM partitioning between the 12-layer JEPA and the LLM.
+*   **Memory**: Weights are persisted to `project_memory/adapters/`.
 
 ---
 

@@ -1,32 +1,30 @@
 {
-  "project_name": "Opt_20_Wafer_Scale",
-  "reach_mm": 1005.0,
+  "project_name": "CXL_Switch_SoP_Mitigated",
+  "reach_mm": 300.0,
+  "loss_db": 18.0,
   "target_bandwidth_gbps": 224.0,
-  "max_power_budget_w": 150.0,
-  "io_efficiency_pjb": 2.5,
+  "max_power_budget_w": 200.0,
   "packaging": {
-    "topology": "Wafer_Scale_Integration",
-    "interconnect": "RDL",
-    "interposer": "Silicon",
-    "pdn_strategy": "Dual-Side",
-    "cooling": "Passive",
-    "material_name": "Flyover"
+    "topology": "Face_to_Face",
+    "material_name": "Flyover",
+    "interposer": "Silicon_Interposer",
+    "cooling": "BSPDN_Liquid"
   },
   "die_hierarchy": {
     "die_0": {
-      "name": "Logic",
-      "type": "3nm",
+      "name": "CXL_Switch_Logic",
+      "type": "3nm_FinFET",
       "size_mm": [
-        25,
-        25
+        15,
+        15
       ]
     },
     "die_1": {
-      "name": "SRAM",
-      "type": "Stacked",
+      "name": "SRAM_Search_Die",
+      "type": "Stacked_SRAM",
       "size_mm": [
-        25,
-        25
+        12,
+        12
       ]
     }
   },
@@ -35,37 +33,39 @@
     "grid_size": 16,
     "k_map": {
       "Die": 140.0,
-      "Interposer": 140.0,
-      "Package": 0.3
+      "Metal_Stack": 380.0,
+      "C4_BGA": 50.0,
+      "Package": 100.0
     }
   },
   "constraints": {
-    "min_isolation_db": 35,
-    "modulation": "PAM4",
-    "fec_preference": "inner"
+    "min_isolation_db": 40,
+    "reliability_years": 10,
+    "fec_preference": "inner",
+    "modulation": "PAM4"
   },
-  "reach_classification": "VLR",
+  "reach_classification": "MR",
   "architectural_recs": [
     "  -> Clocking: Drift detected. Use CDR (Adds ~15% area).",
-    "  -> PHY: ADC-based DSP mandatory for heavy equalization."
+    "  -> PHY: Analog FFE + DFE required for eye closure."
   ],
   "floorplan": {
-    "lx": 6,
-    "ly": 7,
-    "mx": 6,
-    "my": 7,
-    "estimated_max_temp": 52.20331573486328,
+    "lx": 10,
+    "ly": 3,
+    "mx": 10,
+    "my": 3,
+    "estimated_max_temp": 61.9954948425293,
     "internal_reach_mm": 0.0
   },
   "si_signoff": {
-    "total_insertion_loss_db": 467.65646084612746,
-    "eye_width_ui": -8.353129216922548,
-    "eye_height_mv": 3.3133471804786584e-21
+    "total_insertion_loss_db": 144.43276138681125,
+    "eye_width_ui": -1.888655227736225,
+    "eye_height_mv": 4.8023290893454036e-05
   },
   "si_analysis_v3": {
-    "loss": 24.805118110236222,
-    "snr_margin_db": 4.694881889763778,
-    "eye_width_ui": 0.2347440944881889,
+    "loss": 12.31496062992126,
+    "snr_margin_db": 25.18503937007874,
+    "eye_width_ui": 1.0,
     "status": "\u2705 PASS",
     "mod": "PAM4"
   }

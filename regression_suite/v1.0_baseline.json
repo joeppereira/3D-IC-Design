@@ -1,0 +1,17 @@
+{
+  "version": "1.0",
+  "date": "2026-02-20",
+  "baseline_project": "CXL_Switch_SoP_Mitigated",
+  "measurements": {
+    "thermal_peak_c": 56.0,
+    "eye_margin_ui": 0.47,
+    "total_power_w": 188.0,
+    "die_area_mm2": 225.0,
+    "link_loss_db": 20.2
+  },
+  "qualification_thresholds": {
+    "thermal_max_c": 105.0,
+    "min_eye_margin_ui": 0.20,
+    "max_link_loss_db": 35.0
+  }
+}

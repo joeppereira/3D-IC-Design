@@ -1,0 +1,2 @@
+{"instruction": "Calculate keep-out zone for Caliptra RoT near 224G lanes.", "response": "Based on EM interference profiles, a 250µm keep-out zone is required to protect secure keys from side-channel leakage."}
+{"instruction": "Select material for 800mm reach at 112GHz Nyquist.", "response": "Standard PCB materials like Megtron 7 fail at 35dB. Recommendation: Flyover Twinax cables (+15dB DSP credit) to achieve 0.47 UI margin."}
