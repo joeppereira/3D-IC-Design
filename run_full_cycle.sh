@@ -69,6 +69,9 @@ python3 src/thermal/transient_solver.py --config $GOLDEN
 # Physical Layout Generation
 python3 src/layout/gen_def.py --golden_config $GOLDEN
 
+# Post-Layout RC Extraction (Milestone #8)
+python3 src/layout/rc_extractor.py --config $GOLDEN
+
 # Final Design Summary Report (Review-Ready)
 python3 scripts/generate_final_summary.py --config $GOLDEN
 

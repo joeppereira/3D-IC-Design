@@ -66,11 +66,11 @@
     "  -> Clocking: Use Forwarded Clock (Low Power/Latency)."
   ],
   "floorplan": {
-    "lx": 1,
-    "ly": 4,
-    "mx": 1,
-    "my": 4,
-    "estimated_max_temp": 58.92701721191406,
+    "lx": 8,
+    "ly": 3,
+    "mx": 8,
+    "my": 3,
+    "estimated_max_temp": 54.14205551147461,
     "internal_reach_mm": 0.0
   },
   "si_analysis_v3": {
@@ -88,5 +88,11 @@
       "EM Isolation (250um Guard-band): VERIFIED",
       "Backside PDN (Side-channel Mitigation): ENABLED"
     ]
+  },
+  "rc_extraction": {
+    "m7_signal_r_ohm": 112500.0,
+    "m7_signal_c_pf": 20.718,
+    "m10_pdn_r_ohm": 4500.0,
+    "extraction_status": "\u2705 VERIFIED"
   }
 }

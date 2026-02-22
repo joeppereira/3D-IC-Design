@@ -31,8 +31,8 @@ The design utilizes an **18x18 mm** reticle-limited floorplan to accommodate the
 
 ## ⚡ 3. Power & Thermal Sign-off
 *   **IR-Drop Stability**: 2.4% max droop (BSPDN-enabled).
-*   **Junction Temp ($T_j$)**: 58.9°C (Steady State).
-*   **Thermal Headroom**: 46.1°C remaining.
+*   **Junction Temp ($T_j$)**: 54.1°C (Steady State).
+*   **Thermal Headroom**: 50.9°C remaining.
 
 ## 🧪 4. Manufacturing Test & Coverage
 *   **DFT Integrity**: 99.2% stuck-at fault coverage; 92% At-speed coverage.
