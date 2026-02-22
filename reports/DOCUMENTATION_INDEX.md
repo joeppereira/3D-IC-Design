@@ -10,6 +10,7 @@ This index tracks the mandatory documents required for fab qualification and inv
 ## 📁 2. Architectural & Physical Design (Tape-out Ready)
 *   [reports/architectural_spec.md](architectural_spec.md): Block-level functional and power spec.
 *   [reports/assembly_packaging_spec.md](assembly_packaging_spec.md): Hybrid bond and substrate material definition.
+*   [reports/clocking_jitter_spec.md](clocking_jitter_spec.md): Timing H-tree and jitter budget allocation.
 *   [reports/connectivity_pinout.md](connectivity_pinout.md): Die-level macro placement.
 *   [serdes_architect/scripts/floorplan.tcl](../serdes_architect/scripts/floorplan.tcl): OpenROAD floorplan commands.
 
