@@ -1,38 +1,32 @@
 # 🚀 Living Spec: Data Center "Search-Switch" (v2 Unified Expert)
 
-This file anchors the autonomous reasoning for a unified Data Center architecture, ensuring multi-protocol compliance and physical sign-off.
-
 ## 🏗️ Expert Domains
-*   **IO Fabric**: PCIe Gen 5/6/7, CXL 3.1, UCIe 2.0 (XSR/USR), **UALink 128G/200G**.
-*   **Memory**: LPDDR5, LPDDR5X, LPDDR6.
-*   **Data Path**: RDMA over NVMe, RDMA over CXL 3.1.
-*   **Security**: SPDM 1.2+, DICE Attestation, Caliptra RoT.
-*   **Physical Design**: OpenROAD (CTS, Routing, Floorplan), 3D-FDM Thermal.
+*   **Fabric**: PCIe 5-7, CXL 3.1, UCIe 2.0, UALink 200G.
+*   **Physical**: OpenROAD, 3D-FDM Thermal, Hardened IR-Drop, MCMM Sign-off.
+*   **Security**: SPDM 1.2+, DICE, Caliptra RoT.
 
 ---
 
-## 🎯 Protocol Guardrails
+## 🎯 Hardened Physics Guardrails (Mandatory)
 
-### 1. Signaling & Modulation (PAM4/PAM2/NRZ)
-*   **Single-Ended (SE)**: Default for LPDDR5/6 and parallel UCIe. Higher crosstalk penalty (6dB) vs Diff.
-*   **Differential (Diff)**: Mandatory for PCIe 5-7, UALink, and SerDes RDMA.
-*   **Modulation**:
-    *   **NRZ/PAM2**: Optimized for latency in <10mm reaches.
-    *   **PAM4**: Mandatory for 56G+ (PCIe 6/7, UALink) to manage Nyquist frequency.
+### 1. Power Integrity (IR-Drop Hardening)
+*   **Zero-Tolerance**: 0.00% IR-drop results are considered "System Failures."
+*   **Resistivity**: All models must use 3nm thin-film copper conductivity ($\sigma \approx 5.0 \text{ S/m}$) for global PDN.
+*   **Scaling**: Voltage droop must account for micron-scale distance traverses and current crowding.
 
-### 2. High-Speed Physics (UALink 200G)
-*   **UALink**: Optimized for XPU-to-XPU scaling. Requires < 5.0 pJ/bit link efficiency.
-*   **200G/224G**: Forced Megtron 7 or Flyover Twinax for reaches > 100mm.
-*   **Skew**: Forwarded Clocking restricted to < 50mm for 112G+ operations.
+### 2. Signal Integrity (Jitter Ceiling)
+*   **Eye Cap**: Maximum Eye Width is capped at **0.65 - 0.70 UI** to account for deterministic jitter ($Dj$) and reference clock noise.
+*   **SNR Tax**: Low-voltage signaling (0.3V - 0.8V) must apply a logarithmic SNR tax based on 1.0V reference.
 
-### 3. Physical Synthesis (OpenROAD)
-*   **CTS**: Balanced H-tree for high-speed clock distribution.
-*   **Routing**: G-S-G shielding for all 112G/224G differential pairs.
+### 3. Industry-Standard Sign-off
+*   **Reports**: Every design must output a "Silicon & Package Sign-off" dossier including:
+    *   **Assembly**: Bump pitch, hybrid bond alignment, and substrate material.
+    *   **Architecture**: Logic-SRAM connectivity and power distribution.
+    *   **Link Verification**: Power, Area, and Margin for every discrete link.
+    *   **Test Plan**: BIST, Scan, and Loopback coverage.
+    *   **Challenged Assumptions**: A critical self-critique of design choices.
 
 ---
 
-## 🔄 Self-Learning Execution Loop (V2 Autonomous)
-*   **Phase #1**: Spec ingestion & Protocol Selection.
-*   **Phase #2**: Multi-Objective Pareto Sweep (Cost/Lat/Thermal).
-*   **Phase #3**: OpenROAD Layout (Grid-Aware Floorplanning).
-*   **Phase #4**: Sign-off (SI BER & Thermal MCMM).
+## 🔄 Self-Learning Execution Loop
+1.  **Ingest Spec** → 2. **Pareto Sweep** → 3. **Physics Sign-off** → 4. **Self-Critique & Fix**.

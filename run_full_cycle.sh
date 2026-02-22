@@ -72,6 +72,9 @@ python3 src/layout/gen_def.py --golden_config $GOLDEN
 # Final Design Summary Report (Review-Ready)
 python3 scripts/generate_final_summary.py --config $GOLDEN
 
+# Comprehensive Silicon & Package Sign-off Dossier (Industry Standard)
+python3 scripts/generate_comprehensive_signoff.py --config $GOLDEN
+
 echo "⚠️ OpenROAD Skipping actual P&R (mock run complete)."
 cd ..
 
