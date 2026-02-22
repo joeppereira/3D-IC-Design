@@ -7,15 +7,16 @@ This index tracks the mandatory documents required for fab qualification and inv
 *   [GEMINI.md](../GEMINI.md): Living spec and autonomous reasoning anchor.
 *   [configs/formal_spec.json](../configs/formal_spec.json): Machine-readable constraints.
 
-## 📁 2. Architectural & Physical Design
-*   [reports/comprehensive_signoff_dossier.md](comprehensive_signoff_dossier.md): The Master Sign-off (Area, PI, SI, Thermal).
+## 📁 2. Architectural & Physical Design (Tape-out Ready)
+*   [reports/architectural_spec.md](architectural_spec.md): Block-level functional and power spec.
+*   [reports/assembly_packaging_spec.md](assembly_packaging_spec.md): Hybrid bond and substrate material definition.
 *   [reports/connectivity_pinout.md](connectivity_pinout.md): Die-level macro placement.
 *   [serdes_architect/scripts/floorplan.tcl](../serdes_architect/scripts/floorplan.tcl): OpenROAD floorplan commands.
 
-## 📁 3. Verification & Safety
-*   [reports/design_reasoning.md](design_reasoning.md): Audit trail of design choices.
-*   [reports/sensitivity_analysis.md](sensitivity_analysis.md): Sensitivity levers.
+## 📁 3. Electrical & Signal Integrity (Foundry Sign-off)
+*   [reports/comprehensive_signoff_dossier.md](comprehensive_signoff_dossier.md): The Master Sign-off (Area, PI, SI, Thermal).
 *   [reports/search_king_final_eye.png](search_king_final_eye.png): 224G SI proof.
+*   [reports/sensitivity_analysis.md](sensitivity_analysis.md): Sensitivity levers.
 *   [regression_suite/run_v1_qualification.sh](../regression_suite/run_v1_qualification.sh): System integrity test suite.
 
 ## 📁 4. Multi-Objective Analysis

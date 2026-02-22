@@ -35,7 +35,9 @@ def generate_report(config_path):
     
     lines.append("## 📊 4. Link Performance (224G RDMA)")
     lines.append(f"*   **Protocol**: CXL 3.1 / RDMA 224G")
-    lines.append(f"*   **Reach**: {config.get('reach_mm', 0.0)} mm ({config.get('reach_classification', 'LR')})")
+    reach = config.get('reach_mm', 0.0)
+    reach_cls = config.get('reach_classification', 'MR')
+    lines.append(f"*   **Reach**: {reach} mm ({reach_cls})")
     lines.append(f"*   **Insertion Loss**: {si.get('loss', 0.0):.1f} dB")
     lines.append(f"*   **Eye Width Margin**: {si.get('eye_width_ui', 0.0):.3f} UI (Target > 0.20)\n")
     

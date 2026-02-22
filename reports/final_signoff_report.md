@@ -14,7 +14,7 @@
 *   **IR-Drop (Droop)**: 0.00% (✅ PASS)
 
 ## 🌡️ 3. Thermal Sign-off
-*   **Steady State Peak**: 57.1 C
+*   **Steady State Peak**: 64.0 C
 *   **Transient (RDMA Burst)**: 0.0 C
 *   **Thermal Headroom**: 105.0 C (✅ PASS)
 

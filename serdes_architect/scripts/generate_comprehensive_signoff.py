@@ -60,7 +60,9 @@ def generate_dossier(config_path):
     report.append("## 📊 2. Multi-Protocol Link Verification")
     report.append("| Interface | Protocol | Power (W) | Reach | Eye Margin | Status |")
     report.append("| :--- | :--- | :--- | :--- | :--- | :--- |")
-    report.append(f"| **Host-XPU** | PCIe 7.0 | 4.2 | 800mm | {si.get('eye_width_ui', 0.45):.3f} UI | ✅ PASS |")
+    
+    reach = config.get('reach_mm', 300.0)
+    report.append(f"| **Host-XPU** | PCIe 7.0 | 4.2 | {reach}mm | {si.get('eye_width_ui', 0.45):.3f} UI | ✅ PASS |")
     report.append(f"| **DRAM-Pool** | UCIe 2.0 | 2.1 | 10mm | 0.650 UI | ✅ PASS |")
     report.append(f"| **XPU-Return** | RDMA 224G | 8.4 | 300mm | {si.get('eye_width_ui', 0.45):.3f} UI | ✅ PASS |")
     report.append(f"| **SRAM-Cache** | Native 3D | 0.5 | 10µm | 0.950 UI | ✅ PASS |\n")
