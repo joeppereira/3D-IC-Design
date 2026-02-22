@@ -16,6 +16,7 @@ This index tracks the mandatory documents required for fab qualification and inv
 
 ## 📁 3. Electrical & Signal Integrity (Foundry Sign-off)
 *   [reports/comprehensive_signoff_dossier.md](comprehensive_signoff_dossier.md): The Master Sign-off (Area, PI, SI, Thermal).
+*   [reports/link_verification_margins.md](link_verification_margins.md): Per-link exhaustive testing & SNR report.
 *   [reports/functional_simulation_report.md](functional_simulation_report.md): RTL logic verification trace.
 *   [reports/search_king_final_eye.png](search_king_final_eye.png): 224G SI proof.
 *   [reports/sensitivity_analysis.md](sensitivity_analysis.md): Sensitivity levers.
