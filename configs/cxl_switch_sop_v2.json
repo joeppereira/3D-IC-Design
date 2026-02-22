@@ -1,29 +1,36 @@
 {
   "project_name": "CXL_Switch_SoP_1TB_V2",
-  "reach_mm": 300.0,
   "target_bandwidth_gbps": 224.0,
   "max_power_budget_w": 180.0,
+  "io_efficiency_pjb": 6.5,
   "packaging": {
     "topology": "Face_to_Face",
+    "interconnect": "Hybrid_Bond",
+    "pitch_um": 5.0,
     "material_name": "Flyover",
     "interposer": "Silicon_Interposer",
-    "cooling": "BSPDN_Liquid"
+    "cooling": "BSPDN_Liquid",
+    "vddq_v": 0.8,
+    "vddq_range": [
+      0.75,
+      0.85
+    ]
   },
   "die_hierarchy": {
     "die_0": {
       "name": "CXL_Switch_Logic",
       "type": "3nm_FinFET",
       "size_mm": [
-        15,
-        15
+        18,
+        18
       ]
     },
     "die_1": {
       "name": "SRAM_Search_Die",
       "type": "Stacked_SRAM",
       "size_mm": [
-        12,
-        12
+        15,
+        15
       ]
     }
   },
@@ -39,8 +46,9 @@
   },
   "constraints": {
     "min_isolation_db": 40,
-    "modulation": "PAM4",
+    "reliability_years": 10,
     "fec_preference": "inner",
+    "modulation": "PAM4",
     "clock_mode": "CDR",
     "protocol": "CXL3.1",
     "security": [

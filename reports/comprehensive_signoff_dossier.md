@@ -3,9 +3,9 @@
 **Technology Node**: 3nm GAA | **Package**: 3D Stacked SoP
 
 ## 🏗️ 1. Assembly & Packaging Configuration
-*   **Top Die (SRAM)**: [12, 12] mm, Hybrid Bonded
-*   **Bottom Die (Logic)**: [15, 15] mm, Silicon Interposer
-*   **Interconnect**: Hybrid Bond | Pitch: 10.0um
+*   **Top Die (SRAM)**: [15, 15] mm, Hybrid Bonded
+*   **Bottom Die (Logic)**: [18, 18] mm, Silicon Interposer
+*   **Interconnect**: Hybrid_Bond | Pitch: 5.0um
 *   **Substrate**: Flyover | Cooling: BSPDN_Liquid
 
 ## 📊 2. Multi-Protocol Link Verification
@@ -19,7 +19,7 @@
 
 ## ⚡ 3. Power & Thermal Sign-off
 *   **IR-Drop (Steady State)**: 2.4% droop detected (Limit: 5.0%)
-*   **Peak Junction Temp**: 65.5 C (Steady State)
+*   **Peak Junction Temp**: 57.1 C (Steady State)
 *   **Transient RDMA Burst**: 0.0 C (Duration: 10ms)
 
 ## 🧪 4. Manufacturing Test Plan

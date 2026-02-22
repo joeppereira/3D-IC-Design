@@ -3,25 +3,25 @@
 
 ## 🏗️ 1. Package Architecture
 *   **Topology**: Face_to_Face
-*   **Interconnect**: Hybrid Bond (10um pitch)
+*   **Interconnect**: Hybrid_Bond (10um pitch)
 *   **Cooling**: BSPDN_Liquid
 *   **Interposer**: Silicon_Interposer
 
 ## ⚡ 2. Power & Electrical Sign-off
 *   **Total System Power**: 180.0 W
 *   **I/O Efficiency**: 6.5 pJ/bit
-*   **AVS Optimized VDDQ**: 0.8 V
+*   **AVS Optimized VDDQ**: 0.75 V
 *   **IR-Drop (Droop)**: 0.00% (✅ PASS)
 
 ## 🌡️ 3. Thermal Sign-off
-*   **Steady State Peak**: 65.5 C
+*   **Steady State Peak**: 57.1 C
 *   **Transient (RDMA Burst)**: 0.0 C
 *   **Thermal Headroom**: 105.0 C (✅ PASS)
 
 ## 📊 4. Link Performance (224G RDMA)
 *   **Protocol**: CXL 3.1 / RDMA 224G
-*   **Reach**: 300.0 mm (MR)
-*   **Insertion Loss**: 12.8 dB
+*   **Reach**: 0.0 mm (XSR)
+*   **Insertion Loss**: 8.4 dB
 *   **Eye Width Margin**: 0.700 UI (Target > 0.20)
 
 ## 🛡️ 5. Security & Root-of-Trust Audit
