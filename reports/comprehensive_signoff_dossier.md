@@ -1,5 +1,5 @@
 # 🏅 Silicon & Package Sign-off Dossier: CXL_Switch_SoP_1TB_V2
-**Final Status**: ✅ QUALIFIED FOR FAB
+**Final Status**: ❌ REJECTED
 **Design Generation**: V2.5 Autonomous Architect | **Node**: 3nm GAA N3P
 
 ## 🏗️ 1. Geometry & Area Justification
@@ -24,15 +24,15 @@ The design utilizes an **18x18 mm** reticle-limited floorplan to accommodate the
 ## 📊 2. Multi-Protocol Link Verification
 | Interface | Protocol | Power (W) | Reach | Eye Margin | Status |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Host-XPU** | PCIe 7.0 | 4.2 | 300.0mm | 0.700 UI | ✅ PASS |
+| **Host-XPU** | PCIe 7.0 | 4.2 | 300.0mm | 0.000 UI | ✅ PASS |
 | **DRAM-Pool** | UCIe 2.0 | 2.1 | 10mm | 0.650 UI | ✅ PASS |
-| **XPU-Return** | RDMA 224G | 8.4 | 300mm | 0.700 UI | ✅ PASS |
+| **XPU-Return** | RDMA 224G | 8.4 | 300mm | 0.000 UI | ✅ PASS |
 | **SRAM-Cache** | Native 3D | 0.5 | 10µm | 0.950 UI | ✅ PASS |
 
 ## ⚡ 3. Power & Thermal Sign-off
-*   **IR-Drop Stability**: 2.4% max droop (BSPDN-enabled).
-*   **Junction Temp ($T_j$)**: 37.4°C (Steady State).
-*   **Thermal Headroom**: 67.6°C remaining.
+*   **IR-Drop Stability**: 373.7% max droop (BSPDN-enabled).
+*   **Junction Temp ($T_j$)**: 36.3°C (Steady State).
+*   **Thermal Headroom**: 68.7°C remaining.
 
 ## 🧪 4. Manufacturing Test & Coverage
 *   **DFT Integrity**: 99.2% stuck-at fault coverage; 92% At-speed coverage.

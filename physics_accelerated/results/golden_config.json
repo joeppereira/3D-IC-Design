@@ -10,7 +10,7 @@
     "material_name": "Flyover",
     "interposer": "Silicon_Interposer",
     "cooling": "BSPDN_Liquid",
-    "vddq_v": 0.75,
+    "vddq_v": 0.85,
     "vddq_range": [
       0.75,
       0.85
@@ -66,20 +66,32 @@
     "  -> Clocking: Use Forwarded Clock (Low Power/Latency)."
   ],
   "floorplan": {
-    "lx": 6,
+    "lx": 0,
     "ly": 0,
-    "mx": 6,
+    "mx": 0,
     "my": 0,
-    "estimated_max_temp": 37.43217468261719,
+    "estimated_max_temp": 36.25611114501953,
     "internal_reach_mm": 0.0
   },
+  "rc_extraction": {
+    "m7_signal_r_ohm": 112500.0,
+    "m7_signal_c_pf": 20.718,
+    "m10_pdn_r_ohm": 4500.0,
+    "extraction_status": "\u2705 VERIFIED"
+  },
   "si_analysis_v3": {
-    "loss": 8.385826771653544,
-    "snr_margin_db": 29.660523033225616,
-    "eye_width_ui": 0.7,
-    "status": "\u2705 PASS"
+    "loss": 67.03076781030654,
+    "snr_margin_db": -28.984418005427386,
+    "eye_width_ui": 0.0,
+    "status": "\u274c FAIL"
   },
   "avs_optimized": true,
+  "ir_drop_signoff": {
+    "min_voltage": -2.326,
+    "droop_percentage": 373.7,
+    "status": "\u274c FAIL",
+    "threshold": 5.0
+  },
   "security_signoff": {
     "status": "\u2705 PASS",
     "checks": [
@@ -88,11 +100,5 @@
       "EM Isolation (250um Guard-band): VERIFIED",
       "Backside PDN (Side-channel Mitigation): ENABLED"
     ]
-  },
-  "rc_extraction": {
-    "m7_signal_r_ohm": 112500.0,
-    "m7_signal_c_pf": 20.718,
-    "m10_pdn_r_ohm": 4500.0,
-    "extraction_status": "\u2705 VERIFIED"
   }
 }
