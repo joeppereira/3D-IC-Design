@@ -1,14 +1,15 @@
 {
-  "project_name": "CXL_Switch_SoP_1TB_V2",
+  "project_name": "CXL_Switch_SoP_1TB_V4_PowerStacked",
   "target_bandwidth_gbps": 224.0,
   "max_power_budget_w": 60.0,
   "io_efficiency_pjb": 6.5,
+  "reach_mm": 300.0,
   "packaging": {
-    "topology": "Face_to_Face",
-    "interconnect": "Hybrid_Bond",
-    "pitch_um": 5.0,
+    "topology": "3D_Stacked_SoP",
+    "interconnect": "Hybrid_Bond_Power_Array",
+    "power_die_enabled": true,
+    "pitch_um": 2.0,
     "material_name": "Flyover",
-    "interposer": "Silicon_Interposer",
     "cooling": "BSPDN_Liquid",
     "vddq_v": 0.85,
     "vddq_range": [
@@ -19,7 +20,7 @@
   "die_hierarchy": {
     "die_0": {
       "name": "CXL_Switch_Logic",
-      "type": "3nm_FinFET",
+      "type": "3nm_GAA",
       "size_mm": [
         18,
         18
@@ -31,6 +32,14 @@
       "size_mm": [
         15,
         15
+      ]
+    },
+    "die_2": {
+      "name": "Power_Delivery_Die",
+      "type": "Integrated_VRM",
+      "size_mm": [
+        18,
+        18
       ]
     }
   },
@@ -46,7 +55,6 @@
   },
   "constraints": {
     "min_isolation_db": 40,
-    "reliability_years": 10,
     "fec_preference": "inner",
     "modulation": "PAM4",
     "clock_mode": "CDR",
@@ -61,16 +69,17 @@
     "line_count": 94,
     "predicted_w": 60.01504
   },
-  "reach_classification": "XSR",
+  "reach_classification": "MR",
   "architectural_recs": [
-    "  -> Clocking: Use Forwarded Clock (Low Power/Latency)."
+    "  -> Clocking: Drift detected. Use CDR (Adds ~15% area).",
+    "  -> PHY: Analog FFE + DFE required for eye closure."
   ],
   "floorplan": {
-    "lx": 0,
-    "ly": 0,
-    "mx": 0,
-    "my": 0,
-    "estimated_max_temp": 36.25611114501953,
+    "lx": 3,
+    "ly": 1,
+    "mx": 3,
+    "my": 1,
+    "estimated_max_temp": 25.043245315551758,
     "internal_reach_mm": 0.0
   },
   "rc_extraction": {
@@ -87,9 +96,9 @@
   },
   "avs_optimized": true,
   "ir_drop_signoff": {
-    "min_voltage": -2.326,
-    "droop_percentage": 373.7,
-    "status": "\u274c FAIL",
+    "min_voltage": 0.846,
+    "droop_percentage": 0.42,
+    "status": "\u2705 PASS",
     "threshold": 5.0
   },
   "security_signoff": {

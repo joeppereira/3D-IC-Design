@@ -1,0 +1,72 @@
+{
+  "project_name": "CXL_Switch_SoP_1TB_V4_PowerStacked",
+  "target_bandwidth_gbps": 224.0,
+  "max_power_budget_w": 60.0,
+  "io_efficiency_pjb": 6.5,
+  "reach_mm": 300.0,
+  "packaging": {
+    "topology": "3D_Stacked_SoP",
+    "interconnect": "Hybrid_Bond_Power_Array",
+    "power_die_enabled": true,
+    "pitch_um": 2.0,
+    "material_name": "Flyover",
+    "cooling": "BSPDN_Liquid",
+    "vddq_v": 0.8,
+    "vddq_range": [
+      0.75,
+      0.85
+    ]
+  },
+  "die_hierarchy": {
+    "die_0": {
+      "name": "CXL_Switch_Logic",
+      "type": "3nm_GAA",
+      "size_mm": [
+        18,
+        18
+      ]
+    },
+    "die_1": {
+      "name": "SRAM_Search_Die",
+      "type": "Stacked_SRAM",
+      "size_mm": [
+        15,
+        15
+      ]
+    },
+    "die_2": {
+      "name": "Power_Delivery_Die",
+      "type": "Integrated_VRM",
+      "size_mm": [
+        18,
+        18
+      ]
+    }
+  },
+  "voxel_stack_params": {
+    "layers": 5,
+    "grid_size": 16,
+    "k_map": {
+      "Die": 140.0,
+      "Metal_Stack": 380.0,
+      "C4_BGA": 50.0,
+      "Package": 100.0
+    }
+  },
+  "constraints": {
+    "min_isolation_db": 40,
+    "fec_preference": "inner",
+    "modulation": "PAM4",
+    "clock_mode": "CDR",
+    "protocol": "CXL3.1",
+    "security": [
+      "SPDM",
+      "DICE"
+    ]
+  },
+  "rtl_analysis": {
+    "gate_count": 18800,
+    "line_count": 94,
+    "predicted_w": 60.01504
+  }
+}

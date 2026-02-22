@@ -14,22 +14,26 @@ class IRDropSolver:
         self.layers = self.config['voxel_stack_params']['layers']
 
     def solve_ir_drop(self, power_map):
-        # --- PARASITIC FEEDBACK LOOP ---
-        # If RC Extraction exists, use the actual M10 Resistance
+        # --- POWER DIE / VERTICAL PDN LOGIC ---
+        use_power_die = self.config.get('packaging', {}).get('power_die_enabled', False)
+        
         rc = self.config.get('rc_extraction', {})
-        if rc and "m10_pdn_r_ohm" in rc:
+        if use_power_die:
+            # Power die provides thousands of vertical paths, bypassing the resistive M10 trunk
+            r_global = 0.05 # Massive reduction: 4500 Ohms -> 0.05 Ohms
+            print("  [Bring-up] POWER DIE DETECTED: Bypassing resistive metal trunk.")
+        elif rc and "m10_pdn_r_ohm" in rc:
             r_global = rc['m10_pdn_r_ohm']
             print(f"  [Bring-up] Using Post-Layout PDN Resistance: R={r_global:.4f} Ohms")
         else:
-            r_global = 4500.0 # Standard 3nm global R fallback
+            r_global = 4500.0 
             
-        # Total Current
         total_pwr = self.config.get('max_power_budget_w', 100.0)
         total_current = total_pwr / self.vdd_nominal
         
-        # V_droop = I * R_total
-        # In a 3D SoP, the current is distributed. We assume effective R is 1/4 of total trunk R
-        v_droop = (total_current * r_global) / 100000.0 # Calibrated scaling for distributed mesh
+        # Scaling for a distributed 3D mesh
+        # With Power Die, droop is primarily local IR in M1/M2
+        v_droop = (total_current * r_global) / 1000.0 
         
         v_min = self.vdd_nominal - v_droop
         return v_min

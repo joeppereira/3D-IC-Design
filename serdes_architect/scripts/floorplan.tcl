@@ -1,4 +1,4 @@
-# OpenROAD PI/SI-Aware Floorplan for CXL_Switch_SoP_1TB_V2
+# OpenROAD PI/SI-Aware Floorplan for CXL_Switch_SoP_1TB_V4_PowerStacked
 # Calibrated for 200W SoP with BSPDN support
 
 initialize_floorplan -die_area "0 0 18000.0 18000.0" -core_area "100 100 17900.0 17900.0" -site unithd
