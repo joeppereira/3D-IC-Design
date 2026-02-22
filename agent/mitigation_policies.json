@@ -1,0 +1,22 @@
+{
+  "trigger_thermal_fail": {
+    "condition": "T_junction > 105C",
+    "policy": ["Switch to Diamond Substrate", "Enable Liquid Cooling Boundary"],
+    "cost_penalty": 3.5
+  },
+  "trigger_pi_fail": {
+    "condition": "IR_droop > 5%",
+    "policy": ["Enable Power Delivery Die (v4.0)", "Increase C4 Bump Density"],
+    "cost_penalty": 1.2
+  },
+  "trigger_si_fail": {
+    "condition": "Eye_Width < 0.20 UI",
+    "policy": ["Enable Flyover Twinax", "Force ADC-DSP Mode"],
+    "cost_penalty": 1.5
+  },
+  "security_violation": {
+    "condition": "Caliptra_Isolation < 250um",
+    "policy": ["Auto-reroute SerDes lanes", "Insert Ground Shielding Wall"],
+    "cost_penalty": 0.1
+  }
+}
