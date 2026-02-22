@@ -1,7 +1,7 @@
 {
   "project_name": "CXL_Switch_SoP_1TB_V2",
   "target_bandwidth_gbps": 224.0,
-  "max_power_budget_w": 180.0,
+  "max_power_budget_w": 60.0,
   "io_efficiency_pjb": 6.5,
   "packaging": {
     "topology": "Face_to_Face",
@@ -57,8 +57,8 @@
     ]
   },
   "rtl_analysis": {
-    "gate_count": 150000000.0,
-    "toggle_rate": 0.15,
-    "predicted_w": 180.0
+    "gate_count": 18800,
+    "line_count": 94,
+    "predicted_w": 60.01504
   }
 }

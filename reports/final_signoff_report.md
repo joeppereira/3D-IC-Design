@@ -8,13 +8,13 @@
 *   **Interposer**: Silicon_Interposer
 
 ## ⚡ 2. Power & Electrical Sign-off
-*   **Total System Power**: 180.0 W
+*   **Total System Power**: 60.0 W
 *   **I/O Efficiency**: 6.5 pJ/bit
 *   **AVS Optimized VDDQ**: 0.75 V
 *   **IR-Drop (Droop)**: 0.00% (✅ PASS)
 
 ## 🌡️ 3. Thermal Sign-off
-*   **Steady State Peak**: 53.7 C
+*   **Steady State Peak**: 37.4 C
 *   **Transient (RDMA Burst)**: 0.0 C
 *   **Thermal Headroom**: 105.0 C (✅ PASS)
 

@@ -1,7 +1,7 @@
 {
   "project_name": "CXL_Switch_SoP_1TB_V2",
   "target_bandwidth_gbps": 224.0,
-  "max_power_budget_w": 180.0,
+  "max_power_budget_w": 60.0,
   "io_efficiency_pjb": 6.5,
   "packaging": {
     "topology": "Face_to_Face",
@@ -57,20 +57,20 @@
     ]
   },
   "rtl_analysis": {
-    "gate_count": 150000000.0,
-    "toggle_rate": 0.15,
-    "predicted_w": 180.0
+    "gate_count": 18800,
+    "line_count": 94,
+    "predicted_w": 60.01504
   },
   "reach_classification": "XSR",
   "architectural_recs": [
     "  -> Clocking: Use Forwarded Clock (Low Power/Latency)."
   ],
   "floorplan": {
-    "lx": 1,
-    "ly": 6,
-    "mx": 1,
-    "my": 6,
-    "estimated_max_temp": 53.70622634887695,
+    "lx": 6,
+    "ly": 0,
+    "mx": 6,
+    "my": 0,
+    "estimated_max_temp": 37.43217468261719,
     "internal_reach_mm": 0.0
   },
   "si_analysis_v3": {
