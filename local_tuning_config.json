@@ -1,5 +1,5 @@
 {
-  "base_model": "gemma-3-4b",
+  "base_model": "gemini-3.1-pro",
   "quantization": "nf4",
   "vram_cap_gb": 9.0,
   "adapter_name": "secure_fabric_v1",

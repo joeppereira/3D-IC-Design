@@ -103,7 +103,7 @@ To qualify any architectural changes against the baseline physics and results:
 ```
 
 ### v2 Autonomous Training (Local fine-tuning)
-The tool supports local **QLoRA fine-tuning** of the Gemma 3 (4B) expert on 10GB VRAM hardware.
+The tool supports local **QLoRA fine-tuning** of the Gemini 3.1 Pro expert on 10GB VRAM hardware.
 *   **Trigger**: Use the keyword "Train" or "Fine-tune" in your CLI prompt.
 *   **Orchestrator**: `.gemini/hooks/train-logic.sh` manages VRAM partitioning between the 12-layer JEPA and the LLM.
 *   **Memory**: Weights are persisted to `project_memory/adapters/`.

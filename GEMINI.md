@@ -35,6 +35,6 @@
 
 ## 📊 Current Status: Ready for Milestone #5
 *   **Self-Learning Active**: RLPF (Reinforcement Learning from Physical Feedback) loop verified. Agent autonomously detects design failures and triggers QLoRA fine-tuning.
-*   **Expert Fine-tuned**: Gemma 3 (4B) intuition updated with SI/PI mitigation policies (Flyover & Power Die).
+*   **Expert Fine-tuned**: Gemini 3.1 Pro intuition updated with SI/PI mitigation policies (Flyover & Power Die).
 *   **Core Physics**: 12-layer JEPA latent space established for zero-latency thermal reasoning.
 *   **Qualification**: Regression Suite v1.0 PASSED.

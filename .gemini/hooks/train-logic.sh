@@ -22,7 +22,7 @@ if [[ "$INTENT" == *"Train"* || "$INTENT" == *"Fine-tune"* ]]; then
     echo "🧠 [AfterAgent] Starting Local Learning Session..." >&2
     
     if [[ "$INTENT" == *"Step 4"* ]]; then
-        echo "Tuning Gemma 3 (4B) on secure_fabric_v1..." >&2
+        echo "Tuning Gemini 3.1 Pro on secure_fabric_v1..." >&2
         # Use our mitigation policies to update the model intuition
         python3 -c "print('Learning from mitigation_policies.json...')" >&2
         sleep 2
