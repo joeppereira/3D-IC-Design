@@ -1,9 +1,9 @@
 #!/bin/bash
-# 3D IC Designer Orchestrator v3.0 (Closed-Loop Sign-off)
+# 3D IC Designer Orchestrator v3.1 (Architectural Qualification)
 set -e 
 
-SPEC_FILE=${1:-"configs/cxl_switch_sop_v2.json"}
-echo "🚀 Initializing v3.0 Silicon Architect (Closed-Loop): $SPEC_FILE"
+SPEC_FILE=${1:-"configs/cxl_switch_sop_v4.json"}
+echo "🚀 Initializing v3.1 Silicon Architect (Qualification Flow): $SPEC_FILE"
 
 # 1. RTL & SPEC PRE-FLIGHT
 python3 serdes_architect/scripts/rtl_analyzer.py --config $SPEC_FILE
@@ -28,7 +28,7 @@ cd physics_accelerated
 python3 src/gepa.py --avs_enabled true --target_ber 1e-12 --config ../$SPEC_FILE
 cd ..
 
-# 5. PHASE 4: PHYSICAL & ELECTRICAL SIGN-OFF (Closed Loop)
+# 5. PHASE 4: PHYSICAL & ELECTRICAL QUALIFICATION (Closed Loop)
 echo "🏗️  [Phase 4] Execution of Layout & Extraction..."
 cd serdes_architect
 GOLDEN="../physics_accelerated/results/golden_config.json"
@@ -39,17 +39,17 @@ python3 src/layout/gen_def.py --golden_config $GOLDEN
 # B. Extract Parasitics (Crucial for SI/PI feedback)
 python3 src/layout/rc_extractor.py --config $GOLDEN
 
-# C. Feedback-Driven Sign-off Gates
-echo "📊 [Phase 4b] Data-Driven Sign-off..."
+# C. Feedback-Driven Qualification Gates
+echo "📊 [Phase 4b] Data-Driven Verification Checklist..."
 python3 src/si_analyzer_v3.py --config $GOLDEN
 python3 scripts/avs_optimizer.py --config $GOLDEN
 python3 src/thermal/ir_drop_solver.py --config $GOLDEN
 python3 src/security_analyzer.py --config $GOLDEN
 python3 src/thermal/transient_solver.py --config $GOLDEN
 
-# D. Final Summary
-python3 scripts/generate_final_summary.py --config $GOLDEN
-python3 scripts/generate_comprehensive_signoff.py --config $GOLDEN
+# D. Final Checklist Generation
+python3 scripts/generate_design_summary.py --config $GOLDEN
+python3 scripts/generate_design_checklist.py --config $GOLDEN
 
-echo "✅ v3.0 Sign-off Complete. Post-Layout parasitics integrated into margins."
+echo "✅ v3.1 Qualification Complete. Post-Layout parasitics integrated into status checklist."
 cd ..
