@@ -27,8 +27,25 @@
 
 ---
 
-## 🔄 Self-Learning Execution Loop
-1. **Ingest Intent** → 2. **Pareto Sweep** → 3. **Smart Netlist Export** → 4. **SPICE/nspice Validation** → 5. **Self-Critique**.
+## 🧠 Hybrid Model Architecture (v2.5)
+The system utilizes a dual-lobed architecture optimized for 10GB VRAM hardware.
+
+### Lobe A: Reasoning Engine
+*   **Global**: Gemini 3.1 Pro (Multi-protocol orchestration).
+*   **Local**: **Phi-3.5 (3.8B)** 4-bit NF4 quantized.
+*   **Role**: Handles architectural policy and RLPF fine-tuning.
+
+### Lobe B: Physics Intuition (JEPA-12L)
+*   **Structure**: 12-Layer CNN-MLP Encoder-Predictor.
+*   **Parameters**: ~420k (Real-time inference).
+*   **Role**: Zero-latency spatial prediction of 3D-FDM thermal and droop maps.
+
+---
+
+## 🔄 Self-Learning Execution Loop (RLPF)
+1.  **Ingest Spec** → 2. **Pareto Sweep** → 3. **Physical Verification** (FDM/SI).
+4.  **Failure Ingestion**: `agent/rlpf_ingestor.py` extracts numerical failures from real simulations.
+5.  **Fine-tune**: Phi-3.5 learns the [Failure] -> [Mitigation] pair via local QLoRA.
 
 ---
 
