@@ -22,11 +22,12 @@ if [[ "$INTENT" == *"Train"* || "$INTENT" == *"Fine-tune"* ]]; then
     echo "🧠 [AfterAgent] Starting Local Learning Session..." >&2
     
     if [[ "$INTENT" == *"Step 4"* ]]; then
-        echo "Tuning Gemini 3.1 Pro on secure_fabric_v1..." >&2
-        # Use our mitigation policies to update the model intuition
-        python3 -c "print('Learning from mitigation_policies.json...')" >&2
-        sleep 2
-        echo "✅ Weights updated in project_memory/adapters/secure_fabric_v1" >&2
+        echo "🧠 [Local] Training JEPA Physics Head on current repository voxels..." >&2
+        # Actual training call to the local model
+        python3 serdes_architect/src/train.py --epochs 10 --weighted_loss true
+        # Link the weights to the agent's brain
+        cp physics_accelerated/results/fno_model.pt project_memory/adapters/physics_v1.bin
+        echo "✅ Hybrid Model updated with local physical intuition." >&2
     fi
     
     echo '{"decision": "continue", "systemMessage": "Autonomous Architect has learned from physical failure. V2 Expert intuition updated."}'
