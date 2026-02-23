@@ -1,40 +1,38 @@
 # 🚀 Living Spec: Data Center "Search-Switch" (v2 Unified Expert)
 
 ## 🏗️ Expert Domains
-*   **Fabric**: PCIe 5-7, CXL 3.1, UCIe 2.0, UALink 200G.
-*   **Physical**: OpenROAD, 3D-FDM Thermal, Hardened IR-Drop, MCMM Qualification.
+*   **Fabric**: PCIe 5-7, CXL 3.1, UCIe 2.0 (A/S), BoW (Bunch of Wires), HDI/HBW.
+*   **Physical**: OpenROAD, 3D-FDM Thermal (Heatwave style), Hardened IR-Drop, MCMM Qualification.
+*   **EDA Tools**: Smart Netlist Exporter (SPICE), CILD (Impedance Aware), VTF Analyzer.
 *   **Security**: SPDM 1.2+, DICE, Caliptra RoT.
 
 ---
 
-## 🎯 Hardened Physics Guardrails (Mandatory)
+## 🎯 Hardened Physics & EDA Guardrails (Enterprise Grade)
 
-### 1. Power Integrity (IR-Drop Hardening)
-*   **Zero-Tolerance**: 0.00% IR-drop results are considered "System Failures."
-*   **Resistivity**: All models must use 3nm thin-film copper conductivity ($\sigma \approx 5.0 \text{ S/m}$) for global PDN.
-*   **Scaling**: Voltage droop must account for micron-scale distance traverses and current crowding.
+### 1. Chiplet PHY & EM Design (Keysight W3650B Level)
+*   **UCIe 2.0 A/S**: Support for Advanced (A) and Standard (S) packages with unique noise floors.
+*   **BoW (Bunch of Wires)**: Model for low-cost organic substrate chiplet interfaces.
+*   **Forward Clocking**: Measurement of Voltage Transfer Function (VTF) and phase-tracking correlated jitter.
+*   **CILD**: Controlled Impedance Line modeling for all interposer and PCB traces.
 
-### 2. Signal Integrity (Jitter Ceiling)
-*   **Eye Cap**: Maximum Eye Width is capped at **0.65 - 0.70 UI** to account for deterministic jitter ($Dj$) and reference clock noise.
-*   **SNR Tax**: Low-voltage signaling (0.3V - 0.8V) must apply a logarithmic SNR tax based on 1.0V reference.
+### 2. Electrothermal (ETH) & Device Modeling
+*   **Heatwave Logic**: Resolve fine temperature variations between layers and localized self-heating impact on device mobility.
+*   **Device Calibration**: Mathematical model adjustment (MBP/MQA style) based on simulated vs. measured V/I curves.
 
-### 3. Architectural Qualification Checklist
-*   **Reports**: Every design must output a "Pre-Tapeout Verification Checklist" including:
-    *   **Assembly**: Bump pitch, hybrid bond alignment, and substrate material.
-    *   **Architecture**: Logic-SRAM connectivity and power distribution.
-    *   **Link Verification**: Power, Area, and Margin for every discrete link.
-    *   **Test Plan**: BIST, Scan, and Loopback coverage.
-    *   **Challenged Assumptions**: A critical self-critique of design choices.
+### 3. Physics-Informed EDA (Smart Netlist)
+*   **Netlist Pruning**: Large flat netlists must be pruned into "Smart Simulation Decks."
+*   **ROI Detail**: RC extraction and transistor-level detail for "Hotspots" (ROIs).
+*   **Physics Injection**: Automatic injection of local `.TEMP` and `.VDD` tags into SPICE sub-circuits based on 3D-FDM predictions.
 
 ---
 
 ## 🔄 Self-Learning Execution Loop
-1.  **Ingest Spec** → 2. **Pareto Sweep** → 3. **Physical Verification** → 4. **Self-Critique & Fix**.
+1. **Ingest Intent** → 2. **Pareto Sweep** → 3. **Smart Netlist Export** → 4. **SPICE/nspice Validation** → 5. **Self-Critique**.
 
 ---
 
-## 📊 Current Status: Ready for Milestone #5
-*   **Self-Learning Active**: RLPF (Reinforcement Learning from Physical Feedback) loop verified. Agent autonomously detects design failures and triggers QLoRA fine-tuning.
-*   **Expert Fine-tuned**: Gemini 3.1 Pro intuition updated with SI/PI mitigation policies (Flyover & Power Die).
-*   **Core Physics**: 12-layer JEPA latent space established for zero-latency thermal reasoning.
-*   **Qualification**: Regression Suite v1.0 PASSED.
+## 📊 Current Status: Ready for Milestone #6
+*   **Enterprise EDA**: Support for Smart Netlist Pruning and Physics Injection established.
+*   **Standards**: Integrated UCIe 2.0 A/S and BoW.
+*   **Hybrid Model**: Local JEPA head calibrated for ETH heating effects.

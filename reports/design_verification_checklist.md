@@ -31,4 +31,11 @@ Verification of the **18x18 mm** floorplan occupancy.
 *   **Peak Junction Temp**: 25.0°C.
 
 ---
-**Disclaimer**: This is an architectural verification checklist based on FDM/FNO modeling. Final tape-out requires full foundry-certified sign-off tools.
+## ⚠️ Architectural Limitations & Tool Accuracy
+> **Critical for Designer Review**: This checklist is an architectural qualification, not a foundry sign-off.
+*   **Voxel Resolution**: Physical modeling is based on a **16x16 grid**. Sub-micron effects like **Electromigration (EM)** and local **Self-Heating** are not captured.
+*   **Parasitics**: RC extraction is performed on **Global Trunk lines (M7/M10)** only. Local gate-level parasitics are estimated via RTL heuristics.
+*   **Foundry Rules**: Design rules are based on a **Generic 3nm PDK**. Specific TSMC/Samsung/Intel proprietary rules must be verified in a real EDA environment.
+*   **Implementation**: P&R is currently in **Virtual Mode**. Actual GDSII DRC/LVS has not been performed.
+
+**Disclaimer**: This output is a verification checklist for architectural exploration. Final tape-out requires foundry-certified golden sign-off tools.
