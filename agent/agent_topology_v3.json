@@ -1,0 +1,20 @@
+{
+  "topology_name": "RLPF-Aware Ad Hoc Graph",
+  "nodes": {
+    "intent_ingestion": {"type": "react", "description": "Global reasoning on user ask"},
+    "physics_screening": {"type": "local_jepa", "description": "Instant latent space verification"},
+    "qualification_gate": {"type": "graph_gate", "description": "Strict verification of FDM/SI results"},
+    "learning_recovery": {"type": "rlpf_edge", "description": "Local QLoRA fine-tuning on failure"}
+  },
+  "edges": [
+    {"from": "intent_ingestion", "to": "physics_screening", "condition": "always"},
+    {"from": "physics_screening", "to": "qualification_gate", "condition": "jepa_pass_prob > 0.8"},
+    {"from": "qualification_gate", "to": "learning_recovery", "condition": "phys_status == FAIL"},
+    {"from": "learning_recovery", "to": "intent_ingestion", "condition": "weights_updated == true"}
+  ],
+  "platform_hybridization": {
+    "orchestrator": "Gemini CLI (ReAct)",
+    "safety_layer": "LangGraph (Gated Logic)",
+    "intuition_layer": "JEPA-12L (Local)"
+  }
+}

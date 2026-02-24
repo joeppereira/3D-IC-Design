@@ -47,9 +47,12 @@ python3 src/thermal/ir_drop_solver.py --config $GOLDEN
 python3 src/security_analyzer.py --config $GOLDEN
 python3 src/thermal/transient_solver.py --config $GOLDEN
 
-# D. Final Checklist Generation
-python3 scripts/generate_design_summary.py --config $GOLDEN
+# Comprehensive Silicon & Package Sign-off Dossier (Industry Standard)
 python3 scripts/generate_design_checklist.py --config $GOLDEN
+
+# --- HYBRID AGENTIC GRAPH GATE (Milestone #15) ---
+echo "🛡️  [Graph] Verifying Qualification Gate..."
+python3 ../agent/graph_orchestrator.py
 
 echo "✅ v3.1 Qualification Complete. Post-Layout parasitics integrated into status checklist."
 cd ..
