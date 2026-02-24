@@ -5,6 +5,7 @@ This index tracks the mandatory documents required for fab qualification and inv
 ## 📁 1. Project Management & Spec
 *   [README.md](../README.md): High-level project summary.
 *   [GEMINI.md](../GEMINI.md): Living spec and autonomous reasoning anchor.
+*   [reports/full_soc_architecture_spec.md](full_soc_architecture_spec.md): Full SoC Spec (Every IP, Memory, and IO).
 *   [configs/formal_spec.json](../configs/formal_spec.json): Machine-readable constraints.
 
 ## 📁 2. Architectural & Physical Design (Tape-out Ready)

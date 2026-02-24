@@ -33,6 +33,10 @@ The system utilizes a dual-lobed architecture optimized for 10GB VRAM hardware.
 ### Lobe A: Reasoning Engine
 *   **Global**: Gemini 3.1 Pro (Multi-protocol orchestration).
 *   **Local**: **Phi-3.5 (3.8B)** 4-bit NF4 quantized.
+*   **QLoRA Config**:
+    *   **Rank/Alpha**: 64 / 128 (Scaling: 2.0).
+    *   **Learning Rate**: $5 \times 10^{-5}$ (Precision Focus).
+    *   **Optimization**: Paged AdamW with Cosine Warmup.
 *   **Role**: Handles architectural policy and RLPF fine-tuning.
 
 ### Lobe B: Physics Intuition (JEPA-12L)
