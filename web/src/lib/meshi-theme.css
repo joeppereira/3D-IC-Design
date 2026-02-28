@@ -1,0 +1,116 @@
+:root {
+  --bg-primary: #111111;
+  --bg-secondary: #1a1a1a;
+  --accent: #00e5ff; /* Meshi Teal */
+  --text-primary: #ffffff;
+  --text-secondary: #999999;
+  --border: #2a2a2a;
+}
+
+:global(body) {
+  margin: 0;
+  padding: 0;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: 'Inter', -apple-system, sans-serif;
+  overflow: hidden;
+}
+
+.app-container {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+}
+
+.viewport-section {
+  flex: 1;
+  position: relative;
+  background: radial-gradient(circle at center, #1a1a1a 0%, #111111 100%);
+}
+
+.chat-section {
+  width: 400px;
+  background: var(--bg-secondary);
+  border-left: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  box-shadow: -10px 0 30px rgba(0,0,0,0.5);
+}
+
+.chat-header {
+  padding: 24px;
+  border-bottom: 1px solid var(--border);
+}
+
+.chat-header h2 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 500;
+  letter-spacing: 0.05rem;
+  color: var(--accent);
+}
+
+.chat-messages {
+  flex: 1;
+  padding: 24px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.message {
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.message.agent {
+  color: var(--text-primary);
+}
+
+.message.user {
+  color: var(--text-secondary);
+  align-self: flex-end;
+}
+
+.chat-input {
+  padding: 24px;
+  border-top: 1px solid var(--border);
+}
+
+.chat-input input {
+  width: 100%;
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  font-size: 0.95rem;
+  outline: none;
+}
+
+.chat-input input::placeholder {
+  color: var(--text-secondary);
+}
+
+.meshi-logo {
+  position: absolute;
+  top: 24px;
+  left: 24px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  z-index: 10;
+}
+
+.logo-circle {
+  width: 32px;
+  height: 32px;
+  background: var(--accent);
+  border-radius: 50%;
+  box-shadow: 0 0 15px rgba(0,229,255,0.4);
+}
+
+.logo-text {
+  font-weight: 700;
+  font-size: 1.2rem;
+  letter-spacing: -0.02rem;
+}

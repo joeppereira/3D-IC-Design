@@ -1,67 +1,63 @@
 <script>
+  import './lib/meshi-theme.css';
   import ICViewport from './lib/components/ICViewport.svelte';
-  import WaveformViewer from './lib/components/WaveformViewer.svelte';
-  import { PhysicsAgent } from './lib/agents/PhysicsAgent';
-  import { RemoteSensingAgent } from './lib/agents/RemoteSensingAgent';
   import { onMount } from 'svelte';
 
-  let physics = new PhysicsAgent();
-  let remote = new RemoteSensingAgent();
-  let agentStatus = $state("Monitoring Physics...");
-  let agentLogs = $state([]);
+  let userInput = $state("");
+  let messages = $state([
+    { type: 'agent', text: "Hello. I am the Silicon Architect. I've analyzed your 1TB CXL Switch. The 3nm PDN is holding steady at 0.42% droop. How shall we proceed with the SerDes reach?" }
+  ]);
 
-  onMount(async () => {
-    // Start background telemetry monitoring
-    await remote.processLog("OpenROAD: Global Route Initialized");
-    agentLogs = remote.getTraceabilityReport();
-    
-    // Run an initial agent design check
-    const result = await physics.analyzeLink({ jitter: 0.22 });
-    if (result.action === "REPLACE_DECAP") {
-      agentStatus = `⚠️ Action Needed: ${result.suggestion}`;
+  function handleKeydown(e) {
+    if (e.key === 'Enter' && userInput.trim()) {
+      messages = [...messages, { type: 'user', text: userInput }];
+      userInput = "";
+      
+      // Agent "Reasoning" simulation
+      setTimeout(() => {
+        messages = [...messages, { type: 'agent', text: "Analyzing your instruction against the v4.0 Sign-off Checklist. I am adjusting the twinax flyover routing to optimize for 224G reach." }];
+      }, 1000);
     }
-  });
+  }
 </script>
 
-<main>
-  <header>
-    <h1>🛰️ 3D-IC Designer v4.0 (Enterprise Explorer)</h1>
-    <div class="agent-panel">
-      <strong>Agent Status:</strong> {agentStatus}
+<div class="app-container">
+  <!-- THE SILICON VIEWPORT (80% WIDTH) -->
+  <section class="viewport-section">
+    <div class="meshi-logo">
+      <div class="logo-circle"></div>
+      <div class="logo-text">MESHI.IC</div>
     </div>
-  </header>
+    
+    <ICViewport />
 
-  <div class="dashboard-grid">
-    <section class="left">
-      <ICViewport />
-      <div class="log-view">
-        <h3>🛰️ Traceable Telemetry (Fluent Bit)</h3>
-        <ul>
-          {#each agentLogs as log}
-            <li>{log}</li>
-          {/each}
-        </ul>
-      </div>
-    </section>
+    <!-- OVERLAY STATUS (Minimalist) -->
+    <div style="position: absolute; bottom: 24px; left: 24px; color: var(--text-secondary); font-size: 0.75rem; letter-spacing: 0.1rem; text-transform: uppercase;">
+      Status: 🟢 ARCHITECTURE FROZEN | TSMC 3nm GAA
+    </div>
+  </section>
 
-    <section class="right">
-      <WaveformViewer />
-      <div class="layout-viewer-mock">
-        <h3>📐 KLayout GDSII Viewer (Wasm)</h3>
-        <div class="canvas-placeholder">
-          [GDSII Merge: Logic-SRAM Hybrid Bonds]
+  <!-- THE AUTONOMOUS ARCHITECT CHAT (20% WIDTH) -->
+  <section class="chat-section">
+    <div class="chat-header">
+      <h2>ARCHITECT</h2>
+    </div>
+
+    <div class="chat-messages">
+      {#each messages as msg}
+        <div class="message {msg.type}">
+          {msg.text}
         </div>
-      </div>
-    </section>
-  </div>
-</main>
+      {each}
+    </div>
 
-<style>
-  :global(body) { background: #0a0a0a; color: #eee; font-family: system-ui; }
-  main { padding: 1rem; }
-  header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; padding-bottom: 1rem; }
-  .agent-panel { background: #222; padding: 0.5rem 1rem; border-radius: 4px; border-left: 4px solid #0088ff; }
-  .dashboard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 1rem; }
-  .log-view { margin-top: 1rem; background: #111; padding: 1rem; height: 200px; overflow-y: auto; font-family: monospace; border: 1px solid #222; }
-  .canvas-placeholder { height: 250px; background: #111; border: 1px dashed #444; display: flex; align-items: center; justify-content: center; }
-</style>
+    <div class="chat-input">
+      <input 
+        type="text" 
+        placeholder="Type a command for the architect..." 
+        bind:value={userInput}
+        onkeydown={handleKeydown}
+      />
+    </div>
+  </section>
+</div>
