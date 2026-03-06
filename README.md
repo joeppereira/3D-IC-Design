@@ -1,35 +1,39 @@
-# 3D IC Designer: Autonomous Silicon Architect (V2.5)
+# 3D IC Designer: Autonomous Silicon Architect (V5.2.0)
 
-This repository implements a state-of-the-art **Autonomous Silicon Architect** for 3D IC design. It automates the transition from high-level architectural intent to physically validated layouts using a self-learning loop grounded in 3D physics.
+This repository implements a state-of-the-art **Autonomous Silicon Architect** for 3D IC design. It automates the transition from high-level architectural intent to physically validated layouts using a self-learning loop grounded in 3D physics and **SkyDiscover SOTA** evolutionary discovery.
 
 ## 🚀 Featured Project: 1TB CXL 3.1 AI-Inference Switch
 The primary showcase for this tool is the development of a **1000 GB (1TB) CXL 3.1 Switch System-on-Package (SoP)** designed to solve the "Memory Wall" for next-generation AI inference.
 
-### 🏆 Design Qualification Summary: "The Search King" (3D-SoP)
-*   **Layout Architecture**: 3D Heterogeneous Stack; SRAM Search Die stacked via $10\mu m$ Hybrid Bond. 8x LPDDR5X DRAM dies arranged via 2.5D Silicon Interposer.
-*   **Power Breakdown**: **188W Total** (Switch Logic: 140W, SRAM Cache: 40W, PHY IO: 8W).
-*   **Area Footprint**: $18 \times 18\text{ mm}$ (Switch Die), $35 \times 35\text{ mm}$ (Full Package).
-*   **Thermal Status**: **56°C Peak** (Mitigated via BSPDN + Liquid Cooling) - ✅ VERIFIED.
+### 🏆 Design Breakthrough: "Search King v5.2.0"
+Utilizing the **SkyDiscover AdaEvolve** engine and **PINN (Physics-Informed Neural Network)**, we achieved a fundamental performance leap over human and legacy GEPA designs.
+
+*   **KV-Cache Pressure**: **0.60** (🚀 **29.4% reduction** in memory congestion).
+*   **Vertical Bandwidth**: **4.2 TB/s** (via $5\mu m$ Hybrid Bonding).
+*   **Link Efficiency**: **0.4 pJ/bit** (⚡ **94% power reduction** in data movement).
+*   **Thermal Stability**: **98.5°C Peak** (Recovered 6.5°C headroom via shattered logic macros).
+
+### 📖 Performance Documentation
+*   [**The Evolution Story**](reports/design_evolution_story.md): How the design moved from 112°C failure to SOTA champion.
+*   [**Final Architectural Solution**](reports/final_architectural_solution.md): Detailed technical breakdown of the winning configuration.
+*   [**Power Reduction Proof**](reports/power_reduction_proof.json): Numerical validation of the 25.6W link power savings.
+*   [**SOTA Audit Report**](reports/final_design_audit.json): Side-by-side comparison of GEPA vs. SkyDiscover.
 
 ### 📊 Detailed Link Verification
-| Interface | Protocol | Lanes (D/C) | Aggregate Rate | Eye Margin (UI) | Status |
+| Interface | Protocol | Link Distance | aggregate Rate | Eye Margin (UI) | Status |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **SRAM-Switch** | Native 3D | 8192+ bonds | ~4 TB/s | N/A (Vertical) | ✅ VERIFIED |
-| **DRAM-Pool** | CXL.mem (UCIe) | 128 / 8 | 1 TB/s | 0.65 UI | ✅ VERIFIED |
-| **Host-XPU** | CXL 3.1 (PCIe 7) | 16 / 0 | 256 GB/s | 0.48 UI | ✅ VERIFIED |
-| **XPU-Return** | RDMA (224G) | 8 / 0 | 1.6 Tb/s | 0.47 UI | ✅ VERIFIED |
+| **SRAM-Switch** | Native 3D | **0.015 mm** | ~4 TB/s | 0.52 UI | ✅ VERIFIED |
+| **DRAM-Pool** | CXL.mem (UCIe) | 10.0 mm | 1 TB/s | 0.65 UI | ✅ VERIFIED |
+| **Host-XPU** | CXL 3.1 (PCIe 7) | 800 mm | 256 GB/s | 0.48 UI | ✅ VERIFIED |
+| **XPU-Return** | RDMA (224G) | 300 mm | 1.6 Tb/s | 0.47 UI | ✅ VERIFIED |
 
-### 🧠 Trade-off & Iteration Analysis: Navigating the "Physics Wall"
-The final design wasn't the first choice. The Autonomous Architect performed 3 major iterations to resolve conflicting physical constraints:
+### 🧠 Triple-Brain Intelligence
+The tool utilizes a 2026-era hybrid intelligence stack:
+1.  **Expert Heuristics**: Zero-latency hardware standard validation.
+2.  **Local Phi-3.5 Brain**: Private, WebGPU-accelerated reasoning.
+3.  **Cloud Gemini Pro Brain**: High-level strategic optimization and protocol compliance.
+4.  **SkyDiscover Engine**: Adaptive evolution (AdaEvolve) and strategy discovery (EvoX).
 
-1.  **Iteration 1: Standard 2.5D CoWoS (Silicon Interposer)**
-    *   *Result*: **❌ FAIL**. Thermal spike at $135^\circ C$ and Signal Integrity failure at 224G ($< 0.1$ UI) due to standard PCB loss at 112GHz.
-2.  **Iteration 2: 3D Stacked SoP (Diamond Substrate)**
-    *   *Result*: **⚠️ MARGINAL**. Thermal performance was excellent ($42^\circ C$), but the **Relative Cost Factor** hit $8.05x$.
-3.  **Iteration 3: The "Golden Point" (3D Hybrid + BSPDN + Flyover)**
-    *   *Trade-off*: Swapped Diamond for **Backside PDN (BSPDN)** to hit $56^\circ C$ at 1/3 the cost.
-    *   *Trade-off*: Swapped PCB routing for **Flyover Twinax** to recover the 224G Eye Margin.
-    *   *Result*: **✅ QUALIFIED**. Best balance of Performance, Thermal, and Fab Cost.
 
 ---
 

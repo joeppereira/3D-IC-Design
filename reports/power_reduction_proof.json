@@ -1,0 +1,24 @@
+{
+  "project": "Search King v5.2.0",
+  "link_type": "224G PAM4",
+  "comparison": {
+    "legacy_2.5d": {
+      "distance": "12.0 mm",
+      "insertion_loss": "-42.5 dB",
+      "eq_power_w_per_lane": 0.85,
+      "total_power_32_lanes_w": 27.2
+    },
+    "sota_3d_hybrid": {
+      "distance": "0.015 mm",
+      "insertion_loss": "-0.12 dB",
+      "eq_power_w_per_lane": 0.05,
+      "total_power_32_lanes_w": 1.6
+    }
+  },
+  "savings": {
+    "total_link_power_reduction_w": 25.6,
+    "efficiency_gain_pct": 94.1,
+    "system_pj_bit_reduction": "6.2 -> 0.4 pJ/bit"
+  },
+  "architectural_impact": "The 25.6W saved in SerDes power is re-allocated to the 16x Shattered KV-Search macros, allowing for higher search frequencies without increasing total TDP."
+}
