@@ -1,0 +1,22 @@
+{
+  "project": "Search King v5.2.0",
+  "audit_type": "SOTA vs. Legacy Benchmark",
+  "input_spec": {
+    "node": "3nm GAA",
+    "memory": "1TB CXL",
+    "cooling": "180W Liquid"
+  },
+  "results": {
+    "gepa_legacy": {
+      "kv_pressure": 0.85,
+      "temp_c": 112.0,
+      "status": "FAIL (Thermal)"
+    },
+    "skydiscover_sota": {
+      "kv_pressure": 0.60,
+      "temp_c": 98.5,
+      "status": "PASS (SOTA)"
+    }
+  },
+  "discovery_notes": "The 29% pressure reduction was achieved by distributed macro placement and predictive pre-fetching evolved via AdaEvolve. Verified against 3nm physical design rules."
+}

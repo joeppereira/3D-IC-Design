@@ -1,10 +1,12 @@
 :root {
-  --bg-primary: #111111;
-  --bg-secondary: #1a1a1a;
-  --accent: #00e5ff; /* Meshi Teal */
+  --bg-primary: #050505;
+  --bg-secondary: #0f0f0f;
+  --accent-pink: #ff00ff;
+  --accent-purple: #9d00ff;
+  --accent-gradient: linear-gradient(135deg, #ff00ff 0%, #9d00ff 100%);
   --text-primary: #ffffff;
-  --text-secondary: #999999;
-  --border: #2a2a2a;
+  --text-secondary: #a0a0a0;
+  --border: #1a1a1a;
 }
 
 :global(body) {
@@ -25,92 +27,193 @@
 .viewport-section {
   flex: 1;
   position: relative;
-  background: radial-gradient(circle at center, #1a1a1a 0%, #111111 100%);
+  background: radial-gradient(circle at 30% 30%, #1a0a2a 0%, #050505 100%);
 }
 
+/* --- CHAT SECTION --- */
 .chat-section {
-  width: 400px;
+  width: 500px;
   background: var(--bg-secondary);
   border-left: 1px solid var(--border);
   display: flex;
   flex-direction: column;
-  box-shadow: -10px 0 30px rgba(0,0,0,0.5);
+  box-shadow: -20px 0 50px rgba(0,0,0,0.5);
 }
 
 .chat-header {
-  padding: 24px;
+  padding: 24px 32px;
   border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .chat-header h2 {
   margin: 0;
-  font-size: 1.1rem;
-  font-weight: 500;
-  letter-spacing: 0.05rem;
-  color: var(--accent);
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.2rem;
+  text-transform: uppercase;
+  background: var(--accent-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 .chat-messages {
   flex: 1;
-  padding: 24px;
+  padding: 32px;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 32px;
+  scroll-behavior: smooth;
 }
 
-.message {
-  font-size: 0.9rem;
+/* --- MESSAGE BUBBLES --- */
+.message-wrapper {
+  display: flex;
+  gap: 16px;
+  width: 100%;
+}
+
+.message-wrapper.user {
+  flex-direction: row-reverse;
+}
+
+.avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.8rem;
+  color: white;
+}
+
+.avatar.agent {
+  background: var(--accent-gradient);
+  box-shadow: 0 0 15px rgba(255, 0, 255, 0.4);
+}
+
+.avatar.user {
+  background: #333;
+}
+
+.message-bubble {
+  max-width: 80%;
+  padding: 16px 20px;
+  border-radius: 20px;
+  font-size: 1rem;
   line-height: 1.5;
 }
 
-.message.agent {
-  color: var(--text-primary);
+.agent .message-bubble {
+  background: #1a1a1a;
+  color: #fff;
+  border-bottom-left-radius: 4px;
+  border: 1px solid #222;
 }
 
-.message.user {
-  color: var(--text-secondary);
-  align-self: flex-end;
+.user .message-bubble {
+  background: var(--accent-gradient);
+  color: #fff;
+  border-bottom-right-radius: 4px;
 }
 
-.chat-input {
-  padding: 24px;
+/* --- TYPING INDICATOR --- */
+.typing {
+  font-size: 0.8rem;
+  color: var(--accent-pink);
+  margin-top: -16px;
+  margin-left: 52px;
+  font-style: italic;
+  opacity: 0.8;
+}
+
+/* --- INPUT BOX (CLEAR & ACCESSIBLE) --- */
+.chat-input-container {
+  padding: 32px;
+  background: #080808;
   border-top: 1px solid var(--border);
 }
 
-.chat-input input {
-  width: 100%;
-  background: transparent;
-  border: none;
-  color: var(--text-primary);
-  font-size: 0.95rem;
-  outline: none;
-}
-
-.chat-input input::placeholder {
-  color: var(--text-secondary);
-}
-
-.meshi-logo {
-  position: absolute;
-  top: 24px;
-  left: 24px;
+.input-wrapper {
   display: flex;
   align-items: center;
   gap: 12px;
+  background: #151515;
+  padding: 12px 20px;
+  border-radius: 28px;
+  border: 2px solid #222;
+  transition: all 0.3s ease;
+}
+
+.input-wrapper:focus-within {
+  border-color: var(--accent-pink);
+  background: #1a1a1a;
+  box-shadow: 0 0 20px rgba(255, 0, 255, 0.15);
+}
+
+.input-wrapper input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-size: 1.1rem;
+  padding: 10px 0;
+  outline: none;
+}
+
+.send-btn {
+  background: var(--accent-gradient);
+  border: none;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s, box-shadow 0.2s;
+  box-shadow: 0 4px 15px rgba(255, 0, 255, 0.3);
+}
+
+.send-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 20px rgba(255, 0, 255, 0.5);
+}
+
+.send-btn svg {
+  fill: white;
+  width: 20px;
+  height: 20px;
+}
+
+/* --- LOGO --- */
+.meshi-logo {
+  position: absolute;
+  top: 40px;
+  left: 40px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
   z-index: 10;
 }
 
 .logo-circle {
-  width: 32px;
-  height: 32px;
-  background: var(--accent);
+  width: 44px;
+  height: 44px;
+  background: var(--accent-gradient);
   border-radius: 50%;
-  box-shadow: 0 0 15px rgba(0,229,255,0.4);
+  box-shadow: 0 0 25px rgba(255, 0, 255, 0.4);
 }
 
 .logo-text {
-  font-weight: 700;
-  font-size: 1.2rem;
-  letter-spacing: -0.02rem;
+  font-weight: 800;
+  font-size: 1.8rem;
+  letter-spacing: -0.05rem;
+  color: #ffffff;
 }
