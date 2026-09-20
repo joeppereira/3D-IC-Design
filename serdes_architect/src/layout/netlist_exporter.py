@@ -19,7 +19,8 @@ class SmartNetlistExporter:
             "* 3DIC-X v5.6.0 Smart Netlist",
             "* Automated Export from 3DIC Design Dashboard",
             ".include '/pdk/3nm_GAA/models.sp'",
-            ".temp 98.5", # Derived from our ROI Thermal Solver
+            ".temp 83.8745", # reports/mesh_convergence_audit.json; superseded by
+                             # integrations/interchange/spice_io.py (spec P0-C)
             ".param VDD=0.75",
             ""
         ]

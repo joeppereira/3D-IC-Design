@@ -19,7 +19,7 @@
   // Data Mocks
   let emData = $state({ next: -42.5, fext: -48.2, tax: 0.042 });
   let tjHistory = $state([25, 45, 78, 98, 104, 102, 99]);
-  let comparisonData = $state({ baseline: { tj: 105, eye: 0.48, kv: 0.85 }, champion: { tj: 98.5, eye: 0.52, kv: 0.60 } });
+  let comparisonData = $state({ baseline: { tj: 105, eye: 0.48, kv: 0.85 }, champion: { tj: 83.87, eye: 0.52, kv: 0.60 } });
 
   let userInput = $state("");
   let messages = $state([

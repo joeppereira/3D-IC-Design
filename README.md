@@ -11,7 +11,7 @@ Utilizing the **SkyDiscover AdaEvolve** engine and **PINN (Physics-Informed Neur
 *   **KV-Cache Pressure**: **0.60** (🚀 **Estimated 29.4% reduction**).
 *   **Vertical Bandwidth**: **4.2 TB/s** (Targeted via $5\mu m$ Hybrid Bonding).
 *   **Module Efficiency**: **0.4 pJ/bit** (⚡ **Estimated 94% power reduction**).
-*   **Thermal Estimation**: **98.5°C Peak** (Recovered 6.5°C headroom via shattered logic macros).
+*   **Peak Junction Temperature**: **83.87 °C**, grid-converged (GCI 0.081%) on a reference solver verified to 1.04e-9 °C against analytic 1D conduction — [the measurement](reports/mesh_convergence_audit.json). Shattered logic macros recover **41.45 °C** against the best monolithic placement, both solved on the reference ([thermal_validation.json](reports/thermal_validation.json)); the earlier "6.5 °C headroom" was an unmeasured claim the same size as a modelling defect since fixed.
 
 ### 🧠 Triple-Brain Intelligence
 The tool utilizes a 2026-era hybrid intelligence stack:
@@ -28,7 +28,7 @@ The tool utilizes a 2026-era hybrid intelligence stack:
 *   [**Die Thinning & 3D Assembly**](reports/assembly_packaging_spec.md): Thinned 30µm/50µm silicon layers for thermal and TSV optimization.
 *   [**Physics Validation (reference solver + PINO)**](reports/rom_pinn_validation.md): Grid-converged reference solver verified to **1e-9 °C** against analytic conduction; physics-informed loss cuts field RMSE 22% and PDE residual 59%. POD/ROM remains not implemented.
 *   [**Multi-Objective Search**](reports/multiobjective_search.md): NSGA-II verified on ZDT1; shattered-macro headroom of **+41.45 °C** confirmed on the reference solver.
-*   [**Hierarchical Mesh Audit**](reports/mesh_convergence_audit.json): Variable 1µm/50nm mesh for Regions of Interest (ROI).
+*   [**Mesh Convergence Audit**](reports/mesh_convergence_audit.json): measured 12/24/48 grid-refinement study with Richardson extrapolation and a published GCI. (It is not the variable 1 µm/50 nm ROI mesh an earlier README described — that mesh was never run.)
 *   [**Technical Audit & Benchmarking**](reports/technical_audit_v5.md): Detailed comparison against Ansys Heatwave and industry-standard sign-off flows.
 *   [**Critical Review**](reports/critical_review.md): Adversarial audit of this repository — which claims the code supports, which it does not, and why.
 *   [**EDA Vendor Integration Spec**](reports/eda_vendor_integration_spec.md): Hook architecture and interchange layer for handoff into Cadence, Synopsys, and Siemens flows.

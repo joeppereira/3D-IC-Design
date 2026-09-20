@@ -114,8 +114,30 @@ class ThermalSolver:
         self.g_top = area_z / ((self.dz[0] / 2.0) / self.k[0] + 1.0 / self.h_top)
         self.g_bot = area_z / ((self.dz[-1] / 2.0) / self.k[-1] + 1.0 / self.h_bottom)
 
+    def face_conductance_sum(self, dtype=torch.float64):
+        """Total conductance touching one cell, per layer [W/K], shape [layers].
+
+        Adiabatic side walls are handled by replicate padding, which makes the
+        ghost cell equal to the cell, so its flux is zero while the conductance
+        still appears consistently on both sides of the update.
+
+        This is the steady-state denominator and also the quantity that sets
+        the explicit time-step limit, so transient_solver.py shares it rather
+        than deriving a second version of the same discretisation.
+        """
+        total = 2.0 * self.gx.to(dtype) + 2.0 * self.gy.to(dtype)
+        vert = torch.zeros(self.layers, dtype=dtype)
+        for i in range(self.layers):
+            if i > 0:
+                vert[i] += self.gz[i - 1]
+            if i < self.layers - 1:
+                vert[i] += self.gz[i]
+        vert[0] += self.g_top
+        vert[-1] += self.g_bot
+        return total + vert
+
     def solve_steady_state(self, power_map, iterations=60000, tol=1e-8,
-                           verbose=False):
+                           verbose=False, return_dtype=torch.float32):
         """Jacobi relaxation on the finite-volume equations.
 
         power_map: [B, layers, H, W] in watts per cell.
@@ -125,6 +147,11 @@ class ThermalSolver:
         The default tol of 1e-8 K yields a global energy imbalance below 1e-5
         relative; 1e-5 K leaves ~1e-3, which is not good enough for the solver
         to be used as a check on anything.
+
+        `return_dtype` defaults to float32 for callers that feed the surrogate.
+        Ask for float64 when the field is itself going to be differenced: the
+        float32 cast costs ~6e-6 K, which is larger than the residual a
+        convergence check is trying to measure.
         """
         # Solve in float64. In float32 the Jacobi update stalls at ~eps*T
         # (~3e-6 K at 57 C), which leaves a ~1e-3 relative energy imbalance that
@@ -138,21 +165,7 @@ class ThermalSolver:
 
         gx = self.gx.view(1, -1, 1, 1).to(dtype)
         gy = self.gy.view(1, -1, 1, 1).to(dtype)
-
-        # Denominator: all face conductances touching each cell. Adiabatic side
-        # walls are handled by replicate padding, which makes the ghost cell
-        # equal to the cell, so its flux is zero while the conductance still
-        # appears consistently on both sides of the update.
-        denom = 2.0 * gx + 2.0 * gy
-        vert = torch.zeros(self.layers, dtype=dtype)
-        for i in range(self.layers):
-            if i > 0:
-                vert[i] += self.gz[i - 1]
-            if i < self.layers - 1:
-                vert[i] += self.gz[i]
-        vert[0] += self.g_top
-        vert[-1] += self.g_bot
-        denom = denom + vert.view(1, -1, 1, 1)
+        denom = self.face_conductance_sum(dtype).view(1, -1, 1, 1)
 
         bc_source = torch.zeros(self.layers, dtype=dtype)
         bc_source[0] += self.g_top * self.t_ambient
@@ -186,7 +199,7 @@ class ThermalSolver:
         if last_delta >= tol:
             print(f"  ⚠️  [Solver] did not converge: max update {last_delta:.2e} K "
                   f"after {iterations} iterations")
-        return t.to(torch.float32)
+        return t.to(return_dtype)
 
     def energy_balance(self, t, power_map):
         """Heat leaving the convective faces must equal the power injected."""

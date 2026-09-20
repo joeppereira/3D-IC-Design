@@ -14,7 +14,16 @@ After 20 generations of evolutionary discovery, the system identified this optim
 | **Interconnect** | $40\mu m$ Micro-bumps | **$5\mu m$ Hybrid Bonding** | **10x Bandwidth** (Vertical data path) |
 | **Fetch Strategy** | Reactive (Fetch-on-demand) | **Predictive Pre-fetching** | **-15ns Latency** (Logical optimization) |
 | **KV-Cache Pressure**| 0.85 (High) | **0.60 (Optimal)** | **🚀 29.4% Reduction** |
-| **Peak Temp ($T_j$)** | 112.0 °C (FAIL) | **98.5 °C (PASS)** | **PASSED** (Under 105°C limit) |
+| **Peak Temp ($T_j$)** | not measured¹ | **83.87 °C (PASS)** | **PASSED** (21.1 °C under the 105 °C limit) |
+
+¹ The baseline column previously read *112.0 °C (FAIL)* and the champion *98.5 °C*.
+Neither was a solver output — both were literals. The champion figure is now
+measured; the baseline is left unmeasured rather than restated, because no
+controlled run of it exists. What *is* measured is the placement-strategy
+comparison: shattered logic macros reach **77.61 °C** against **119.07 °C** for
+the best monolithic placement (an exhaustive scan, not one hand-picked layout),
+a **41.45 °C** recovery — see
+[`thermal_validation.json`](thermal_validation.json).
 
 ---
 
@@ -38,7 +47,7 @@ GEPA only understood physical heat. It didn't understand the "Logic of AI."
 
 ## 3. Final Physical Proof
 The champion design has been cross-verified by:
-1.  **3D-FDM Thermal Solver**: Verified $98.5^\circ C$ steady-state.
+1.  **Thermal reference solver**: grid-converged peak $T_j$ of $83.87^\circ C$ (Richardson extrapolation over 12/24/48 meshes, GCI 0.081%), on a solver verified to $1.04\times10^{-9}\,^\circ C$ against analytic 1D conduction and $8.4\times10^{-12}$ on global energy balance. The FDM solver agrees to $0.0036^\circ C$. See [`mesh_convergence_audit.json`](mesh_convergence_audit.json).
 2.  **SI V3 Analyzer**: Verified **0.52 UI Eye Margin** for 224G links using Flyover Twinax.
 3.  **IR-Drop Audit**: Verified **0.38% droop** via the Vertical Power Die.
 

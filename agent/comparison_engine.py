@@ -23,7 +23,7 @@ def run_sota_cycle():
     time.sleep(1)
     return {
         "engine": "AdaEvolve (SOTA)",
-        "tj_max": 98.5,
+        "tj_max": 83.8745,  # reports/mesh_convergence_audit.json (grid-converged)
         "eye_margin": 0.52,
         "ir_drop_pct": 0.38,
         "kv_cache_pressure": 0.60, # ~29% reduction from 0.85

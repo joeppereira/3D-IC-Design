@@ -252,7 +252,7 @@ Ranked by effort-to-credibility within the vendor.
 ### 3.1 Celsius Thermal Solver — *highest value, do first*
 - **Insertion point**: the high-fidelity check on 3D-FDM / FNO thermal predictions.
 - **Emit**: `stackup_3dic_x.json` → Celsius stack definition; per-die power maps as CSV/image grids on the same mesh the solver uses (`physics_accelerated/src/hierarchical_grid_manager.py` already manages the 1 µm / 50 nm ROI mesh); boundary conditions from `thermal_boundary_conditions`; a driver Tcl.
-- **Correlation target (T2)**: peak Tj. The repo claims **98.5 °C**. Publish `|ΔTj|` against Celsius and a hotspot-location agreement metric. This single number converts "98 % accurate on validated ROI" from an assertion into a measurement.
+- **Correlation target (T2)**: peak Tj. The repo measures **83.87 °C** (grid-converged, GCI 0.081%). Publish `|ΔTj|` against Celsius and a hotspot-location agreement metric. This single number is what would convert a grid-converged reference into a *vendor-correlated* one.
 - **Effort**: 3 days emit + 1 day correlation write-up (license-gated).
 
 ### 3.2 Voltus-Fi — droop
@@ -268,7 +268,7 @@ Ranked by effort-to-credibility within the vendor.
 
 ### 3.4 Virtuoso maestro / ADE Assembler — corner run plan
 - **Insertion point**: the Pareto winner's chosen corners become a real ADE Assembler run plan, so the surrogate's corner selection is executed rather than asserted.
-- **Emit**: a maestro cellview (`maestro.sdb` via OCEAN/SKILL, or the documented XML/JSON interchange) whose corners/global variables come from the selected `pareto_data.csv` row plus `.temp` (98.5 °C) and `.param VDD` (0.75 V) currently hardcoded in `netlist_exporter.py`. Sweep points come from `configs/sweep_*.json`.
+- **Emit**: a maestro cellview (`maestro.sdb` via OCEAN/SKILL, or the documented XML/JSON interchange) whose corners/global variables come from the selected `pareto_data.csv` row plus `.temp` (83.87 °C, the measured operating point) and `.param VDD` (0.75 V). Sweep points come from `configs/sweep_*.json`.
 - **Prerequisite**: fix `netlist_exporter.py` first (§6). A maestro run plan pointing at a hardcoded netlist automates nothing.
 - **Effort**: 4 days (SKILL/OCEAN learning curve).
 
@@ -360,7 +360,7 @@ Week 6   §4.4 3DIC Compiler, §3.3 Sigrity/EDB        -> 3D floorplan in a prod
 Later    §3.4, §3.5, §4.3, §4.5, §5.3
 ```
 
-Rationale for the ordering: Phase 0 is the multiplier. Then take the cheapest T1/T2 wins that touch the repo's headline claims (thermal 98.5 °C, droop, vertical bandwidth, 224G eye) before the higher-effort platform integrations.
+Rationale for the ordering: Phase 0 is the multiplier. Then take the cheapest T1/T2 wins that touch the repo's headline claims (thermal 83.87 °C, droop, vertical bandwidth, 224G eye) before the higher-effort platform integrations.
 
 ---
 
@@ -375,7 +375,7 @@ Rationale for the ordering: Phase 0 is the multiplier. Then take the cheapest T1
 - [x] Units declared and validated in every geometry artifact; a mm/µm slip is rejected.
 - [x] The emitted SPICE deck executes in a real simulator (ngspice) and cannot show passive gain.
 - [ ] `.ibs` passes `ibischk7` with zero errors — **outstanding**: `ibischk7` is not installed here, so IBIS is structurally validated only.
-- [ ] GDSII verified by KLayout or gdstk — **outstanding**: neither is installed; the stream is checked by this repo's own independent reader.
+- [x] GDSII verified by `gdstk`; DEF/LEF verified by KLayout; Liberty verified by `liberty-parser`.
 - [ ] IBIS-AMI `AMI_Init`/`AMI_GetWave` DLL built and returning a non-degenerate impulse response — **not started** (C work, budgeted separately in §2.7).
 
 **Per vendor hook:**
@@ -412,8 +412,8 @@ integrations/
                     touchstone_io, ibis_io, spice_io      (writer + reader each)
   vendors/          neutral (9 hooks), cadence (3), synopsys (3), siemens (2)
   importers/        vendor_results.py (thermal, IR, SPEF, Touchstone, DEF)
-tests/integrations/ 121 tests, unittest; gdstk + scikit-rf + ngspice used as
-                    external validators when present
+tests/integrations/ unittest; gdstk + scikit-rf + klayout + liberty-parser +
+                    ngspice used as external validators when present
 ```
 
 **17 registered targets, all emitting clean:** `neutral:{stackup,lef,def,gds,spef,liberty,touchstone,ibis,spice}`, `cadence:{celsius,voltus_fi,sigrity_edb}`, `synopsys:{primesim,starrc,primewave}`, `siemens:{calibre_3dstack,hyperlynx}`.
@@ -451,10 +451,17 @@ Round-trip tests prove our writer and our reader agree. If both share a misreadi
 | **GDSII** | `gdstk` (independent C++ implementation) | ✅ units, cell hierarchy, bounding box, all 32 SREF origins, and the TSV/bond/keep-out layers verified |
 | **Touchstone** | `scikit-rf` | ✅ parses identically (max ΔS < 1e-9), and agrees the network is passive and reciprocal |
 | **SPICE** | `ngspice` | ✅ deck simulates; RX swing positive, never exceeds TX; loss ordering Twinax > Megtron-7 > FR4 |
-| **DEF / LEF / SPEF / Liberty** | OpenROAD, PrimeTime | ❌ **not installed — self-validated only** |
-| **IBIS** | `ibischk7` | ❌ **not installed — structural checks only** |
+| **DEF / LEF** | `klayout` (the reader the open-source physical flows use) | ✅ DBU, DIEAREA, every macro abstract at its declared size, all 32 placements including ORIENT semantics, the RoT shield, and the SPECIALNETS stripe layers |
+| **Liberty** | `liberty-parser` (lark grammar, not regexes) | ✅ parses under a real Liberty grammar; no `timing`/`internal_power` group present; operating point, pin directions and pg_pins match; cell `area` agrees with the LEF extent KLayout reads |
+| **SPEF** | OpenROAD, PrimeTime | ❌ **not installed — self-validated only.** No independent Python SPEF *reader* exists on PyPI; this needs a real EDA install |
+| **IBIS** | `ibischk7` | ❌ **not installed — structural checks only.** The IBIS Open Forum gates the download behind licence acceptance, so this is an owner action, not a `pip install` |
 
 `test_external_parsers.py` asserts this coverage list explicitly, so removing a validator fails a test rather than silently weakening the claim.
+
+**Two real defects this found.** Both were invisible to the round-trip tests, which is the point of the exercise:
+
+* **Two macros physically overlapped.** The N/S SERDES rows and the E/W UCIe columns both started at a 1000 µm offset, so `SERDES_S_0` (1000–1600 × 500–1400 µm) and `UCIE_W_0` (500–1100 × 1000–1900 µm) intersected over 100 × 400 µm. Our own reader could not see it: it compares numbers, and the numbers round-tripped perfectly. KLayout builds *geometry*, and geometry overlaps. The DEF placement point is the lower-left of the bounding box **after** ORIENT is applied, so a 900 × 600 UCIe PHY placed `E` occupies 600 × 900 — reasoning about the unrotated size is how this was missed. `canonical.derive_macros` now starts the column clear of the south row and raises if a placement cannot fit.
+* **Two RoT guard-bands, 7 mm apart.** `def_io` put the 250 µm EM shield at the die centre; `gen_def.py` placed the Caliptra RoT at (w/2, 2000 µm). Both claimed to be the same keep-out. `canonical.rot_origin_um` now owns the geometry and both consume it, which also closes the P0-B duplication for the RoT.
 
 **A real defect this found.** Our passivity check was `σ_max(S) ≤ 1 + ε`. scikit-rf rejected the network anyway. The cause: clamping reflection to exactly `1-|t|` produced `|ρ|+|t| = 1.000000000000` below ~1 GHz — a *lossless* channel whose dissipation matrix `I − Sᴴ·S` is singular (min eigenvalue 4.8e-17). Mathematically passive, physically wrong, and numerically fragile. Fixed by giving the reflection 1% headroom; the check is now the minimum eigenvalue of the dissipation matrix, which is strictly stronger than both the old σ_max test and scikit-rf's own element-wise one.
 
@@ -485,7 +492,7 @@ The calibration file carries a `trustworthy` flag. It is false whenever any inpu
 ### Still outstanding
 
 * **Licensed tiers (T1/T2).** Every vendor hook emits and self-checks, but none has been loaded by its tool. The driver scripts are written to be run unmodified by a licensee.
-* **External parsers.** `ibischk7`, KLayout/gdstk and OpenROAD are not installed here; IBIS and GDSII are validated structurally by this repo's own readers. Installing them is cheap and would harden the T0 claim.
+* **External parsers.** `gdstk`, `scikit-rf`, `klayout`, `liberty-parser` and `ngspice` are installed and used. Still outstanding: `ibischk7` (IBIS — the Open Forum gates the download behind licence acceptance) and OpenROAD/PrimeTime (SPEF). IBIS and SPEF remain validated only by this repo's own readers.
 * **IBIS-AMI DLL.** `.ibs` and `.ami` are emitted with `GetWave_Exists = False`, which is the honest declaration while no shared library ships.
 * **Sigrity/EDB.** EDB is a database, so `build_edb.py` scripts against PyEDB rather than emitting a file; it needs a Cadence install to do anything.
 * **Legacy exporters.** `netlist_exporter.py`, `gds_export.tcl` and `gen_def.py` still hold duplicate or dead logic (see P0-B/C/E). Retiring them is follow-up work, not new capability.

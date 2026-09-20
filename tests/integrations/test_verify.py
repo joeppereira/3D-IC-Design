@@ -39,7 +39,7 @@ def clean_record(tmp: Path) -> DesignRecord:
         links=[link],
         nets=[Net("LINK_0_TX_P", "serdes_diff", r_ohm=150.0, c_pf=12.0,
                   length_um=300000.0)],
-        predictions=Predictions(tj_peak_c=98.5, droop_mv=4.0, eye_margin_ui=0.62,
+        predictions=Predictions(tj_peak_c=83.8745, droop_mv=4.0, eye_margin_ui=0.62,
                                 insertion_loss_db=il, channel_loss_db=il),
         sources={"golden_config": str(golden), "vector_deck": str(deck)},
     )

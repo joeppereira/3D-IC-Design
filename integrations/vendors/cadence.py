@@ -1,7 +1,7 @@
 """Cadence hooks (spec section 3), ordered by effort-to-credibility.
 
 Celsius and Voltus-Fi come first because they check the two headline numbers the
-repo advertises: 98.5 C peak Tj and the 450 A/ns droop event.
+repo advertises: 83.87 C peak Tj (grid-converged) and the 450 A/ns droop event.
 """
 from __future__ import annotations
 
@@ -21,7 +21,7 @@ POWER_MAP_CELLS = 16        # 16x16 tiles per die, matching the FNO grid_size
 class CelsiusHook(VendorHook):
     """Celsius Thermal Solver: high-fidelity check on the 3D-FDM/FNO prediction.
 
-    Correlation target (T2): peak Tj against the repo's 98.5 C claim, plus
+    Correlation target (T2): peak Tj against the repo's 83.87 C measurement, plus
     hotspot-location agreement.
     """
     vendor, tool = "cadence", "celsius"

@@ -1,22 +1,40 @@
 {
-  "project": "3DIC-X v5.2.0",
-  "audit_type": "SOTA vs. Legacy Benchmark",
+  "project": "3DIC-X",
+  "audit_type": "Thermal design of record (measured)",
+  "generated": "2026-09-20",
+  "provenance": {
+    "peak_tj_c": "reports/mesh_convergence_audit.json -> mesh_convergence.richardson_extrapolated_peak_c",
+    "macro_strategy_comparison": "reports/thermal_validation.json -> shattered_vs_monolithic",
+    "replaces": "a version whose temp_c values (98.5 C 'SOTA', 112.0 C 'legacy') were literals rather than solver outputs. See reports/critical_review.md section 5, item 3."
+  },
   "input_spec": {
     "node": "3nm GAA",
     "memory": "1TB CXL",
-    "cooling": "180W Liquid"
+    "cooling": "BSPDN liquid, h_top 8000 W/m2K",
+    "power_budget_w": 60.0,
+    "junction_cap_c": 105.0
   },
   "results": {
+    "skydiscover_sota": {
+      "kv_pressure": 0.6,
+      "temp_c": 83.8745,
+      "temp_basis": "grid-converged: Richardson extrapolation over 12/24/48 meshes, GCI 0.081%, 3-die stack 18x18 mm at the 60 W budget, on a reference solver verified to 1.04e-9 C against analytic 1D conduction",
+      "status": "PASS (21.1 C under the 105 C cap)"
+    },
     "gepa_legacy": {
       "kv_pressure": 0.85,
-      "temp_c": 112.0,
-      "status": "FAIL (Thermal)"
-    },
-    "skydiscover_sota": {
-      "kv_pressure": 0.60,
-      "temp_c": 98.5,
-      "status": "PASS (SOTA)"
+      "temp_c": null,
+      "temp_basis": "not measured. The legacy 112.0 C was a literal with no solver behind it; it is left null rather than restated.",
+      "status": "UNMEASURED"
     }
   },
-  "discovery_notes": "The 29% pressure reduction was achieved by distributed macro placement and predictive pre-fetching evolved via AdaEvolve. Verified against 3nm physical design rules."
+  "macro_strategy_comparison": {
+    "case": "NSGA-II front-coolest placement vs the best monolithic placement, both solved on the reference solver",
+    "monolithic_best_peak_c": 119.0667,
+    "shattered_best_peak_c": 77.6123,
+    "headroom_recovered_c": 41.4545,
+    "method": "the monolithic figure is an exhaustive scan of every block placement on the reference solver, not a single hand-picked layout",
+    "replaces": "an unmeasured '6.5 C headroom from shattered logic macros' claim, which was the same magnitude as the Hybrid_Bond k_map defect (6.02 C) and therefore not separable from modelling error"
+  },
+  "discovery_notes": "The kv_pressure reduction comes from distributed macro placement. The thermal numbers above are solver outputs with stated provenance; the kv_pressure figures are not, and are carried forward unchanged from the earlier audit."
 }

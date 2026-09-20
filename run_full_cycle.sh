@@ -45,7 +45,7 @@ python3 src/si_analyzer_v3.py --config $GOLDEN
 python3 scripts/avs_optimizer.py --config $GOLDEN
 python3 src/thermal/ir_drop_solver.py --config $GOLDEN
 python3 src/security_analyzer.py --config $GOLDEN
-python3 src/thermal/transient_solver.py --config $GOLDEN
+python3 src/thermal/transient_solver.py --config $GOLDEN --write_config
 
 # Comprehensive Silicon & Package Architectural Verification Dossier
 python3 scripts/generate_design_checklist.py --config $GOLDEN

@@ -10,10 +10,9 @@ import re
 from pathlib import Path
 
 from ..base import Finding, SEV_ERROR, SEV_WARN
-from ..canonical import Die, DesignRecord, Macro
+from ..canonical import ROT_KEEPOUT_UM, Die, DesignRecord, Macro, rot_origin_um
 
 DBU_PER_UM = 1000
-ROT_KEEPOUT_UM = 250.0   # Caliptra RoT EM guard-band from gen_def.py
 
 
 def _dbu(um: float) -> int:
@@ -40,8 +39,8 @@ def write(design: DesignRecord, die: Die, path: Path, prov: dict) -> Path:
     L.append("END COMPONENTS")
     L.append("")
 
-    # Security keep-out: gen_def.py declares a 250um EM shield around the RoT.
-    cx, cy = die.width_um / 2.0, die.height_um / 2.0
+    # Security keep-out: the same RoT origin gen_def.py places the cell at.
+    cx, cy = rot_origin_um(die)
     L.append("BLOCKAGES 1 ;")
     L.append(f"    - PLACEMENT RECT ( {_dbu(cx - ROT_KEEPOUT_UM)} {_dbu(cy - ROT_KEEPOUT_UM)} ) "
              f"( {_dbu(cx + ROT_KEEPOUT_UM)} {_dbu(cy + ROT_KEEPOUT_UM)} ) ;")

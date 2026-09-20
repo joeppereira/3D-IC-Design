@@ -157,7 +157,10 @@ class DesignRecord:
     vddq_v: float = 0.85
     ripple_target_mv: float = 15.0
     didt_a_per_ns: float = 450.0
-    op_temp_c: float = 98.5
+    # The operating point reaches Liberty nom_temperature and the SPICE .temp
+    # line. load_design() requires a measured value; this default exists only
+    # for hand-built records in tests.
+    op_temp_c: float = 83.8745
     power_domains: list[str] = field(default_factory=lambda: ["VDD_CORE"])
     sources: dict[str, str] = field(default_factory=dict)
 
@@ -210,28 +213,93 @@ def _snap(val: float, grid: float = 10.0) -> float:
     return round(val / grid) * grid
 
 
+EDGE_KEEPOUT_UM = 500.0     # die-edge keep-out, from gen_def.py
+ROT_KEEPOUT_UM = 250.0      # Caliptra RoT EM guard-band, from gen_def.py
+ROT_Y_UM = 2000.0           # RoT sits low-centre, not at the die centre
+CORNER_GAP_UM = 100.0       # clearance where the N/S and E/W PHY rails meet
+SERDES_SIZE_UM = (600.0, 900.0)
+UCIE_SIZE_UM = (900.0, 600.0)
+
+
+def footprint_um(size_um: tuple[float, float], orient: str) -> tuple[float, float]:
+    """Die area a macro covers once ORIENT is applied.
+
+    DEF places the lower-left of the *oriented* bounding box, so an E/W macro
+    occupies its transposed extent.  Reasoning about the unrotated size is how
+    the corner collision below went unnoticed.
+    """
+    w, h = size_um
+    return (h, w) if orient in ("E", "W", "FE", "FW") else (w, h)
+
+
+def rot_origin_um(die: Die) -> tuple[float, float]:
+    """Caliptra RoT placement, shared by the DEF blockage and the OpenROAD Tcl.
+
+    The DEF writer put the EM shield at the die centre while gen_def.py placed
+    the RoT at (w/2, 2000) -- two guard-bands, 7mm apart, both claiming to be
+    the same one.
+    """
+    return (_snap(die.width_um / 2.0), _snap(ROT_Y_UM))
+
+
 def derive_macros(die: Die, count: int = 8, pitch_um: float = 1800.0) -> list[Macro]:
     """Placement model extracted from gen_def.py (spec P0-B).
 
     gen_def.py computes these origins and serializes them straight to OpenROAD
     Tcl; DEF needs the same numbers, so the geometry lives here and both
     serializers consume it.
+
+    The N/S SERDES rows and the E/W UCIe columns share the die corners.  Both
+    rails originally started at the same 1000um offset, which put SERDES_S_0
+    and UCIE_W_0 100x400um into each other -- legal-looking DEF that no placer
+    would accept.  The column now starts clear of the south row, and a
+    placement that cannot fit raises instead of overlapping silently.
     """
     macros: list[Macro] = []
     w, h = die.width_um, die.height_um
+    _, serdes_h = footprint_um(SERDES_SIZE_UM, "N")
+    _, ucie_h = footprint_um(UCIE_SIZE_UM, "E")
+
+    south_y = _snap(EDGE_KEEPOUT_UM)
+    north_y = _snap(h - 1500)
+    col_y0 = _snap(south_y + serdes_h + CORNER_GAP_UM)
+    col_top = col_y0 + (count - 1) * pitch_um + ucie_h
+    if col_top + CORNER_GAP_UM > north_y:
+        raise ValueError(
+            f"{die.name}: {count} UCIe PHYs at {pitch_um}um pitch need "
+            f"{col_top:.0f}um of edge but the north SERDES row starts at "
+            f"{north_y:.0f}um -- the rails would overlap at the corner")
+
     for i in range(count):
         nx = _snap(1000 + i * pitch_um)
         macros.append(Macro(f"SERDES_N_{i}", "SERDES_224G_PHY", die.name,
-                            (nx, _snap(h - 1500)), "N", (600.0, 900.0)))
+                            (nx, north_y), "N", SERDES_SIZE_UM))
         macros.append(Macro(f"SERDES_S_{i}", "SERDES_224G_PHY", die.name,
-                            (nx, _snap(500)), "N", (600.0, 900.0)))
+                            (nx, south_y), "N", SERDES_SIZE_UM))
     for i in range(count):
-        wy = _snap(1000 + i * pitch_um)
+        wy = _snap(col_y0 + i * pitch_um)
         macros.append(Macro(f"UCIE_W_{i}", "UCIE2_PHY", die.name,
-                            (_snap(500), wy), "E", (900.0, 600.0)))
+                            (_snap(EDGE_KEEPOUT_UM), wy), "E", UCIE_SIZE_UM))
         macros.append(Macro(f"UCIE_E_{i}", "UCIE2_PHY", die.name,
-                            (_snap(w - 1500), wy), "W", (900.0, 600.0)))
+                            (_snap(w - 1500), wy), "W", UCIE_SIZE_UM))
     return macros
+
+
+def _required_op_temp_c(sota: dict) -> float:
+    """The thermal operating point, which must be a solver output.
+
+    It was a literal (98.5 C) that no solver ever produced, and it reaches
+    Liberty's nom_temperature and the SPICE .temp line -- i.e. it sets the
+    corner every downstream tool characterises at. Defaulting it silently is
+    the same defect class as the k_map fall-through.
+    """
+    temp_c = sota.get("temp_c")
+    if temp_c is None:
+        raise ValueError(
+            "reports/final_design_audit.json has no measured "
+            "results.skydiscover_sota.temp_c. It must come from a solver run "
+            "(see reports/mesh_convergence_audit.json), not from a default.")
+    return float(temp_c)
 
 
 def load_design(golden: Path | str | None = None,
@@ -344,7 +412,7 @@ def load_design(golden: Path | str | None = None,
         vddq_v=vdd,
         ripple_target_mv=float(pdn_noise.get("ripple_target", 15.0)),
         didt_a_per_ns=float(pdn_noise.get("di_dt_event_max_amps_per_ns", 450.0)),
-        op_temp_c=float(sota.get("temp_c", 98.5)),
+        op_temp_c=_required_op_temp_c(sota),
         power_domains=deck.get("logical_structure", {}).get(
             "power_domains", ["VDD_CORE", "VDD_SRAM", "VDDQ_SERDES"]),
         sources={"golden_config": str(golden_p), "vector_deck": str(deck_p)},

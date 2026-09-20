@@ -1,0 +1,28 @@
+# 3DIC-X dependencies.
+#
+#   pip install -r requirements.txt
+#   brew install ngspice          # circuit simulation, not a Python package
+#
+# Everything below is needed to reproduce the two regression gates:
+#   ./regression_suite/run_physics_verification.sh
+#   ./regression_suite/run_interchange_qualification.sh
+
+# --- solvers, surrogate, search ------------------------------------------
+numpy
+scipy
+torch
+matplotlib
+
+# --- independent format validators ---------------------------------------
+# These exist to check our writers against implementations nobody here wrote.
+# Round-trip tests only prove our writer and our reader agree; if both share a
+# misreading of the spec, they agree and are both wrong.
+gdstk            # GDSII   -- independent C++ implementation
+scikit-rf        # Touchstone + RF network theory
+klayout          # LEF/DEF -- the reader the open-source physical flows use
+liberty-parser   # Liberty -- a real lark grammar rather than regexes
+
+# Still unvalidated externally (see eda_vendor_integration_spec.md section 10):
+#   SPEF  -- needs OpenROAD or PrimeTime; no independent Python reader exists
+#   IBIS  -- needs ibischk7, whose download the IBIS Open Forum gates behind
+#            licence acceptance, so it is an owner action rather than a pip

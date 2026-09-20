@@ -1,6 +1,18 @@
+"""OpenROAD floorplan Tcl.
+
+Macro origins come from integrations.canonical.derive_macros -- the same
+function the DEF writer uses (spec P0-B).  They used to be computed here and
+again there; when the corner collision between the SERDES rows and the UCIe
+columns was fixed, only one copy would have been corrected.
+"""
 import argparse
 import json
 import os
+import sys
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../../..")))
+
+from integrations.canonical import ROT_KEEPOUT_UM, Die, derive_macros, rot_origin_um
 
 def generate_def(args):
     print(f"🏗️ Generating PI/SI-Aware OpenROAD Floorplan...")
@@ -33,34 +45,20 @@ def generate_def(args):
         f.write("add_pdn_stripe -grid stdgrid -layer Metal10 -width 2.0 -pitch 50.0 -offset 5.0\n\n")
         
         # 3. Macro Placement (Heat Spread & SI Aware)
-        # Snap to grid function
+        # Single source of geometry, shared with the DEF writer.
         def snap(val): return round(val / grid) * grid
 
-        # North/South Escape (SerDes)
-        for i in range(8):
-            nx = snap(1000 + i*1800) # Increased pitch for SI isolation
-            ny = snap(die_h - 1500)
-            f.write(f"place_cell -inst_name SERDES_N_{i} -origin \"{nx} {ny}\" -orient N -status FIRM\n")
-            
-            sx = nx
-            sy = snap(500)
-            f.write(f"place_cell -inst_name SERDES_S_{i} -origin \"{sx} {sy}\" -orient N -status FIRM\n")
-            
-        # East/West (UCIe DRAM)
-        for i in range(8):
-            wy = snap(1000 + i*1800)
-            wx = snap(500)
-            f.write(f"place_cell -inst_name UCIE_W_{i} -origin \"{wx} {wy}\" -orient E -status FIRM\n")
-            
-            ex = snap(die_w - 1500)
-            ey = wy
-            f.write(f"place_cell -inst_name UCIE_E_{i} -origin \"{ex} {ey}\" -orient W -status FIRM\n")
-            
+        die = Die(name=project_name, kind="logic", width_um=die_w, height_um=die_h)
+        for m in derive_macros(die):
+            x, y = m.origin_um
+            f.write(f"place_cell -inst_name {m.name} -origin \"{x} {y}\" "
+                    f"-orient {m.orient} -status FIRM\n")
+
         # 4. Security & SI Isolation (Keep-out)
-        f.write("\n# Caliptra RoT Security Keep-out (250um EM Shielding)\n")
-        rot_x, rot_y = snap(die_w/2), snap(2000)
+        f.write(f"\n# Caliptra RoT Security Keep-out ({ROT_KEEPOUT_UM:.0f}um EM Shielding)\n")
+        rot_x, rot_y = rot_origin_um(die)
         f.write(f"place_cell -inst_name Caliptra_RoT -origin \"{rot_x} {rot_y}\" -orient N -status FIRM\n")
-        f.write(f"add_keepout_margin -inst_name Caliptra_RoT -margin 250\n")
+        f.write(f"add_keepout_margin -inst_name Caliptra_RoT -margin {ROT_KEEPOUT_UM:.0f}\n")
         
         # 5. Routing Grid / Signal Integrity
         f.write("\n# Signal Integrity: G-S-G Routing Tracks for 224G lanes\n")

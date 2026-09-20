@@ -26,6 +26,7 @@ from thermal_reference import (ThermalReference, Layer, Boundary,      # noqa: E
                               analytic_slab_peak_c)
 from heat_residual import HeatEquationResidual                          # noqa: E402
 from thermal.solver import ThermalSolver                                # noqa: E402
+from thermal.transient_solver import TransientThermalSolver             # noqa: E402
 import pareto as P                                                      # noqa: E402
 
 GOLDEN = os.path.join(ROOT, "physics_accelerated", "results", "golden_config.json")
@@ -205,6 +206,119 @@ class TestFdmSolver(unittest.TestCase):
         t_low = float(self.solver.solve_steady_state(self._hotspot(5.0)).max())
         t_high = float(self.solver.solve_steady_state(self._hotspot(20.0)).max())
         self.assertGreater(t_high, t_low)
+
+
+class TestTransientSolver(unittest.TestCase):
+    """The transient solver, checked against an exact solution and the
+    steady-state solver it must agree with in the limit."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.solver = TransientThermalSolver(GOLDEN)
+        cls.G = cls.solver.grid_size
+
+    def _hotspot(self, watts=10.0):
+        p = torch.zeros((1, self.solver.layers, self.G, self.G),
+                        dtype=torch.float64)
+        c = self.G // 2
+        p[0, 0, c - 1:c + 1, c - 1:c + 1] = watts / 4.0
+        return p
+
+    def test_no_magic_constants_remain(self):
+        """Regression guard for the three the audit named: PHYSICAL_SCALE=500,
+        a bare *2000.0 on the source, and `diffusivity` used as a relaxation
+        factor. The module docstring may still explain why they went."""
+        import ast
+        src = open(os.path.join(ROOT, "serdes_architect", "src", "thermal",
+                                "transient_solver.py")).read()
+        doc = ast.get_docstring(ast.parse(src))
+        code = src.replace(doc, "") if doc else src
+        code = "\n".join(ln for ln in code.splitlines()
+                         if not ln.strip().startswith("#"))
+        for token in ("PHYSICAL_SCALE", "2000.0", "self.diffusivity"):
+            self.assertNotIn(token, code, f"{token} still in use")
+
+    def test_every_material_has_a_declared_heat_capacity(self):
+        self.assertEqual(self.solver.layers, len(self.solver.capacitance))
+        self.assertTrue(bool((self.solver.capacitance > 0).all()))
+
+    def test_refuses_unknown_heat_capacity_instead_of_defaulting(self):
+        """Same rule as the k_map, for the same reason: an unstated thermal
+        mass silently changes every time constant in the result."""
+        import transient_solver as TS
+        saved = dict(TS.VOLUMETRIC_HEAT_CAPACITY_J_M3K)
+        try:
+            TS.VOLUMETRIC_HEAT_CAPACITY_J_M3K.pop("Hybrid_Bond")
+            with self.assertRaises(KeyError):
+                TS.TransientThermalSolver(GOLDEN)
+        finally:
+            TS.VOLUMETRIC_HEAT_CAPACITY_J_M3K.clear()
+            TS.VOLUMETRIC_HEAT_CAPACITY_J_M3K.update(saved)
+
+    def test_heat_capacity_can_be_overridden_without_editing_the_table(self):
+        doubled = TransientThermalSolver(
+            GOLDEN, rho_cp_map={m: 2.0 * v for m, v in
+                                zip(self.solver.layer_materials,
+                                    self.solver.rho_cp.tolist())})
+        # Twice the thermal mass, same conductances -> twice the time constant.
+        self.assertAlmostEqual(doubled.time_constant_s(),
+                               2.0 * self.solver.time_constant_s(), places=9)
+
+    def test_stability_limit_is_computed_from_the_discretisation(self):
+        """dt_max = min_i C_i / sum_j g_ij -- the quantity `diffusivity = 0.01`
+        was standing in for."""
+        expected = float((self.solver.capacitance
+                          / self.solver.face_conductance_sum()).min())
+        self.assertAlmostEqual(self.solver.stability_limit_s(), expected, places=15)
+        self.assertGreater(self.solver.stability_limit_s(), 0.0)
+
+    def test_matches_the_exact_matrix_exponential(self):
+        """With a laterally uniform field the stack reduces exactly to N
+        coupled nodes, whose solution scipy computes independently."""
+        r = self.solver.verify_against_matrix_exponential()
+        self.assertLess(r["max_abs_error_c"], 1e-2,
+                        f"transient vs expm: {r['max_abs_error_c']:.3e} C")
+
+    def test_the_stack_has_more_than_one_time_constant(self):
+        """Why a single lumped exponential is the wrong reference: the 5um
+        hybrid bond and the 775um package are four orders of magnitude apart."""
+        taus = self.solver.mode_time_constants_s()
+        self.assertEqual(self.solver.layers, len(taus))
+        self.assertGreater(taus[0] / taus[-1], 1e3)
+
+    def test_shares_the_steady_state_solvers_fixed_point(self):
+        """The check the old implementation could not have passed: its fixed
+        point was not solver.py's fixed point, so the two solvers described
+        different stacks. Checked as a residual rather than by integrating
+        there, which would take ~2e6 explicit steps."""
+        r = self.solver.verify_fixed_point(self._hotspot())
+        self.assertLess(r["relative_to_load"], 1e-5,
+                        f"{r['power_imbalance_w']:.3e} W unbalanced at the "
+                        f"steady-state field")
+
+    def test_closes_the_energy_budget(self):
+        """integral(P dt) = dU + integral(Q_out dt)."""
+        self.solver.solve_transient(self._hotspot(),
+                                    duration_s=0.02, dt_s=0.002)
+        self.assertLess(self.solver.energy_closure(), 1e-4)
+
+    def test_starts_from_ambient_not_a_hardcoded_50c(self):
+        p = self._hotspot(0.0)
+        _, history = self.solver.solve_transient(p, duration_s=1e-4, dt_s=1e-4)
+        self.assertAlmostEqual(history[0]["peak_c"], self.solver.t_ambient, places=6)
+
+    def test_more_power_heats_faster(self):
+        _, low = self.solver.solve_transient(self._hotspot(5.0), 0.005, dt_s=0.005)
+        _, high = self.solver.solve_transient(self._hotspot(20.0), 0.005, dt_s=0.005)
+        self.assertGreater(high[-1]["peak_c"], low[-1]["peak_c"])
+
+    def test_transient_peak_never_exceeds_the_steady_state_peak(self):
+        """Heating from ambient under constant power is monotone toward the
+        steady state; overshoot would mean the integration is unstable."""
+        r = self.solver.verify_relaxes_toward_steady_state(self._hotspot())
+        self.assertTrue(r["monotone"], r["peaks_c"])
+        self.assertLessEqual(r["overshoot_c"], 1e-6)
+        self.assertGreater(r["fraction_of_steady_rise"], 0.1)
 
 
 class TestHeatResidual(unittest.TestCase):

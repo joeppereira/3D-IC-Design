@@ -3,6 +3,8 @@
 #
 #   reference solver  <- analytic 1D slab conduction, global energy balance
 #   FDM solver        <- the reference solver (different method, same equations)
+#   transient solver  <- the exact matrix exponential of the same ODE system,
+#                        and the FDM solver's field as a fixed point
 #   heat residual     <- a converged field (residual must vanish)
 #   NSGA-II           <- ZDT1, whose Pareto front is known analytically
 #
@@ -16,15 +18,31 @@ echo "=================================================================="
 echo " PHYSICS VERIFICATION"
 echo "=================================================================="
 
-echo "--- [1/4] Solver self-check (geometry, energy, gradient) ----------"
+echo "--- [1/5] Solver self-check (geometry, energy, gradient) ----------"
 (cd serdes_architect && ../$PY src/thermal/solver.py --verify --mode 3d_6neighbor)
 
 echo
-echo "--- [2/4] Verification test suite --------------------------------"
-$PY -m unittest discover -s tests/physics -t . 2>&1 | tail -5
+echo "--- [2/5] Transient solver self-check -----------------------------"
+$PY serdes_architect/src/thermal/transient_solver.py \
+    --config physics_accelerated/results/golden_config.json --verify
 
 echo
-echo "--- [3/4] Reference solver: analytic benchmark + convergence ------"
+echo "--- [3/5] Verification test suite --------------------------------"
+# tail -5 used to swallow the summary line, so a failing suite could read as a
+# passing gate. Assert on the result instead of printing near it.
+LOG=$(mktemp)
+$PY -m unittest discover -s tests/physics -t . >"$LOG" 2>&1 || true
+grep -E "^(Ran |OK|FAILED)" "$LOG" | sed 's/^/  /'
+if ! grep -qE "^OK" "$LOG"; then
+    echo "  ❌ physics test suite failed:"
+    sed 's/^/    /' "$LOG" | tail -40
+    rm -f "$LOG"
+    exit 1
+fi
+rm -f "$LOG"
+
+echo
+echo "--- [4/5] Reference solver: analytic benchmark + convergence ------"
 $PY - <<'PYEOF'
 import sys, json; sys.path.insert(0, "physics_accelerated/src")
 doc = json.load(open("reports/mesh_convergence_audit.json"))
@@ -38,7 +56,7 @@ print(f"  grid-converged peak Tj : {m['richardson_extrapolated_peak_c']:.3f} C "
 PYEOF
 
 echo
-echo "--- [4/4] Surrogate error band at optimiser-selected designs ------"
+echo "--- [5/5] Surrogate error band at optimiser-selected designs ------"
 $PY - <<'PYEOF'
 import json, os
 p = "reports/thermal_validation.json"
