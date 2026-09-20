@@ -1,0 +1,5 @@
+# 3DIC-X TEST FIXTURE -- emulates the FORMAT of a vendor export. Not vendor data, not measured, not field-solved.
+# Redhawk-style export, nominal vdd = 0.85 V
+net,voltage
+VDD_CORE,0.844900
+VDD_SRAM,0.846800

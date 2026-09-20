@@ -1,0 +1,7 @@
+# 3DIC-X TEST FIXTURE -- emulates the FORMAT of a vendor export. Not vendor data, not measured, not field-solved.
+# Voltus-Fi dynamic rail analysis -- nominal supply 0.85 V
+net,instance,node_voltage,ir_drop_mv
+VDD_CORE,SERDES_N_0,0.844900,5.100
+VDD_CORE,SERDES_S_3,0.845600,4.400
+VDD_SRAM,SRAM_BANK_7,0.846800,3.200
+VDDQ_SERDES,UCIE_W_1,0.847200,2.800

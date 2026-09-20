@@ -31,6 +31,19 @@ The tool utilizes a 2026-era hybrid intelligence stack:
 *   [**Technical Audit & Benchmarking**](reports/technical_audit_v5.md): Detailed comparison against Ansys Heatwave and industry-standard sign-off flows.
 *   [**EDA Vendor Integration Spec**](reports/eda_vendor_integration_spec.md): Hook architecture and interchange layer for handoff into Cadence, Synopsys, and Siemens flows.
 
+### 🔌 EDA Handoff (implemented)
+The `integrations/` package emits standard artifacts from the physics surrogates and reads vendor results back:
+
+```bash
+python -m integrations.cli status                       # design record + the 17 emit targets
+python -m integrations.cli emit --target neutral:all    # DEF/LEF, GDSII, SPEF, Liberty, Touchstone, IBIS, SPICE
+python -m integrations.cli emit --target cadence:celsius
+python -m integrations.cli correlate --thermal celsius_temperature.csv   # vendor result -> error band
+./regression_suite/run_interchange_qualification.sh     # T0 gate, no licenses needed
+```
+
+Artifacts land in `results/handoff/<run_id>/` with a manifest, SHA-256 per file, and a provenance header declaring whether the data behind them is `SURROGATE` or `SYNTHETIC`. Every claim is currently **T0** (emitted and independently parsed); `T1`/`T2` require licensed vendor tools. Calibration derived from our own output is refused by design — see spec section 10.
+
 ### 📖 Performance Documentation
 *   [**Design Evolution**](reports/design_evolution_story.md): The journey from initial failure to the lead 3DIC-X candidate.
 *   [**Technical Solution Recommendation**](reports/final_architectural_solution.md): Detailed breakdown of the recommended module configuration.

@@ -199,8 +199,10 @@ Same discipline. Emit `.lib` for hard macros only (SerDes PHY, UCIe PHY, SRAM st
 The credibility centerpiece for the 224G link work, and the place where the current code is weakest: `si_analyzer.py` computes total insertion loss from a dB-per-inch table (`FR4` 11.6, `Megtron_7` 3.5, `Twinax` 0.44). That is a budget calculator, not a channel model.
 
 Two-step plan:
-1. **Now (T0, synthetic)**: synthesize a causal, passive, reciprocal 4-port from the existing loss waterfall via a Djordjević-Sarkar dielectric model plus the CILD impedance already described in `GEMINI.md`. Frequency grid: DC → **80 GHz** (Nyquist for 224G PAM4 at 53.125 GBd is 26.56 GHz; carry ≥3rd harmonic), 10 MHz spacing minimum, DC point extrapolated not invented. Tag `fidelity: SYNTHETIC`. Enforce with `scikit-rf`: passivity, causality (Kramers-Kronig residual), reciprocity, and a real, positive DC resistance.
+1. **Now (T0, synthetic)**: synthesize a causal, passive, reciprocal 4-port from the existing loss waterfall via a wideband-Debye (Djordjević-Sarkar) dielectric model plus the CILD impedance already described in `GEMINI.md`. Frequency grid: DC → **≥2× Nyquist**. 224 Gbps PAM4 is ~112 GBd, so Nyquist is ~56 GHz and the grid runs DC → 112 GHz at 0.25 GHz spacing; the DC point is computed from the conductor's DC resistance, not extrapolated. Tag `fidelity: SYNTHETIC`. Enforce passivity, causality, reciprocity, and a real, positive DC transmission.
 2. **Later (T2)**: replace with output from `physics_accelerated/src/maxwell_em_solver.py` once that solver is validated against a reference structure, or with vendor field-solver data. Only then may the file be described as a field-solved channel.
+
+Two constraints are easy to get wrong and are both enforced in code: for a symmetric 2-port the passivity bound is `|ρ + t| ≤ 1` (its eigenvalues are `ρ ± t`), **not** `|ρ|² + |t|² ≤ 1`; and a scalar-scaled `√f` loss term is not Kramers-Kronig consistent, so the phase must come from a minimum-phase construction plus the physical delay rather than from an ad-hoc `β`.
 
 Emit one `.s4p` per differential link and one `.s8p` per coupled victim/aggressor pair — crosstalk is a first-class output, not a scalar penalty. Port ordering must be declared in the header comment (`1,2 = TX P/N; 3,4 = RX P/N`); mismatched port order is the single most common cause of a downstream engineer getting garbage.
 
@@ -335,14 +337,14 @@ Ranked by effort-to-credibility within the vendor.
 
 These are fixes to existing code, not new hooks. Nothing in §3–§5 is credible until they are done.
 
-| ID | Item | Why it blocks |
-| :--- | :--- | :--- |
-| **P0-A** | Promote stackup from Markdown to `configs/stackup_3dic_x.json`; generate the `.md` from it. | Celsius, Sigrity, 3DSTACK, HyperLynx, 3DIC Compiler all need it machine-readable. |
-| **P0-B** | Split geometry from serialization in `gen_def.py`. | DEF and Tcl must come from one placement list or they will diverge. |
-| **P0-C** | Rewrite `netlist_exporter.py` to build topology from `DesignRecord`; remove the hardcoded 16-macro loop and the fake `/pdk/3nm_GAA/models.sp` include. | Blocks §3.4, §4.1, §4.3, §4.5. |
-| **P0-D** | Extend `rc_extractor.py` to per-net extraction. | Blocks SPEF (§2.4) and the StarRC correlation (§4.2). |
-| **P0-E** | Replace `gds_export.tcl` with a real writer. | Blocks GDS (§2.3) and therefore Calibre 3DSTACK (§5.1). |
-| **P0-F** | Add `fidelity` provenance to every existing report generator. | Required by §1.4 before anything leaves the repo. |
+| ID | Item | Status | Why it blocks |
+| :--- | :--- | :--- | :--- |
+| **P0-A** | Promote stackup from Markdown to machine-readable JSON. | **Partial** — `integrations/interchange/stackup.py` emits validated stackup JSON (units declared, unit-sanity checked) from the `DesignRecord`, but the *authored* source is still `configs/3dic_x_vector_deck.json` plus prose in `assembly_packaging_spec.md`. | Celsius, Sigrity, 3DSTACK, HyperLynx, 3DIC Compiler all need it machine-readable. |
+| **P0-B** | Split geometry from serialization in `gen_def.py`. | **Partial** — the placement model now lives in `integrations/canonical.derive_macros` and DEF/GDS/Tcl-equivalent numbers come from it (tested against the 10 µm snap grid and the `SERDES_N_0` origin). `gen_def.py` has not yet been switched over to consume it, so two copies of the geometry still exist. | DEF and Tcl must come from one placement list or they will diverge. |
+| **P0-C** | Rewrite `netlist_exporter.py` to build topology from `DesignRecord`. | **Superseded** — `integrations/interchange/spice_io.py` builds the deck from the record, drops the nonexistent `/pdk/3nm_GAA/models.sp` include, and is verified by running ngspice. `netlist_exporter.py` still exists unchanged and should be retired. | Blocks §3.4, §4.1, §4.3, §4.5. |
+| **P0-D** | Extend `rc_extractor.py` to per-net extraction. | **Partial** — `canonical.build_nets` distributes the class-level R/C across the nets 3DIC-X models, which is enough for a conserving SPEF, but it is a distribution of an analytic class value, not a real per-net extraction. `*DESIGN_FLOW "ANALYTIC_SURROGATE"` says so in every file. | Blocks a defensible SPEF (§2.4) and the StarRC correlation (§4.2). |
+| **P0-E** | Replace `gds_export.tcl` with a real writer. | **Done** — `integrations/interchange/gds_io.py` writes real GDSII records (1 nm DBU, BOUNDARY/SREF/STRANS, excess-64 reals) and reads them back; `gds_export.tcl` is now dead code. | Blocked GDS (§2.3) and Calibre 3DSTACK (§5.1). |
+| **P0-F** | Add `fidelity` provenance to every existing report generator. | **Partial** — every artifact emitted by `integrations/` carries the full provenance block (enforced by test), including a sidecar for GDSII. The pre-existing generators in `serdes_architect/scripts/` are untouched. | Required by §1.4 before anything leaves the repo. |
 
 ---
 
@@ -365,13 +367,16 @@ Rationale for the ordering: Phase 0 is the multiplier. Then take the cheapest T1
 ## 8. Definition of Done
 
 **Phase 0 (no licenses required — must be fully achievable in CI):**
-- [ ] `python -m integrations.cli emit --target neutral:all` produces a complete `results/handoff/<run_id>/` tree with a manifest and SHA-256 per file.
-- [ ] `regression_suite/run_interchange_qualification.sh` is green: every format round-trips through its open-source parser.
-- [ ] Every emitted file carries a §1.4 provenance header with an accurate `fidelity` field.
-- [ ] Touchstone files pass `scikit-rf` passivity, causality, and reciprocity checks; port ordering is documented in-file.
-- [ ] `.ibs` passes `ibischk7` with zero errors.
-- [ ] No Liberty timing arc is emitted without a characterized source or an explicit `uncharacterized` annotation.
-- [ ] Units declared and validated in every geometry artifact.
+- [x] `python -m integrations.cli emit --target neutral:all` produces a complete `results/handoff/<run_id>/` tree with a manifest and SHA-256 per file.
+- [x] `regression_suite/run_interchange_qualification.sh` is green: every format round-trips through an independent parser.
+- [x] Every emitted file carries a §1.4 provenance header with an accurate `fidelity` field (enforced by `test_every_text_artifact_carries_provenance`).
+- [x] Touchstone files pass passivity, causality, and reciprocity checks; port ordering is documented in-file.
+- [x] No Liberty timing arc is emitted without a characterized source (enforced by `test_rejects_injected_timing`).
+- [x] Units declared and validated in every geometry artifact; a mm/µm slip is rejected.
+- [x] The emitted SPICE deck executes in a real simulator (ngspice) and cannot show passive gain.
+- [ ] `.ibs` passes `ibischk7` with zero errors — **outstanding**: `ibischk7` is not installed here, so IBIS is structurally validated only.
+- [ ] GDSII verified by KLayout or gdstk — **outstanding**: neither is installed; the stream is checked by this repo's own independent reader.
+- [ ] IBIS-AMI `AMI_Init`/`AMI_GetWave` DLL built and returning a non-degenerate impulse response — **not started** (C work, budgeted separately in §2.7).
 
 **Per vendor hook:**
 - [ ] `emit()` runs with no vendor tool installed; `validate()` passes.
@@ -390,3 +395,56 @@ This spec adds **handoff**, not authority. Even at full implementation with all 
 - No 3DIC-X output may be used for tape-out or fabrication without independent validation in a certified flow.
 
 The `README.md` disclaimer stands unchanged. Vendor hooks make the transition to certified flows *real and automated* — that is the whole claim, and it is a sufficient one.
+
+---
+
+## 10. Implementation Status (as built)
+
+Phase 0 and the hook scaffolding for all three vendors are implemented and tested. Every claim below is T0: artifacts are emitted and independently parsed, with no vendor license involved.
+
+```
+integrations/
+  base.py           VendorHook / HookResult / Finding, registry, provenance, manifests
+  canonical.py      DesignRecord + loaders (golden_config.json, vector deck, reports)
+  correlate.py      vendor-vs-surrogate error bands + calibration feedback
+  cli.py            status | emit | ingest | correlate | roundtrip
+  interchange/      stackup, def_io, lef_io, gds_io, spef_io, liberty_io,
+                    touchstone_io, ibis_io, spice_io      (writer + reader each)
+  vendors/          neutral (9 hooks), cadence (3), synopsys (3), siemens (2)
+  importers/        vendor_results.py (thermal, IR, SPEF, Touchstone, DEF)
+tests/integrations/ 79 tests, unittest, no external deps beyond numpy
+```
+
+**17 registered targets, all emitting clean:** `neutral:{stackup,lef,def,gds,spef,liberty,touchstone,ibis,spice}`, `cadence:{celsius,voltus_fi,sigrity_edb}`, `synopsys:{primesim,starrc,primewave}`, `siemens:{calibre_3dstack,hyperlynx}`.
+
+### What the tests actually prove
+
+| Claim | How it is verified |
+| :--- | :--- |
+| DEF round-trips exactly | 32 placements compared origin-by-origin; moved macro and changed DBU are both detected |
+| GDSII is real GDSII | record walk reaches `ENDLIB` with even-length records; excess-64 real codec round-trips; bbox equals `DIEAREA`; SREF count equals placed macros |
+| SPEF conserves | `sum(*RES)` and `sum(*CAP)` equal the net totals; a tampered segment is caught |
+| Liberty fabricates nothing | zero timing groups; an injected `cell_rise` table fails the validator |
+| Touchstone is physical | passivity (max singular value ≤ 1), reciprocity (‖S−Sᵀ‖ = 0), real positive DC, pre-cursor energy < 0.03% across 5 link configurations |
+| Touchstone agrees with the surrogate | IL at Nyquist matches the `si_analyzer.py` budget for every material |
+| The SPICE deck runs | ngspice completes; RX swing is positive and never exceeds TX; Twinax > Megtron-7 > FR4 in surviving swing |
+| Power maps conserve power | every die's tiles sum to its declared wattage exactly |
+| The di/dt profile is legal | max slope ≤ the declared 450 A/ns |
+| The 3D stack is contiguous | z-extents chain from 0 to 875 µm with no gap; every interface references a real die |
+| Correlation math is right | a 1.4 dB injected channel offset and a 1.15× parasitic offset are recovered exactly |
+| Self-validation is impossible | our own artifacts and all fixtures are detected and downgraded to T0; calibration from them is refused |
+
+### The return path
+
+`python -m integrations.cli correlate --thermal <celsius.csv> --ir <voltus.csv> --spef <starrc.spef> --sparam <field_solved.s4p>` reads vendor exports, publishes the error band against the surrogate in `reports/correlation/`, and writes `configs/surrogate_calibration.json` for the physics side to consume.
+
+The calibration file carries a `trustworthy` flag. It is false whenever any input was produced by this repo or by a test fixture, and `load_calibration()` returns nothing in that case — so a surrogate can never be "corrected" by its own output. Only a genuine third-party vendor file earns T2 and moves a prediction.
+
+### Still outstanding
+
+* **Licensed tiers (T1/T2).** Every vendor hook emits and self-checks, but none has been loaded by its tool. The driver scripts are written to be run unmodified by a licensee.
+* **External parsers.** `ibischk7`, KLayout/gdstk and OpenROAD are not installed here; IBIS and GDSII are validated structurally by this repo's own readers. Installing them is cheap and would harden the T0 claim.
+* **IBIS-AMI DLL.** `.ibs` and `.ami` are emitted with `GetWave_Exists = False`, which is the honest declaration while no shared library ships.
+* **Sigrity/EDB.** EDB is a database, so `build_edb.py` scripts against PyEDB rather than emitting a file; it needs a Cadence install to do anything.
+* **Legacy exporters.** `netlist_exporter.py`, `gds_export.tcl` and `gen_def.py` still hold duplicate or dead logic (see P0-B/C/E). Retiring them is follow-up work, not new capability.
+

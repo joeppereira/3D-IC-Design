@@ -56,3 +56,10 @@ python3 ../agent/graph_orchestrator.py
 
 echo "✅ v3.1 Architectural Pass Complete. Post-Layout parasitics integrated into status checklist."
 cd ..
+
+# 6. PHASE 5: EDA HANDOFF (vendor-neutral interchange)
+echo "🔌 [Phase 5] Emitting vendor-neutral interchange artifacts..."
+python3 -m integrations.cli emit --target neutral:all --golden "physics_accelerated/results/golden_config.json"
+echo "   -> results/handoff/<run_id>/  (DEF/LEF, GDSII, SPEF, Liberty, Touchstone, IBIS, SPICE)"
+echo "   Vendor decks:  python3 -m integrations.cli emit --target cadence:celsius"
+echo "   Results back:  python3 -m integrations.cli correlate --thermal <celsius_export>.csv"
