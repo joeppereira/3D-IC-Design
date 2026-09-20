@@ -6,12 +6,12 @@ def generate_checklist(config_path):
     with open(config_path, 'r') as f:
         config = json.load(f)
         
-    name = config.get('project_name', 'Search King')
+    name = config.get('project_name', '3DIC-X')
     pkg = config.get('packaging', {})
-    si = config.get('si_analysis_v3', {})
-    ir = config.get('ir_drop_signoff', {})
-    sec = config.get('security_signoff', {})
-    transient = config.get('transient_thermal_signoff', {})
+    si = config.get('si_verification', {})
+    ir = config.get('ir_drop_verification', {})
+    sec = config.get('security_verification', {})
+    transient = config.get('transient_thermal_verification', {})
     
     die0 = config['die_hierarchy']['die_0']['size_mm']
     die1 = config['die_hierarchy']['die_1']['size_mm']
@@ -35,7 +35,7 @@ def generate_checklist(config_path):
 
     report = []
     report.append(f"# 📋 Architectural Verification Checklist: {name}")
-    report.append(f"**Verification Status**: {'✅ QUALIFIED' if ir.get('droop_percentage', 100) < 5.0 and si.get('eye_width_ui', 0) > 0.20 else '❌ FAILED'}")
+    report.append(f"**Verification Status**: {'✅ VERIFIED' if ir.get('droop_percentage', 100) < 5.0 and si.get('eye_width_ui', 0) > 0.20 else '❌ FAILED'}")
     report.append(f"**Tool Version**: V3.1 (Checklist Mode) | **Technology**: 3nm GAA\n")
 
     report.append("## 🏗️ 1. Geometry & Area Verification")

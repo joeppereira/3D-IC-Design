@@ -1,6 +1,6 @@
 # 🕒 Clocking Specification & Jitter Budget (v1.0)
 
-This document defines the timing architecture and jitter allocation for the Search King 1TB CXL Switch.
+This document defines the timing architecture and jitter allocation for the 3DIC-X 1TB CXL Switch.
 
 ## 1. Clock Distribution Architecture
 The design utilizes a **Global H-Tree Topology** to ensure uniform phase alignment across the $18 \times 18\text{ mm}$ die.

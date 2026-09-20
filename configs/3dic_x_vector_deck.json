@@ -1,0 +1,43 @@
+{
+  "design_id": "SearchKing_v5.3_PRO",
+  "logical_structure": {
+    "logic_cells_count": 4.2e9,
+    "toggle_rate_vcd_proxy": 0.28,
+    "power_domains": ["VDD_CORE", "VDD_SRAM", "VDDQ_SERDES"],
+    "upf_spec": "Dual-rail isolation with power-gating"
+  },
+  "physical_vectors": {
+    "bump_grid": {
+      "pitch_um": 40.0,
+      "total_count": 12400,
+      "signal_to_power_ratio": "1:3"
+    },
+    "tsv_structure": {
+      "diameter_um": 2.0,
+      "liner_material": "TaN/Ta",
+      "aspect_ratio": "10:1"
+    },
+    "die_thickness_vectors": {
+      "dram_module_um": 30.0,
+      "kv_search_die_um": 50.0,
+      "logic_core_um": 50.0,
+      "power_base_die_um": 775.0
+    }
+  },
+  "electrical_noise_deck": {
+    "serdes_jitter_decomposition_ps": {
+      "random_jitter": 0.12,
+      "deterministic_jitter": 0.45,
+      "isi_budget": 0.8
+    },
+    "pdn_noise_mv": {
+      "ripple_target": 15.0,
+      "di_dt_event_max_amps_per_ns": 450.0
+    }
+  },
+  "thermal_boundary_conditions": {
+    "heatsink_case_temp_c": 45.0,
+    "liquid_flow_rate_lpm": 1.5,
+    "tim_thickness_um": 25.0
+  }
+}

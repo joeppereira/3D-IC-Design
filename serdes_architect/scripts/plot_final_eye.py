@@ -7,9 +7,9 @@ def plot_eye(config_path, output_path):
     with open(config_path, 'r') as f:
         config = json.load(f)
         
-    res = config.get('si_analysis_v3', {})
+    res = config.get('si_verification', {})
     if not res:
-        print("No SI V3 results found.")
+        print("No SI verification results found.")
         return
 
     eye_width = res.get('eye_width_ui', 0.0)
@@ -40,7 +40,7 @@ def plot_eye(config_path, output_path):
         plt.plot(t, y_bot, color=colors[i%3], alpha=0.8)
         plt.fill_between(t, y_top, y_bot, color=colors[i%3], alpha=0.1)
 
-    plt.title(f"Final Sign-off: 224G {mod} (Flyover) - {status}\nEye Width: {eye_width:.3f} UI")
+    plt.title(f"Architectural Eye Pass: 224G {mod} (Flyover) - {status}\nEye Width: {eye_width:.3f} UI")
     plt.xlabel("UI")
     plt.ylabel("Voltage (V)")
     plt.grid(True)

@@ -1,5 +1,5 @@
 # 🏗️ OpenROAD 3D-IC P&R Script (v1.0)
-# Target: Search King 1TB CXL Switch
+# Target: 3DIC-X 1TB CXL Switch
 
 puts "🚀 Initializing Physical Synthesis Flow..."
 

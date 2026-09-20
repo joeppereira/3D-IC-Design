@@ -5,7 +5,7 @@ def generate_summary(config_path):
     with open(config_path, 'r') as f:
         config = json.load(f)
         
-    name = config.get('project_name', 'Search King')
+    name = config.get('project_name', '3DIC-X')
     pkg = config.get('packaging', {})
     si = config.get('si_analysis_v3', {})
     

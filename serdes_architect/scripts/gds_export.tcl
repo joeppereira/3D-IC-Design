@@ -1,14 +1,14 @@
 # 📦 GDSII Stream-out Script (v1.0)
-# Project: Search King 1TB CXL Switch
+# Project: 3DIC-X 1TB CXL Switch
 
 puts "🚀 Initializing GDSII Stream-out..."
 
 # 1. Load the Physical Database
-# read_db "results/search_king_final.odb"
+# read_db "results/3dic_x_final.odb"
 
 # 2. Merge Abstract LEF with Manufacturing GDS
 # In a real flow: 
-# stream_out "results/search_king_tapeout.gds" \
+# stream_out "results/3dic_x_tapeout.gds" \
 #    -library "pdk/generic_3nm.gds" \
 #    -macros "pdk/macros.gds"
 
@@ -24,5 +24,5 @@ puts "  [LVS] Verifying Layout vs Schematic..."
 # check_lvs -report_file "reports/final_lvs.rpt"
 
 # 4. Stream-out
-puts "✅ GDSII Export Complete: results/search_king_tapeout.gds"
+puts "✅ GDSII Export Complete: results/3dic_x_tapeout.gds"
 puts "📦 Tape-out package finalized for Foundry ingestion."

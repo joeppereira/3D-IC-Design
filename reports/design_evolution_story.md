@@ -1,4 +1,4 @@
-# 🧬 The Evolution of Search King: From Failure to SOTA
+# 🧬 The Evolution of 3DIC-X: From Failure to SOTA
 This is the story of how the 1TB CXL Switch design evolved from a standard engineering failure into a world-class AI Switch using **Physics-Aware AI**.
 
 ---

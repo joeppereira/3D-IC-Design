@@ -14,7 +14,7 @@ echo "[2/5] Running Baseline CXL Switch SoP (Mitigated)..."
 ./run_full_cycle.sh configs/cxl_switch_sop_mitigated.json > regression_suite/baseline_run.log 2>&1
 
 # 3. Capture and Compare
-echo "[3/5] Comparing measurements against Baseline v1.0..."
+echo "[3/5] Comparing measurements against Architectural Baseline v1.0..."
 python3 <<EOF
 import json
 import sys
@@ -24,7 +24,7 @@ with open('regression_suite/v1.0_baseline.json') as f:
 with open('physics_accelerated/results/golden_config.json') as f:
     current = json.load(f)
 
-res = current.get('si_analysis_v3', {})
+res = current.get('si_verification', {})
 temp = current.get('floorplan', {}).get('estimated_max_temp', 0)
 eye = res.get('eye_width_ui', 0)
 
@@ -38,9 +38,9 @@ t_max = baseline['qualification_thresholds']['thermal_max_c']
 e_min = baseline['qualification_thresholds']['min_eye_margin_ui']
 
 if temp <= t_max and eye >= e_min:
-    print('✅ QUALIFIED: System meets v1.0 thresholds.')
+    print('✅ VERIFIED: System meets v1.0 architectural thresholds.')
 else:
-    print('❌ FAILED: System violates v1.0 thresholds.')
+    print('❌ FAILED: System violates v1.0 architectural thresholds.')
     sys.exit(1)
 EOF
 
@@ -52,4 +52,4 @@ python3 serdes_architect/scripts/generate_sensitivity_report.py > /dev/null
 echo "[5/5] Checking Pareto Visualization Stability..."
 python3 serdes_architect/src/pareto_visualizer.py > /dev/null
 
-echo "🏁 Regression Suite v1.0: PASSED"
+echo "🏁 Architectural Verification: PASSED"

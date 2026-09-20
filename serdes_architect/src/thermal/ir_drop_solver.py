@@ -61,5 +61,5 @@ if __name__ == "__main__":
     print(f"📊 Power Integrity Audit: Droop={res['droop_percentage']}% | Status={res['status']}")
     
     with open(args.config, 'r') as f: config = json.load(f)
-    config['ir_drop_signoff'] = res
+    config['ir_drop_verification'] = res
     with open(args.config, 'w') as f: json.dump(config, f, indent=2)

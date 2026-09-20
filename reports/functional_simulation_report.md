@@ -1,5 +1,5 @@
 # 📟 Functional Simulation Report (v1.0)
-**Project**: Search King 1TB CXL Switch | **Verification Status**: ✅ PASSED
+**Project**: 3DIC-X 1TB CXL Switch | **Verification Status**: ✅ PASSED
 
 This report documents the logical correctness of the CXL PBR Manager and the 3D-SRAM lookup interface.
 

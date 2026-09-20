@@ -1,4 +1,4 @@
-# 🧪 Manufacturing Test Plan: Search King 1TB CXL Switch
+# 🧪 Manufacturing Test Plan: 3DIC-X 1TB CXL Switch
 
 ## 1. DFT Strategy
 *   **Scan Chains**: 12,000 internal chains per die to ensure >99.2% stuck-at coverage.

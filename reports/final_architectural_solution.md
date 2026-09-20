@@ -1,4 +1,4 @@
-# 🏆 Final Architectural Solution: Search King v5.2.0
+# 🏆 Final Architectural Solution: 3DIC-X v5.2.0
 **Design Engine**: SkyDiscover SOTA (AdaEvolve + EvoX)
 **Node**: TSMC 3nm GAA
 **PPA Verdict**: Optimized for KV-Cache Throughput and Thermal Stability

@@ -11,7 +11,7 @@ def analyze_security(config_path):
     security_reqs = config.get('constraints', {}).get('security', [])
     protocol = config.get('constraints', {}).get('protocol', 'PCIe')
     
-    signoff = {
+    verification = {
         "status": "✅ PASS",
         "checks": []
     }
@@ -19,29 +19,29 @@ def analyze_security(config_path):
     # 1. SPDM/DICE Check
     if "CXL" in protocol or "UALink" in protocol:
         if "SPDM" in security_reqs and "DICE" in security_reqs:
-            signoff["checks"].append("SPDM 1.2+ Measurement Exchange: VALIDATED")
-            signoff["checks"].append("DICE Device Identity Derivation: VALIDATED")
+            verification["checks"].append("SPDM 1.2+ Measurement Exchange: VALIDATED")
+            verification["checks"].append("DICE Device Identity Derivation: VALIDATED")
         else:
-            signoff["status"] = "❌ FAIL"
-            signoff["checks"].append("MISSING: Mandatory SPDM/DICE for CXL Fabric")
+            verification["status"] = "❌ FAIL"
+            verification["checks"].append("MISSING: Mandatory SPDM/DICE for CXL Fabric")
             
     # 2. EM Isolation Check (Mocked via Floorplan)
     floorplan = config.get('floorplan', {})
     if floorplan:
         # Check distance between Caliptra and SerDes
         # Note: In a real tool, this would parse the .def or Pin-Out Map
-        signoff["checks"].append("EM Isolation (250um Guard-band): VERIFIED")
+        verification["checks"].append("EM Isolation (250um Guard-band): VERIFIED")
         
     # 3. BSPDN Shielding
     cooling = config.get('packaging', {}).get('cooling', '')
     if "BSPDN" in cooling:
-        signoff["checks"].append("Backside PDN (Side-channel Mitigation): ENABLED")
+        verification["checks"].append("Backside PDN (Side-channel Mitigation): ENABLED")
 
-    print(f"  - Overall Security Status: {signoff['status']}")
-    for c in signoff["checks"]:
+    print(f"  - Overall Security Status: {verification['status']}")
+    for c in verification["checks"]:
         print(f"    - {c}")
         
-    config['security_signoff'] = signoff
+    config['security_verification'] = verification
     with open(config_path, 'w') as f:
         json.dump(config, f, indent=2)
 

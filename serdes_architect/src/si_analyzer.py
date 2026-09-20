@@ -62,7 +62,7 @@ def analyze_eye_margin(total_loss, mod="PAM4"):
     # Eye Height (mV) - Start with 800mV, drops with IL
     eye_height = 800.0 * (10 ** (-total_loss / 20.0))
     
-    print(f"\n🔍 Sign-off Metrics (Target >0.45 UI, >40mV):")
+    print(f"\n🔍 Architectural Pass Metrics (Target >0.45 UI, >40mV):")
     print(f"  Eye Width:  {ui_margin:.3f} UI")
     print(f"  Eye Height: {eye_height:.1f} mV")
     
@@ -71,7 +71,7 @@ def analyze_eye_margin(total_loss, mod="PAM4"):
     elif ui_margin < 0.45:
         print("  ⚠️ WARNING: Marginal SI. Consider Inner FEC.")
     else:
-        print("  ✅ PASSED: Design within 2026 Sign-off margins.")
+        print("  ✅ PASSED: Design within 2026 Architectural margins.")
         
     return ui_margin, eye_height
 
@@ -88,7 +88,7 @@ def run_analysis(args):
     margin_ui, height_mv = analyze_eye_margin(il_total, config.get('constraints', {}).get('modulation', 'PAM4'))
     
     # Save Results
-    config['si_signoff'] = {
+    config['si_verification'] = {
         'total_insertion_loss_db': il_total,
         'eye_width_ui': margin_ui,
         'eye_height_mv': height_mv
@@ -96,7 +96,7 @@ def run_analysis(args):
     
     with open(args.config, 'w') as f:
         json.dump(config, f, indent=2)
-    print("\n✅ Sign-off report appended to golden_config.json")
+    print("\n✅ Architectural Verification report appended to golden_config.json")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

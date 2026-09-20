@@ -30,7 +30,7 @@ def generate_sensitivity():
             
         f.write("\n## 💡 Key Architectural Takeaway\n")
         max_lever = correlations.abs().idxmax().replace('_', ' ').title()
-        f.write(f"For this project, **{max_lever}** was the dominant factor in achieving sign-off. Optimizing this variable first will yield the fastest convergence in future iterations.")
+        f.write(f"For this project, **{max_lever}** was the dominant factor in achieving architectural convergence. Optimizing this variable first will yield the fastest convergence in future iterations.")
 
     print("✅ Sensitivity analysis saved to reports/sensitivity_analysis.md")
 

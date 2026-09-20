@@ -1,4 +1,4 @@
-# 🏗️ Detailed Architectural Specification: Search King 1TB CXL Switch
+# 🏗️ Detailed Architectural Specification: 3DIC-X 1TB CXL Switch
 
 ## 1. Functional Block Breakdown (3nm GAA)
 The CXL Switch Logic die contains the following mission-critical IP blocks:

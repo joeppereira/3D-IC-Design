@@ -1,9 +1,9 @@
 #!/bin/bash
-# 3D IC Designer Orchestrator v3.1 (Architectural Qualification)
+# 3D IC Designer Orchestrator v3.1 (Architectural Verification)
 set -e 
 
 SPEC_FILE=${1:-"configs/cxl_switch_sop_v4.json"}
-echo "🚀 Initializing v3.1 Silicon Architect (Qualification Flow): $SPEC_FILE"
+echo "🚀 Initializing v3.1 Silicon Architect (Architectural Pass Flow): $SPEC_FILE"
 
 # 1. RTL & SPEC PRE-FLIGHT
 python3 serdes_architect/scripts/rtl_analyzer.py --config $SPEC_FILE
@@ -47,12 +47,12 @@ python3 src/thermal/ir_drop_solver.py --config $GOLDEN
 python3 src/security_analyzer.py --config $GOLDEN
 python3 src/thermal/transient_solver.py --config $GOLDEN
 
-# Comprehensive Silicon & Package Sign-off Dossier (Industry Standard)
+# Comprehensive Silicon & Package Architectural Verification Dossier
 python3 scripts/generate_design_checklist.py --config $GOLDEN
 
 # --- HYBRID AGENTIC GRAPH GATE (Milestone #15) ---
-echo "🛡️  [Graph] Verifying Qualification Gate..."
+echo "🛡️  [Graph] Verifying Architectural Pass Gate..."
 python3 ../agent/graph_orchestrator.py
 
-echo "✅ v3.1 Qualification Complete. Post-Layout parasitics integrated into status checklist."
+echo "✅ v3.1 Architectural Pass Complete. Post-Layout parasitics integrated into status checklist."
 cd ..

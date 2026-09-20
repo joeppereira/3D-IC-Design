@@ -1,4 +1,4 @@
-// 🚀 Search King CXL 3.1 PBR Manager
+// 🚀 3DIC-X CXL 3.1 PBR Manager
 // Function: Routes CXL flits between Host, SRAM Tags, and DRAM Pool.
 
 module cxl_pbr_manager (

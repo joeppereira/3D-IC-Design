@@ -85,7 +85,7 @@ if __name__ == "__main__":
             
         # Write to config
         with open(args.config, 'r') as f: config = json.load(f)
-        config['transient_thermal_signoff'] = {
+        config['transient_thermal_verification'] = {
             "peak_burst_temp": T_final.max().item(),
             "duration_ms": 10,
             "status": "PASS" if T_final.max().item() <= 105.0 else "FAIL"

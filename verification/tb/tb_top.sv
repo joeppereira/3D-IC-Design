@@ -1,4 +1,4 @@
-// 🚀 Search King Top Testbench
+// 🚀 3DIC-X Top Testbench
 // Function: Verifies the "Request-to-Return" logic cycle.
 
 module tb_top;

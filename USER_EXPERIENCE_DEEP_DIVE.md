@@ -6,7 +6,7 @@ This document demonstrates the full range of possibilities when using the **Auto
 
 ## 1. The Scope: What can the Agent build?
 The system is not limited to one design. It can autonomously architect any high-speed Data Center component:
-*   **AI Inference Switches**: 3D-stacked SRAM + CXL Logic (The "Search King").
+*   **AI Inference Switches**: 3D-stacked SRAM + CXL Logic (The "3DIC-X").
 *   **High-Speed Retimers**: PCIe 7.0 / 224G signal restorers for 1-meter reaches.
 *   **Memory Hubs**: CXL Type-3 expanders managing 1TB+ LPDDR5X/6 pools.
 *   **Security RoT**: Integrated Caliptra/SPDM identity modules for confidential computing.

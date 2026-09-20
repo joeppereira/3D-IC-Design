@@ -1,4 +1,4 @@
-# 📄 Full SoC Architecture Specification: Search King (v1.0)
+# 📄 Full SoC Architecture Specification: 3DIC-X (v1.0)
 **Project**: 1000 GB CXL 3.1 AI-Inference Switch SoP
 **Technology**: TSMC 3nm GAA (N3P)
 **Package**: 3D Heterogeneous System-on-Package (SoP)
@@ -6,7 +6,7 @@
 ---
 
 ## 1. System Overview
-The Search King is a high-bandwidth, low-latency memory orchestrator designed to solve the "Memory Wall" in Large Language Model (LLM) inference. It provides a unified 1TB DRAM pool with a 3D-stacked "Metadata Fast-Path" for zero-latency KV-cache lookups.
+The 3DIC-X is a high-bandwidth, low-latency memory orchestrator designed to solve the "Memory Wall" in Large Language Model (LLM) inference. It provides a unified 1TB DRAM pool with a 3D-stacked "Metadata Fast-Path" for zero-latency KV-cache lookups.
 
 ## 2. Die Hierarchy & Physical Geometry
 The system consists of a 10-die assembly integrated via 2.5D and 3D technologies.
