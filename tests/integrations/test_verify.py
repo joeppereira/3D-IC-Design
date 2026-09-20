@@ -40,7 +40,7 @@ def clean_record(tmp: Path) -> DesignRecord:
         nets=[Net("LINK_0_TX_P", "serdes_diff", r_ohm=150.0, c_pf=12.0,
                   length_um=300000.0)],
         predictions=Predictions(tj_peak_c=98.5, droop_mv=4.0, eye_margin_ui=0.62,
-                                insertion_loss_db=il),
+                                insertion_loss_db=il, channel_loss_db=il),
         sources={"golden_config": str(golden), "vector_deck": str(deck)},
     )
 
@@ -105,16 +105,32 @@ class TestChecks(unittest.TestCase):
         self.assertEqual([], self.errors(V.check_channel_agreement(self.design)))
 
     def test_disagreeing_channel_fires(self):
-        self.design.predictions.insertion_loss_db = 67.03
+        self.design.predictions.channel_loss_db = 67.03
         errs = self.errors(V.check_channel_agreement(self.design))
         self.assertTrue(any(e.check == "il_model_disagreement" for e in errs), errs)
         self.assertIn("dB", errs[0].message)
 
+    def test_total_budget_is_not_compared_against_a_channel_only_sparam(self):
+        """Comparing a full link budget to a channel-only .s4p is apples to
+        oranges; the gate must say so rather than report a false disagreement."""
+        self.design.predictions.channel_loss_db = None
+        self.design.predictions.insertion_loss_db = 12.96
+        findings = V.check_channel_agreement(self.design)
+        self.assertEqual([], self.errors(findings))
+        self.assertTrue(any(f.check == "il_comparison_scope" for f in findings), findings)
+
+    def test_channel_component_is_preferred_when_present(self):
+        self.design.predictions.insertion_loss_db = 12.96    # total budget
+        findings = V.check_channel_agreement(self.design)
+        self.assertEqual([], self.errors(findings))
+        self.assertTrue(any(f.check == "il_budget" for f in findings), findings)
+
     def test_small_disagreement_tolerated(self):
-        self.design.predictions.insertion_loss_db += V.IL_DISAGREEMENT_DB * 0.5
+        self.design.predictions.channel_loss_db += V.IL_DISAGREEMENT_DB * 0.5
         self.assertEqual([], self.errors(V.check_channel_agreement(self.design)))
 
     def test_no_prediction_is_not_an_error(self):
+        self.design.predictions.channel_loss_db = None
         self.design.predictions.insertion_loss_db = None
         self.assertEqual([], V.check_channel_agreement(self.design))
 

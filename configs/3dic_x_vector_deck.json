@@ -1,9 +1,13 @@
 {
-  "design_id": "SearchKing_v5.3_PRO",
+  "design_id": "3DIC_X_v5.7.5",
   "logical_structure": {
-    "logic_cells_count": 4.2e9,
+    "logic_cells_count": 4200000000.0,
     "toggle_rate_vcd_proxy": 0.28,
-    "power_domains": ["VDD_CORE", "VDD_SRAM", "VDDQ_SERDES"],
+    "power_domains": [
+      "VDD_CORE",
+      "VDD_SRAM",
+      "VDDQ_SERDES"
+    ],
     "upf_spec": "Dual-rail isolation with power-gating"
   },
   "physical_vectors": {

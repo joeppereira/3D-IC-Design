@@ -7,11 +7,14 @@ import sys
 
 # --- Material Sensitivity Logic ---
 # Reach Multiplier: (35 dB loss distance)
-MATERIALS = {
-    "FR4": {"loss_per_inch": 11.6, "multiplier": 1.0},
-    "Megtron_7": {"loss_per_inch": 3.5, "multiplier": 3.3},
-    "Twinax": {"loss_per_inch": 0.44, "multiplier": 26.0}
-}
+import os as _os
+sys.path.insert(0, _os.path.dirname(_os.path.abspath(__file__)))
+import materials as M
+
+# Reach multiplier relative to FR4 at the 35 dB loss point.
+MATERIALS = {k: {"loss_per_inch": v["loss_per_inch"],
+                 "multiplier": M.MATERIALS["FR4"]["loss_per_inch"] / v["loss_per_inch"]}
+             for k, v in M.MATERIALS.items()}
 
 def calculate_loss_waterfall(reach_mm, material_name="Megtron_7", xtk_iso_db=30, temp_avg=25.0):
     """
@@ -25,7 +28,7 @@ def calculate_loss_waterfall(reach_mm, material_name="Megtron_7", xtk_iso_db=30,
     # 2. PCB Trace Loss
     # reach_mm -> inches
     dist_inch = reach_mm / 25.4
-    loss_per_inch = MATERIALS.get(material_name, MATERIALS["FR4"])["loss_per_inch"]
+    loss_per_inch = MATERIALS[M.resolve_or_default(material_name)[0]]["loss_per_inch"]
     trace_loss = dist_inch * loss_per_inch
     
     # 3. Connector Pair Loss

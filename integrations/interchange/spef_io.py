@@ -18,10 +18,23 @@ RES_TOL = 1e-6
 CAP_TOL = 1e-6
 
 
+def _split(total: float, parts: int) -> list[float]:
+    """Split `total` into `parts` values that sum to it exactly at 6 decimals.
+
+    Writing total/parts rounded independently leaves a residual (4 x 0.727931 =
+    2.911724 against a 2.911725 header). The residual goes into the last term so
+    sum(*RES) and sum(*CAP) match the header bit for bit.
+    """
+    each = round(total / parts, 6)
+    vals = [each] * parts
+    vals[-1] = round(total - each * (parts - 1), 6)
+    return vals
+
+
 def _net_lines(net: Net) -> list[str]:
-    c_ff = net.c_pf * 1000.0
-    seg_r = net.r_ohm / SEGMENTS
-    node_c = c_ff / (SEGMENTS + 1)
+    c_ff = round(net.c_pf * 1000.0, 6)
+    seg_r = _split(net.r_ohm, SEGMENTS)
+    node_c = _split(c_ff, SEGMENTS + 1)
     L = [f"*D_NET {net.name} {c_ff:.6f}", "*CONN"]
     for idx, pin in enumerate(net.pins):
         if ":" in pin or "/" in pin:
@@ -30,11 +43,11 @@ def _net_lines(net: Net) -> list[str]:
         else:
             L.append(f"*P {pin} {'I' if idx else 'O'}")
     L.append("*CAP")
-    for i in range(SEGMENTS + 1):
-        L.append(f"{i + 1} {net.name}:{i + 1} {node_c:.6f}")
+    for i, c in enumerate(node_c):
+        L.append(f"{i + 1} {net.name}:{i + 1} {c:.6f}")
     L.append("*RES")
-    for i in range(SEGMENTS):
-        L.append(f"{i + 1} {net.name}:{i + 1} {net.name}:{i + 2} {seg_r:.6f}")
+    for i, r in enumerate(seg_r):
+        L.append(f"{i + 1} {net.name}:{i + 1} {net.name}:{i + 2} {r:.6f}")
     L.append("*END")
     return L
 
@@ -93,10 +106,10 @@ def validate(doc: dict, design: DesignRecord) -> list[Finding]:
         if got is None:
             out.append(Finding(SEV_ERROR, "spef_net", f"{net.name} missing from SPEF"))
             continue
-        if abs(got["sum_r_ohm"] - net.r_ohm) > max(RES_TOL, net.r_ohm * 1e-9):
+        if abs(got["sum_r_ohm"] - round(net.r_ohm, 6)) > RES_TOL:
             out.append(Finding(SEV_ERROR, "spef_res",
                                f"{net.name} sum(R)={got['sum_r_ohm']} != {net.r_ohm}"))
-        if abs(got["sum_c_ff"] - net.c_pf * 1000.0) > max(CAP_TOL, net.c_pf):
+        if abs(got["sum_c_ff"] - round(net.c_pf * 1000.0, 6)) > CAP_TOL:
             out.append(Finding(SEV_ERROR, "spef_cap",
                                f"{net.name} sum(C)={got['sum_c_ff']}fF != header "
                                f"{net.c_pf * 1000.0}fF"))

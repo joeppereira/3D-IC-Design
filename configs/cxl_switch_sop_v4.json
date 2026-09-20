@@ -1,5 +1,5 @@
 {
-  "project_name": "CXL_Switch_SoP_1TB_V4_PowerStacked",
+  "project_name": "3DIC_X_1TB_CXL_Module",
   "target_bandwidth_gbps": 224.0,
   "max_power_budget_w": 60.0,
   "io_efficiency_pjb": 6.5,

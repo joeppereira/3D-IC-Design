@@ -140,11 +140,13 @@ class TestCorrelation(unittest.TestCase):
         """Fixture R/C are 1.15x ours, so our error is -13.04% everywhere."""
         c = corr.parasitics(self.design, vr.read_starrc_spef(FIX / "starrc_golden.spef"))
         self.assertEqual(c.detail["matched_entries"], 2 * len(self.design.nets))
-        self.assertAlmostEqual(c.detail["mean_err_pct"], -13.0434782, places=5)
-        self.assertAlmostEqual(c.detail["max_abs_err_pct"], 13.0434782, places=5)
+        # places=3: the fixture stores R/C at 6 decimals, so on sub-ohm channel
+        # resistances the recovered percentage is only meaningful to ~1e-4 %.
+        self.assertAlmostEqual(c.detail["mean_err_pct"], -13.0434782, places=3)
+        self.assertAlmostEqual(c.detail["max_abs_err_pct"], 13.0434782, places=3)
         self.assertEqual(c.verdict, "PASS")
         for scale in c.calibration["rc_scale_by_class"].values():
-            self.assertAlmostEqual(scale, 1.15, places=6)
+            self.assertAlmostEqual(scale, 1.15, places=5)
 
     def test_parasitic_large_error_is_flagged(self):
         vendor = vr.read_starrc_spef(FIX / "starrc_golden.spef")

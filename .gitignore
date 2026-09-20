@@ -7,3 +7,6 @@ data/
 results/
 reports/correlation/
 configs/surrogate_calibration.json
+node_modules/
+web/dist/
+web/.vite/

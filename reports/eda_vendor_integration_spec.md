@@ -412,7 +412,8 @@ integrations/
                     touchstone_io, ibis_io, spice_io      (writer + reader each)
   vendors/          neutral (9 hooks), cadence (3), synopsys (3), siemens (2)
   importers/        vendor_results.py (thermal, IR, SPEF, Touchstone, DEF)
-tests/integrations/ 79 tests, unittest, no external deps beyond numpy
+tests/integrations/ 121 tests, unittest; gdstk + scikit-rf + ngspice used as
+                    external validators when present
 ```
 
 **17 registered targets, all emitting clean:** `neutral:{stackup,lef,def,gds,spef,liberty,touchstone,ibis,spice}`, `cadence:{celsius,voltus_fi,sigrity_edb}`, `synopsys:{primesim,starrc,primewave}`, `siemens:{calibre_3dstack,hyperlynx}`.
@@ -436,29 +437,44 @@ tests/integrations/ 79 tests, unittest, no external deps beyond numpy
 
 ### Verification: two independent gates
 
-Format correctness and design consistency are different questions, so they are separate gates.
-
 | Gate | Command | What it proves | Status |
 | :--- | :--- | :--- | :--- |
-| **T0 format** | `regression_suite/run_interchange_qualification.sh` stages 1-4 | every artifact is well-formed and reads back through an independent parser; Touchstone is passive/causal/reciprocal; the SPICE deck executes in ngspice | **PASSING** (107 tests) |
-| **Cross-consistency** | `python -m integrations.cli verify` | the numbers *inside* the artifacts agree with the silicon flow that produced them | **FAILING** — 6 errors, 3 warnings |
+| **T0 format** | `regression_suite/run_interchange_qualification.sh` stages 1-4 | artifacts are well-formed, read back correctly, are mathematically valid, and the SPICE deck executes | **PASSING** (121 tests) |
+| **Cross-consistency** | `python -m integrations.cli verify` | the numbers *inside* the artifacts agree with the silicon flow that produced them | **1 error remaining** (was 6) |
 
-A deck can be perfectly well-formed and still describe a design nobody ran. The second gate exists because the first cannot see that.
+### What "validated" means, per format
 
-### Known inconsistencies in the source data (as of 2026-09-20)
+Round-trip tests prove our writer and our reader agree. If both share a misreading of the format spec, they agree and are both wrong. Only an independently-written implementation closes that gap:
 
-`verify` currently reports six errors. None of them are defects in the interchange layer — they are pre-existing disagreements in the silicon flow's own outputs, now made visible:
+| Format | External validator | Status |
+| :--- | :--- | :--- |
+| **GDSII** | `gdstk` (independent C++ implementation) | ✅ units, cell hierarchy, bounding box, all 32 SREF origins, and the TSV/bond/keep-out layers verified |
+| **Touchstone** | `scikit-rf` | ✅ parses identically (max ΔS < 1e-9), and agrees the network is passive and reciprocal |
+| **SPICE** | `ngspice` | ✅ deck simulates; RX swing positive, never exceeds TX; loss ordering Twinax > Megtron-7 > FR4 |
+| **DEF / LEF / SPEF / Liberty** | OpenROAD, PrimeTime | ❌ **not installed — self-validated only** |
+| **IBIS** | `ibischk7` | ❌ **not installed — structural checks only** |
 
-1. **`golden_config.json` is 197 days stale.** Dated 2026-03-06, while the reports and the vector deck are from 2026-09-19. Every emitted artifact therefore describes the pre-rename design.
-2. **Project identity mismatch.** The golden config says `CXL_Switch_SoP_1TB_V4_PowerStacked`; the vector deck says `SearchKing_v5.3_PRO`; the reports say 3DIC-X v5.7.5. Three names for what is meant to be one design.
-3. **The flow's own SI verdict is a failure.** `si_analysis_v3.status` is `FAIL` with `eye_width_ui = 0.0` and `snr_margin_db = -28.98`. The README and `3dic_x_final_eye.png` present the 224G link as proven.
-4. **Two incompatible loss models, 61.8 dB apart.** `si_analyzer_v3.py` derives "insertion loss" from a *DC resistive divider* — `20·log10((100 + R_m7)/100)` with `R_m7 = 112.5 kΩ` — giving 61.03 dB + 6 dB package tax = 67.03 dB. The material tables give 0.44 dB/inch for the Flyover/twinax channel, i.e. 5.20 dB over 300 mm. The first number is not an insertion loss at all.
-5. **Root cause of (3) and (4): `rc_extractor.py` applies on-die M7 geometry to a 300 mm reach.** 112.5 kΩ over 300 mm is 47 Ω/mm; a controlled-impedance link is 0.1-1 Ω/mm — roughly two orders of magnitude out. The closed eye is an artifact of this, not a physical result.
-6. **The stackup is missing the DRAM layer.** `assembly_packaging_spec.md` documents four layers including a 30 µm DRAM stack; `golden_config.json` has three dies. A thermal solver would see a different stack than the spec describes.
+`test_external_parsers.py` asserts this coverage list explicitly, so removing a validator fails a test rather than silently weakening the claim.
 
-Warnings: `Flyover` is absent from `si_analyzer.py`'s material table (silent fallback to a default dielectric); the same laminate is spelled both `Megtron7` and `Megtron_7`; and the spec and golden config use different names for the same three dies.
+**A real defect this found.** Our passivity check was `σ_max(S) ≤ 1 + ε`. scikit-rf rejected the network anyway. The cause: clamping reflection to exactly `1-|t|` produced `|ρ|+|t| = 1.000000000000` below ~1 GHz — a *lossless* channel whose dissipation matrix `I − Sᴴ·S` is singular (min eigenvalue 4.8e-17). Mathematically passive, physically wrong, and numerically fragile. Fixed by giving the reflection 1% headroom; the check is now the minimum eigenvalue of the dissipation matrix, which is strictly stronger than both the old σ_max test and scikit-rf's own element-wise one.
 
-**Fix the source data, not the emitters.** The priority order is (5) → (3)(4) → (1)(2) → (6): correct the channel resistance model, which should reopen the eye and collapse the two loss models into one, then re-run the silicon flow so the golden config matches the documented design.
+### Source-data defects: fixed and remaining
+
+`verify` reported 6 errors and 3 warnings when first run. Five errors and two warnings are now fixed:
+
+| Defect | Fix |
+| :--- | :--- |
+| `rc_extractor.py` applied on-die M7 geometry to a 300 mm reach → 112.5 kΩ (47 Ω/mm) | Two-scale model: on-die thick-metal escape (22.5 Ω over 1500 µm) **plus** an off-die channel conductor (0.79 Ω over 300 mm, 0.003 Ω/mm), with a plausibility guard that rejects the original error class |
+| `si_analyzer_v3.py` derived "insertion loss" from a DC divider: `20·log10((100+112500)/100) + 6 = 67.03 dB` | Loss now comes from the channel material, with the escape entering as the series resistance it actually is. Emits an auditable `loss_breakdown_db` |
+| SI verdict `FAIL`, `eye_width_ui = 0.0` | Eye reopened: **PASS**, 0.70 UI, 12.96 dB budget = 5.20 channel + 1.76 escape + 6.0 package |
+| Two loss models 61.8 dB apart | Now agree to **0.000 dB** (5.197 vs 5.197) — the interchange layer and the SI analyser share one material table |
+| Nyquist computed as bitrate/2 (`112 GHz` for 224G PAM4) | Modulation-aware: 224 Gbps PAM4 → 112 GBd → **56 GHz** |
+| `Megtron7` vs `Megtron_7`, `Flyover` missing from a table | One source of truth in `serdes_architect/src/materials.py`; unknown materials now raise instead of silently defaulting |
+| `golden_config.json` 197 days stale; three names for one design | Re-run through the Phase-4 scripts; identity unified on `3DIC_X_1TB_CXL_Module` |
+
+**Remaining (1 error):** `assembly_packaging_spec.md` documents a 30 µm DRAM stack; `golden_config.json` has three dies and no memory die at all. For a design whose headline is a *1 TB CXL memory module*, that is a substantive gap — either the spec or the die hierarchy is wrong. It needs a design decision, not a code fix, so it is left failing rather than papered over.
+
+Two further bugs were found while fixing the above, both caught by the tests rather than by inspection: the SPEF writer's per-segment rounding left a 1e-6 Ω residual against its own header (invisible while resistances were 14 kΩ, exposed once they became realistic), and the verifier was comparing a full link budget against a channel-only S-parameter. Both fixed.
 
 ### The return path
 

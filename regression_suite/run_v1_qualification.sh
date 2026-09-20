@@ -24,9 +24,27 @@ with open('regression_suite/v1.0_baseline.json') as f:
 with open('physics_accelerated/results/golden_config.json') as f:
     current = json.load(f)
 
-res = current.get('si_verification', {})
-temp = current.get('floorplan', {}).get('estimated_max_temp', 0)
-eye = res.get('eye_width_ui', 0)
+# The SI result key is 'si_analysis_v3'. This read 'si_verification', which
+# has never existed in golden_config.json, so res was always {} and eye was
+# always the 0 default -- the gate compared nothing and failed on a constant.
+# Missing keys are now a hard error rather than a silent default.
+SI_KEY = 'si_analysis_v3'
+if SI_KEY not in current:
+    print(f'❌ FAILED: golden_config.json has no {SI_KEY!r}. '
+          f'Present keys: {sorted(current)}')
+    sys.exit(1)
+res = current[SI_KEY]
+if 'eye_width_ui' not in res:
+    print(f'❌ FAILED: {SI_KEY} has no eye_width_ui: {res}')
+    sys.exit(1)
+
+floorplan = current.get('floorplan', {})
+if 'estimated_max_temp' not in floorplan:
+    print('❌ FAILED: golden_config.json has no floorplan.estimated_max_temp')
+    sys.exit(1)
+temp = floorplan['estimated_max_temp']
+eye = res['eye_width_ui']
+print(f"  - SI status: {res.get('status', 'n/a')}")
 
 b_temp = baseline['measurements']['thermal_peak_c']
 b_eye = baseline['measurements']['eye_margin_ui']

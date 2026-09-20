@@ -14,12 +14,31 @@ from typing import Any
 
 from .base import (REPO_ROOT, FIDELITY_SURROGATE, FIDELITY_SYNTHETIC)
 
-# Loss tables mirrored from serdes_architect/src/si_analyzer.py (heuristic ->
-# anything derived from these is FIDELITY_SYNTHETIC).
-MATERIAL_LOSS_DB_PER_INCH = {"FR4": 11.6, "Megtron_7": 3.5, "Twinax": 0.44, "Flyover": 0.44}
-# Relative permittivity / loss tangent at 1 GHz for the synthetic channel model.
-MATERIAL_DK_DF = {"FR4": (4.3, 0.020), "Megtron_7": (3.4, 0.002),
-                  "Twinax": (2.1, 0.0005), "Flyover": (2.1, 0.0005)}
+# Channel properties come from serdes_architect/src/materials.py so the
+# interchange layer and the SI analysers cannot drift apart. Loaded by path
+# because serdes_architect is not an importable package.
+def _load_materials():
+    import importlib.util
+    spec = importlib.util.spec_from_file_location(
+        "_sa_materials", REPO_ROOT / "serdes_architect/src/materials.py")
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
+try:
+    _M = _load_materials()
+    MATERIAL_LOSS_DB_PER_INCH = {k: v["loss_per_inch"] for k, v in _M.MATERIALS.items()}
+    MATERIAL_DK_DF = {k: (v["dk"], v["df"]) for k, v in _M.MATERIALS.items()}
+    resolve_material = _M.resolve_or_default
+except Exception:                      # keep the layer usable standalone
+    _M = None
+    MATERIAL_LOSS_DB_PER_INCH = {"FR4": 11.6, "Megtron_7": 3.5, "Twinax": 0.44}
+    MATERIAL_DK_DF = {"FR4": (4.3, 0.020), "Megtron_7": (3.4, 0.002),
+                      "Twinax": (2.1, 0.0005)}
+    def resolve_material(name):
+        return (name if name in MATERIAL_LOSS_DB_PER_INCH else "Megtron_7",
+                name in MATERIAL_LOSS_DB_PER_INCH)
 
 
 @dataclass
@@ -111,7 +130,8 @@ class Predictions:
     droop_pct: float | None = None
     droop_mv: float | None = None
     eye_margin_ui: float | None = None
-    insertion_loss_db: float | None = None
+    insertion_loss_db: float | None = None      # total link budget
+    channel_loss_db: float | None = None        # channel only -- what a .s4p models
     source: str = "surrogate"
 
 
@@ -286,7 +306,7 @@ def load_design(golden: Path | str | None = None,
     cons = g.get("constraints", {})
     links = [Link(name=f"LINK_{i}", rate_gbps=rate,
                   modulation=cons.get("modulation", "PAM4"),
-                  material=pkg.get("material_name", "Megtron_7"),
+                  material=resolve_material(pkg.get("material_name"))[0],
                   reach_mm=reach_mm, lanes=1,
                   rj_ps=float(jitter.get("random_jitter", 0.12)),
                   dj_ps=float(jitter.get("deterministic_jitter", 0.45)))
@@ -303,6 +323,9 @@ def load_design(golden: Path | str | None = None,
         droop_mv=(vdd - float(ir["min_voltage"])) * 1000.0 if "min_voltage" in ir else None,
         eye_margin_ui=float(si["eye_width_ui"]) if "eye_width_ui" in si else None,
         insertion_loss_db=float(si["loss"]) if "loss" in si else None,
+        channel_loss_db=(float(si["loss_breakdown_db"]["channel"])
+                         if isinstance(si.get("loss_breakdown_db"), dict)
+                         and "channel" in si["loss_breakdown_db"] else None),
         source="FNO/3D-FDM surrogate + analytic SI",
     )
 
@@ -336,8 +359,15 @@ def build_nets(rc: dict, reach_mm: float, n_links: int = 8) -> list[Net]:
     Deliberately NOT a full-chip extraction: a fabricated 4.2B-cell SPEF would
     be worse than no SPEF at all.
     """
-    r_sig = float(rc.get("m7_signal_r_ohm", 112500.0))
-    c_sig = float(rc.get("m7_signal_c_pf", 20.718))
+    # Prefer the two-scale extraction: the channel conductor, plus the on-die
+    # escape in series. Falls back to the legacy single key.
+    r_chan = rc.get("channel_r_ohm")
+    if r_chan is not None:
+        r_sig = float(r_chan) + float(rc.get("escape_r_ohm_diff", 0.0))
+        c_sig = float(rc.get("channel_c_pf", 0.0)) + float(rc.get("escape_c_pf", 0.0))
+    else:
+        r_sig = float(rc.get("m7_signal_r_ohm", 112500.0))
+        c_sig = float(rc.get("m7_signal_c_pf", 20.718))
     r_pdn = float(rc.get("m10_pdn_r_ohm", 4500.0))
     length_um = reach_mm * 1000.0
     nets: list[Net] = []

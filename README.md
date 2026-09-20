@@ -26,7 +26,7 @@ The tool utilizes a 2026-era hybrid intelligence stack:
 3DIC-X exploration is grounded in high-fidelity industrial engineering principles:
 
 *   [**Die Thinning & 3D Assembly**](reports/assembly_packaging_spec.md): Thinned 30µm/50µm silicon layers for thermal and TSV optimization.
-*   [**Mathematical Solvers (ROM/PINN)**](reports/rom_pinn_validation.md): POD-based Reduced Order Models and Physics-Informed Neural Networks for 95%+ accuracy.
+*   [**Mathematical Solvers (ROM/PINN)**](reports/rom_pinn_validation.md): ⚠️ Planned, not implemented — no POD, no physics-informed loss term, no FEA reference.
 *   [**Hierarchical Mesh Audit**](reports/mesh_convergence_audit.json): Variable 1µm/50nm mesh for Regions of Interest (ROI).
 *   [**Technical Audit & Benchmarking**](reports/technical_audit_v5.md): Detailed comparison against Ansys Heatwave and industry-standard sign-off flows.
 *   [**EDA Vendor Integration Spec**](reports/eda_vendor_integration_spec.md): Hook architecture and interchange layer for handoff into Cadence, Synopsys, and Siemens flows.
@@ -64,6 +64,6 @@ Artifacts land in `results/handoff/<run_id>/` with a manifest, SHA-256 per file,
 
 ## 🚀 Key Features
 *   **224G/112G SerDes Optimization**: AI-driven SI/PI trade-offs for Next-Gen Fabrics.
-*   **3D Thermal Surrogates**: 1.9M x speedup vs FEA with 98% accuracy on validated ROI.
-*   **Architecture Pareto Search**: Multi-objective GEPA search for Area vs. Power vs. Thermal.
+*   **3D Thermal Surrogates**: An FNO surrogate trained on this repo's own 16x16x5 finite-difference solver. Speed and accuracy figures are internal to that comparison — there is no FEA reference dataset ([status](reports/rom_pinn_validation.md)).
+*   **Architecture Search**: `gepa.py` samples random macro placements (50 per generation x 10) and ranks them by predicted peak temperature. It is a single-objective random search — there is no Pareto dominance, crossover, or selection in the loop despite the name.
 *   **Vector-Driven Design**: Ingestion of industrial trace files for real-world calibration.

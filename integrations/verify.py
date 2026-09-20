@@ -102,23 +102,42 @@ def check_channel_agreement(design: DesignRecord) -> list[Finding]:
     This is the check that catches a repo carrying two incompatible loss models.
     """
     out: list[Finding] = []
-    claimed = design.predictions.insertion_loss_db
+    preds = design.predictions
+    # A Touchstone file models the CHANNEL. si_analysis_v3.loss is the whole link
+    # budget (channel + on-die escape + package/connector), so comparing the two
+    # directly is an apples-to-oranges error. Prefer the channel component.
+    claimed = preds.channel_loss_db
+    quantity = "channel loss"
+    if claimed is None:
+        claimed, quantity = preds.insertion_loss_db, "total link budget"
     if claimed is None or not design.links:
         return out
     link = design.links[0]
-    freqs, s, _ = ts.synth_channel(link)
-    emitted = ts.il_at(freqs, s, link.nyquist_ghz)
+    freqs, s_mat, _ = ts.synth_channel(link)
+    emitted = ts.il_at(freqs, s_mat, link.nyquist_ghz)
     delta = claimed - emitted
+    if quantity == "total link budget":
+        out.append(Finding(SEV_WARN, "il_comparison_scope",
+                           "the silicon flow reports no channel-only loss term, so this "
+                           "compares a full link budget against a channel-only "
+                           "S-parameter; add loss_breakdown_db.channel to compare "
+                           "like with like"))
+        return out
     if abs(delta) > IL_DISAGREEMENT_DB:
         out.append(Finding(SEV_ERROR, "il_model_disagreement",
-                           f"the silicon flow reports {claimed:.2f} dB insertion loss "
+                           f"the silicon flow reports {claimed:.2f} dB {quantity} "
                            f"but the emitted channel for {link.name} is {emitted:.2f} dB "
                            f"at Nyquist ({link.nyquist_ghz:g} GHz) -- a {abs(delta):.1f} dB "
                            "disagreement between two models in the same repo"))
     else:
         out.append(Finding(SEV_INFO, "il_model_agreement",
-                           f"surrogate {claimed:.2f} dB vs emitted {emitted:.2f} dB "
-                           f"(delta {delta:+.2f} dB)"))
+                           f"{quantity}: surrogate {claimed:.3f} dB vs emitted channel "
+                           f"{emitted:.3f} dB (delta {delta:+.3f} dB)"))
+        if preds.insertion_loss_db is not None:
+            out.append(Finding(SEV_INFO, "il_budget",
+                               f"total link budget {preds.insertion_loss_db:.2f} dB = "
+                               f"channel {claimed:.2f} + escape/package "
+                               f"{preds.insertion_loss_db - claimed:.2f} dB"))
     return out
 
 

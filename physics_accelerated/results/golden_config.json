@@ -1,5 +1,5 @@
 {
-  "project_name": "CXL_Switch_SoP_1TB_V4_PowerStacked",
+  "project_name": "3DIC_X_1TB_CXL_Module",
   "target_bandwidth_gbps": 224.0,
   "max_power_budget_w": 60.0,
   "io_efficiency_pjb": 6.5,
@@ -83,17 +83,41 @@
     "internal_reach_mm": 0.0
   },
   "rc_extraction": {
-    "m7_signal_r_ohm": 112500.0,
-    "m7_signal_c_pf": 20.718,
-    "m10_pdn_r_ohm": 4500.0,
+    "model": "two-scale: on-die thick-metal escape + off-die channel",
+    "material": "Twinax",
+    "material_input": "Flyover",
+    "on_die_escape_um": 1500.0,
+    "escape_r_ohm_diff": 22.5,
+    "escape_c_pf": 0.0129,
+    "channel_length_mm": 300.0,
+    "channel_r_ohm": 0.7938,
+    "channel_c_pf": 14.5014,
+    "channel_ohm_per_mm": 0.00265,
+    "m10_pdn_r_ohm": 0.75,
+    "pdn_stripes_parallel": 360,
+    "m7_signal_r_ohm": 22.5,
+    "m7_signal_c_pf": 0.0129,
+    "plausibility": {
+      "ok": true,
+      "warnings": []
+    },
     "extraction_status": "\u2705 VERIFIED"
   },
   "si_analysis_v3": {
-    "loss": 67.03076781030654,
-    "vtf": 0.0,
-    "snr_margin_db": -28.984418005427386,
-    "eye_width_ui": 0.0,
-    "status": "\u274c FAIL"
+    "loss": 12.959572167711812,
+    "vtf": 0.225,
+    "snr_margin_db": 25.48171171800258,
+    "eye_width_ui": 0.7,
+    "status": "\u2705 PASS",
+    "loss_breakdown_db": {
+      "channel": 5.197,
+      "on_die_escape": 1.763,
+      "package_connector": 6.0,
+      "interface_xtk": -0.0
+    },
+    "material": "Twinax",
+    "baud_gbd": 112.0,
+    "nyquist_ghz": 56.0
   },
   "avs_optimized": true,
   "ir_drop_signoff": {
@@ -110,5 +134,11 @@
       "EM Isolation (250um Guard-band): VERIFIED",
       "Backside PDN (Side-channel Mitigation): ENABLED"
     ]
+  },
+  "ir_drop_verification": {
+    "min_voltage": 0.846,
+    "droop_percentage": 0.42,
+    "status": "\u2705 PASS",
+    "threshold": 5.0
   }
 }

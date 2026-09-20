@@ -16,7 +16,7 @@ The architecture converges by passing data through a "Handshake" of three specia
 ### Engine 3: SI V3 (Path FX-Proxy)
 *   **Input**: Temperature map and 224G Link Spec.
 *   **Logic**: Temperature-dependent copper loss extraction.
-*   **Output**: Eye Diagram UI Margin. Achieved 0.52 UI by minimizing thermal-induced loss.
+*   **Output**: Eye Diagram UI Margin. The link budget model reports 0.70 UI (saturated at the model's 0.70 ceiling) with a 12.96 dB budget: 5.20 dB channel + 1.76 dB on-die escape + 6.0 dB package/connector. This is a budget calculation, not a measured eye.
 
 ## 3. The Path to Vector-Driven Design (Hard Truths)
 The current v5.2.0 champion is based on **Architectural Abstractions**. To move to Foundry Sign-off, we must replace the simple JSON inputs with the **v5.3.0 Vector Deck**:
@@ -27,13 +27,14 @@ The current v5.2.0 champion is based on **Architectural Abstractions**. To move 
 
 ## 6. Industrial Tool Interoperability (v5.8.0)
 
-3DIC-X is now capable of ingesting intermediary inputs and outputs from the standard industrial stack to ensure exploratory alignment:
+**Status**: the *emit* direction is implemented and tested (see `reports/eda_vendor_integration_spec.md` §10). The *ingest* direction below is parser code without reference data — no vendor export has been ingested, because none exists in this repo.
 
 
 
-*   **Ansys Icepak Integration**: Reads `.csv` monitor point traces to calibrate the ROM/PINN 95% accuracy targets.
 
-*   **Cadence Spectre Integration**: Reads `.sp` sub-circuits as structural "In-Files," ensuring the 3DIC-X discovery respects existing logic blocks.
+*   **Ansys Icepak**: `industrial_ingestor.py` can parse a monitor-point CSV. No reference dataset is present, and there is no ROM/PINN to calibrate (see `reports/rom_pinn_validation.md`).
+
+*   **Cadence Spectre**: reads `.sp` sub-circuits as structural constraints. Untested against a real Spectre netlist.
 
 *   **Siemens/Calibre Bridge**: (Planned) Ingestion of DRC/LVS log files to act as "Hard Gating" for evolutionary candidates.
 

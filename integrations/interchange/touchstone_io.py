@@ -36,6 +36,12 @@ M1, M2 = 2 * math.pi * 1e3, 2 * math.pi * 1e12
 
 RHO_DIFF = 0.05      # differential return loss magnitude (~-26 dB)
 RHO_COMM = 0.10      # common-mode return loss
+# Leave headroom below the passivity boundary. Clamping reflection to exactly
+# 1-|t| produces |rho+t| == 1: mathematically passive but *lossless*, so the
+# dissipation matrix I - S^H.S is singular and any strict positive-definiteness
+# test (e.g. scikit-rf's is_passive) rejects it. 1% headroom keeps it strictly
+# passive at every frequency.
+PASSIVITY_MARGIN = 0.99
 DEFAULT_DF_GHZ = 0.25
 
 
@@ -120,8 +126,8 @@ def synth_channel(link: Link, freqs: np.ndarray | None = None) -> tuple[np.ndarr
 
     # Passivity for a symmetric 2-port S=[[r,t],[t,r]] requires |r+t| <= 1
     # (its eigenvalues are r+t and r-t), NOT |r|^2+|t|^2 <= 1.
-    rho_d = np.clip(np.minimum(RHO_DIFF, 1.0 - np.abs(t_diff)), 0.0, 1.0)
-    rho_c = np.clip(np.minimum(RHO_COMM, 1.0 - np.abs(t_comm)), 0.0, 1.0)
+    rho_d = np.clip(np.minimum(RHO_DIFF, PASSIVITY_MARGIN * (1.0 - np.abs(t_diff))), 0.0, 1.0)
+    rho_c = np.clip(np.minimum(RHO_COMM, PASSIVITY_MARGIN * (1.0 - np.abs(t_comm))), 0.0, 1.0)
 
     n = len(freqs)
     smm = np.zeros((n, 4, 4), dtype=complex)       # basis order: d1, c1, d2, c2
@@ -172,9 +178,17 @@ def il_at(freqs: np.ndarray, s: np.ndarray, f_ghz: float) -> float:
 
 
 # --- checks ------------------------------------------------------------------
-def check_passivity(s: np.ndarray, tol: float = 1e-9) -> tuple[bool, float]:
-    worst = float(max(np.linalg.svd(m, compute_uv=False)[0] for m in s))
-    return worst <= 1.0 + tol, worst
+def check_passivity(s: np.ndarray, tol: float = 0.0) -> tuple[bool, float]:
+    """Strict passivity: the dissipation matrix I - S^H.S must be positive
+    *definite*, not merely positive semi-definite.
+
+    sigma_max(S) <= 1 + eps accepts a marginally passive (lossless) network whose
+    dissipation matrix is singular; independent checkers reject those, so this
+    returns the minimum eigenvalue and requires it to be strictly above tol.
+    """
+    d = np.eye(s.shape[-1])[None, :, :] - np.einsum("nji,njk->nik", s.conj(), s)
+    min_eig = float(np.linalg.eigvalsh(d).min())
+    return min_eig > tol, min_eig
 
 
 def check_reciprocity(s: np.ndarray, tol: float = 1e-12) -> tuple[bool, float]:
@@ -271,9 +285,12 @@ def read(path: Path) -> tuple[np.ndarray, np.ndarray, dict]:
 def validate(freqs: np.ndarray, s: np.ndarray, link: Link,
              precursor_tol: float = 0.01, delay_s: float | None = None) -> list[Finding]:
     out: list[Finding] = []
-    passive, worst = check_passivity(s)
+    passive, min_eig = check_passivity(s)
+    sigma = float(max(np.linalg.svd(m, compute_uv=False)[0] for m in s))
     out.append(Finding(SEV_INFO if passive else SEV_ERROR, "passivity",
-                       f"max singular value {worst:.9f} {'<=' if passive else '>'} 1"))
+                       f"min eigenvalue of I - S^H.S = {min_eig:.3e} "
+                       f"({'strictly passive' if passive else 'NOT strictly passive'}), "
+                       f"sigma_max = {sigma:.9f}"))
     recip, err = check_reciprocity(s)
     out.append(Finding(SEV_INFO if recip else SEV_ERROR, "reciprocity",
                        f"max |S - S^T| = {err:.3e}"))
