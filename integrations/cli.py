@@ -20,6 +20,7 @@ from .base import (REPO_ROOT, HOOK_REGISTRY, resolve, run_id, git_sha,
                    fmt_findings, SEV_ERROR)
 from .canonical import load_design
 from . import correlate as corr
+from . import verify as verifier
 from .importers import vendor_results as vr
 from . import vendors  # noqa: F401  (registers every hook)
 
@@ -163,6 +164,40 @@ def cmd_roundtrip(args) -> int:
     return 1 if failures else 0
 
 
+def cmd_verify(args) -> int:
+    """Cross-consistency gate: do the artifacts agree with the silicon flow?"""
+    design = _design(args)
+    handoff = Path(args.handoff) if args.handoff else _latest_handoff()
+    if handoff:
+        print(f"handoff: {handoff}")
+    else:
+        print("handoff: none found (run 'emit' first for deck-level checks)")
+    findings = verifier.verify(design, handoff)
+    for sev in ("error", "warning", "info"):
+        rows = [f for f in findings if f.severity == sev]
+        if rows and (sev != "info" or args.verbose):
+            print()
+            for f in rows:
+                print(f)
+    s = verifier.summary(findings)
+    print(f"\n{s['errors']} error(s), {s['warnings']} warning(s), {s['info']} passing check(s)")
+    if s["ok"]:
+        print("CROSS-CONSISTENCY GATE: PASSED")
+        return 0
+    print("CROSS-CONSISTENCY GATE: FAILED -- the emitted artifacts contradict their "
+          "own source data.\nA deck that disagrees with the flow that produced it is "
+          "worse than no deck.")
+    return 1
+
+
+def _latest_handoff() -> Path | None:
+    if not HANDOFF.exists():
+        return None
+    runs = sorted((p for p in HANDOFF.iterdir() if p.is_dir()),
+                  key=lambda p: p.stat().st_mtime)
+    return runs[-1] if runs else None
+
+
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(prog="python -m integrations.cli",
                                 description=__doc__,
@@ -197,6 +232,10 @@ def build_parser() -> argparse.ArgumentParser:
 
     sub.add_parser("roundtrip", help="T0 gate: emit + validate everything"
                    ).set_defaults(func=cmd_roundtrip)
+
+    v = sub.add_parser("verify", help="cross-consistency gate vs the silicon flow")
+    v.add_argument("--handoff", help="handoff run directory (default: most recent)")
+    v.set_defaults(func=cmd_verify)
     return p
 
 

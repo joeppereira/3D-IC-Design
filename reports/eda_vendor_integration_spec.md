@@ -434,6 +434,32 @@ tests/integrations/ 79 tests, unittest, no external deps beyond numpy
 | Correlation math is right | a 1.4 dB injected channel offset and a 1.15× parasitic offset are recovered exactly |
 | Self-validation is impossible | our own artifacts and all fixtures are detected and downgraded to T0; calibration from them is refused |
 
+### Verification: two independent gates
+
+Format correctness and design consistency are different questions, so they are separate gates.
+
+| Gate | Command | What it proves | Status |
+| :--- | :--- | :--- | :--- |
+| **T0 format** | `regression_suite/run_interchange_qualification.sh` stages 1-4 | every artifact is well-formed and reads back through an independent parser; Touchstone is passive/causal/reciprocal; the SPICE deck executes in ngspice | **PASSING** (107 tests) |
+| **Cross-consistency** | `python -m integrations.cli verify` | the numbers *inside* the artifacts agree with the silicon flow that produced them | **FAILING** — 6 errors, 3 warnings |
+
+A deck can be perfectly well-formed and still describe a design nobody ran. The second gate exists because the first cannot see that.
+
+### Known inconsistencies in the source data (as of 2026-09-20)
+
+`verify` currently reports six errors. None of them are defects in the interchange layer — they are pre-existing disagreements in the silicon flow's own outputs, now made visible:
+
+1. **`golden_config.json` is 197 days stale.** Dated 2026-03-06, while the reports and the vector deck are from 2026-09-19. Every emitted artifact therefore describes the pre-rename design.
+2. **Project identity mismatch.** The golden config says `CXL_Switch_SoP_1TB_V4_PowerStacked`; the vector deck says `SearchKing_v5.3_PRO`; the reports say 3DIC-X v5.7.5. Three names for what is meant to be one design.
+3. **The flow's own SI verdict is a failure.** `si_analysis_v3.status` is `FAIL` with `eye_width_ui = 0.0` and `snr_margin_db = -28.98`. The README and `3dic_x_final_eye.png` present the 224G link as proven.
+4. **Two incompatible loss models, 61.8 dB apart.** `si_analyzer_v3.py` derives "insertion loss" from a *DC resistive divider* — `20·log10((100 + R_m7)/100)` with `R_m7 = 112.5 kΩ` — giving 61.03 dB + 6 dB package tax = 67.03 dB. The material tables give 0.44 dB/inch for the Flyover/twinax channel, i.e. 5.20 dB over 300 mm. The first number is not an insertion loss at all.
+5. **Root cause of (3) and (4): `rc_extractor.py` applies on-die M7 geometry to a 300 mm reach.** 112.5 kΩ over 300 mm is 47 Ω/mm; a controlled-impedance link is 0.1-1 Ω/mm — roughly two orders of magnitude out. The closed eye is an artifact of this, not a physical result.
+6. **The stackup is missing the DRAM layer.** `assembly_packaging_spec.md` documents four layers including a 30 µm DRAM stack; `golden_config.json` has three dies. A thermal solver would see a different stack than the spec describes.
+
+Warnings: `Flyover` is absent from `si_analyzer.py`'s material table (silent fallback to a default dielectric); the same laminate is spelled both `Megtron7` and `Megtron_7`; and the spec and golden config use different names for the same three dies.
+
+**Fix the source data, not the emitters.** The priority order is (5) → (3)(4) → (1)(2) → (6): correct the channel resistance model, which should reopen the eye and collapse the two loss models into one, then re-run the silicon flow so the golden config matches the documented design.
+
 ### The return path
 
 `python -m integrations.cli correlate --thermal <celsius.csv> --ir <voltus.csv> --spef <starrc.spef> --sparam <field_solved.s4p>` reads vendor exports, publishes the error band against the surrogate in `reports/correlation/`, and writes `configs/surrogate_calibration.json` for the physics side to consume.

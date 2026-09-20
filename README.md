@@ -39,10 +39,13 @@ python -m integrations.cli status                       # design record + the 17
 python -m integrations.cli emit --target neutral:all    # DEF/LEF, GDSII, SPEF, Liberty, Touchstone, IBIS, SPICE
 python -m integrations.cli emit --target cadence:celsius
 python -m integrations.cli correlate --thermal celsius_temperature.csv   # vendor result -> error band
-./regression_suite/run_interchange_qualification.sh     # T0 gate, no licenses needed
+python -m integrations.cli verify                       # cross-consistency vs the silicon flow
+./regression_suite/run_interchange_qualification.sh     # both gates, no licenses needed
 ```
 
-Artifacts land in `results/handoff/<run_id>/` with a manifest, SHA-256 per file, and a provenance header declaring whether the data behind them is `SURROGATE` or `SYNTHETIC`. Every claim is currently **T0** (emitted and independently parsed); `T1`/`T2` require licensed vendor tools. Calibration derived from our own output is refused by design — see spec section 10.
+Artifacts land in `results/handoff/<run_id>/` with a manifest, SHA-256 per file, and a provenance header declaring whether the data behind them is `SURROGATE` or `SYNTHETIC`. Every claim is currently **T0** (emitted and independently parsed); `T1`/`T2` require licensed vendor tools. Calibration derived from our own output is refused by design.
+
+⚠️ **The cross-consistency gate currently fails with 6 errors.** The artifacts are well-formed, but the silicon flow's own outputs disagree with each other — a stale golden config, two insertion-loss models 61.8 dB apart, and an SI verdict of `FAIL` behind a README that presents the link as proven. The defects are catalogued in [spec section 10](reports/eda_vendor_integration_spec.md); they live in the source data, not the interchange layer.
 
 ### 📖 Performance Documentation
 *   [**Design Evolution**](reports/design_evolution_story.md): The journey from initial failure to the lead 3DIC-X candidate.
