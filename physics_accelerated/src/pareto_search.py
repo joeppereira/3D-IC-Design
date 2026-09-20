@@ -1,0 +1,233 @@
+"""Multi-objective shattered-macro floorplan search over the thermal surrogate.
+
+The search variable is the placement of N logic sub-macros plus the memory
+block -- the "shattered macro" topology the project claims recovers thermal
+headroom. With 4 sub-macros that is a 10-dimensional problem, which is where
+dominance-based search starts to matter; an earlier 4-variable version was small
+enough that random sampling nearly matched NSGA-II.
+
+Three objectives that genuinely conflict:
+
+    logic peak Tj      minimise -- spreading the sub-macros cools the logic
+    memory peak Tj     minimise -- but heat dumped near the memory die hurts it,
+                                   and DRAM/SRAM has a far lower Tj limit
+    interconnect span  minimise -- spreading anything costs latency and energy
+
+An earlier objective set used thermal spread (max - mean), which turned out to be
+almost perfectly correlated with peak Tj -- a redundant objective that inflates
+the apparent front without adding information.
+"""
+from __future__ import annotations
+
+import argparse
+import csv
+import json
+import os
+import sys
+from pathlib import Path
+
+import numpy as np
+import torch
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from train import FNO2d                       # noqa: E402
+from pareto import nsga2, random_search, hypervolume, pareto_front  # noqa: E402
+
+GRID = 16
+BLOCK = 4                 # monolithic logic block footprint
+SUB = 2                   # shattered sub-macro footprint
+N_SUB = 4                 # number of logic sub-macros
+# Two objectives, deliberately. Logic peak and memory peak turned out to track
+# each other to within ~0.5 K, because a 5 um Cu-Cu bond at k=300 W/mK couples
+# the dies tightly -- a redundant objective inflates the front without adding
+# information. Memory dT is reported as a diagnostic, not optimised.
+OBJECTIVES = ("logic_peak_tj_c", "interconnect_span_cells")
+GENOME_KEYS = [f"{a}{i}" for i in range(N_SUB) for a in ("x", "y")] + ["mx", "my"]
+
+
+def load_surrogate(model_path: str, stats_path: str, layers: int = 5):
+    model = FNO2d(modes1=8, modes2=8, width=32, layers=layers)
+    model.load_state_dict(torch.load(model_path, map_location="cpu"))
+    model.eval()
+    stats = torch.load(stats_path, map_location="cpu")
+    return model, float(stats["mean"]), float(stats["std"])
+
+
+def build_power_maps(genomes: np.ndarray, logic_w: float, mem_w: float,
+                     layers: int = 5) -> torch.Tensor:
+    """Genome is (x,y) per logic sub-macro then (mx,my) for the memory block."""
+    n = len(genomes)
+    maps = torch.zeros((n, layers, GRID, GRID))
+    per_sub = logic_w / N_SUB
+    sub_cells = SUB * SUB
+    mem_cells = BLOCK * BLOCK
+    for i, g in enumerate(genomes):
+        for s_ in range(N_SUB):
+            x = int(np.clip(round(g[2 * s_]), 0, GRID - SUB))
+            y = int(np.clip(round(g[2 * s_ + 1]), 0, GRID - SUB))
+            maps[i, 0, y:y + SUB, x:x + SUB] += per_sub / sub_cells
+        mx = int(np.clip(round(g[2 * N_SUB]), 0, GRID - BLOCK))
+        my = int(np.clip(round(g[2 * N_SUB + 1]), 0, GRID - BLOCK))
+        maps[i, 1, my:my + BLOCK, mx:mx + BLOCK] = mem_w / mem_cells
+    return maps
+
+
+def monolithic_power_map(logic_w: float, mem_w: float, layers: int,
+                         lx: int, ly: int, mx: int, my: int) -> torch.Tensor:
+    """One solid logic block, for the shattered-vs-monolithic comparison."""
+    maps = torch.zeros((1, layers, GRID, GRID))
+    maps[0, 0, ly:ly + BLOCK, lx:lx + BLOCK] = logic_w / (BLOCK * BLOCK)
+    maps[0, 1, my:my + BLOCK, mx:mx + BLOCK] = mem_w / (BLOCK * BLOCK)
+    return maps
+
+
+def make_evaluator(model, mean, std, logic_w, mem_w, layers=5, counter=None):
+    def evaluate(genomes: np.ndarray) -> np.ndarray:
+        maps = build_power_maps(genomes, logic_w, mem_w, layers)
+        with torch.no_grad():
+            t = model(maps) * std + mean
+        logic_peak = t[:, 0].amax(dim=(1, 2)).numpy()
+        # Total interconnect: sub-macro spread plus the hop to the memory block.
+        span = []
+        for g in genomes:
+            pts = [(g[2 * s_], g[2 * s_ + 1]) for s_ in range(N_SUB)]
+            cx = sum(p[0] for p in pts) / N_SUB
+            cy = sum(p[1] for p in pts) / N_SUB
+            internal = sum(abs(p[0] - cx) + abs(p[1] - cy) for p in pts)
+            to_mem = abs(cx - g[2 * N_SUB]) + abs(cy - g[2 * N_SUB + 1])
+            span.append(internal + to_mem)
+        if counter is not None:
+            counter[0] += len(genomes)
+        return np.stack([logic_peak, np.asarray(span)], axis=1)
+    return evaluate
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--model", default="results/fno_model_lam0p1.pt")
+    ap.add_argument("--stats", default="results/norm_stats.pt")
+    ap.add_argument("--config", default="results/golden_config.json")
+    ap.add_argument("--pop", type=int, default=48)
+    ap.add_argument("--generations", type=int, default=60)
+    ap.add_argument("--seed", type=int, default=0)
+    ap.add_argument("--out", default="../reports")
+    args = ap.parse_args()
+
+    cfg = json.loads(Path(args.config).read_text())
+    total_w = float(cfg.get("max_power_budget_w", 60.0))
+    logic_w, mem_w = total_w * 0.75, total_w * 0.25
+    layers = int(cfg["voxel_stack_params"]["layers"])
+
+    model, mean, std = load_surrogate(args.model, args.stats, layers)
+    evaluate = make_evaluator(model, mean, std, logic_w, mem_w, layers)
+
+    n_vars = 2 * N_SUB + 2
+    lo = np.zeros(n_vars)
+    hi = np.concatenate([np.full(2 * N_SUB, GRID - SUB), np.full(2, GRID - BLOCK)])
+    # Reference point for hypervolume: a shared, pessimistic corner so both
+    # searches are measured on exactly the same box.
+    probe = evaluate(lo + np.random.default_rng(99).random((2000, n_vars)) * (hi - lo))
+    # Fixed box, shared by both searches and every generation.
+    reference = probe.max(axis=0) * 1.02
+    ideal = np.minimum(probe.min(axis=0) * 0.98, probe.min(axis=0) - 1e-9)
+
+    print(f"🔍 NSGA-II shattered-macro search: {N_SUB} logic sub-macros + memory, "
+          f"{n_vars} variables")
+    print(f"   power: {logic_w:.1f} W logic / {mem_w:.1f} W memory")
+    nsga = nsga2(evaluate, lo, hi, pop_size=args.pop,
+                 generations=args.generations, seed=args.seed,
+                 reference=reference, ideal=ideal)
+    rand = random_search(evaluate, lo, hi, evaluations=nsga.evaluations,
+                         seed=args.seed, reference=reference, ideal=ideal)
+
+    hv_n = hypervolume(nsga.objectives, reference, ideal)
+    hv_r = hypervolume(rand.objectives, reference, ideal)
+    print(f"  evaluations (both) : {nsga.evaluations}")
+    print(f"  NSGA-II hypervolume: {hv_n:.4f}   front size {len(nsga.front_index)}")
+    print(f"  random  hypervolume: {hv_r:.4f}   front size {len(rand.front_index)}")
+    print(f"  improvement        : {(hv_n / hv_r - 1) * 100:+.1f}%" if hv_r else "")
+    print(f"  HV first -> last gen: {nsga.history[0]:.4f} -> {nsga.history[-1]:.4f}")
+
+    front = nsga.front
+    order = np.argsort(front[:, 0])
+    print(f"\n  Pareto front ({len(front)} non-dominated designs), by peak Tj:")
+    print(f"    {'logic Tj':>9} {'span':>7}")
+    for row in front[order][:8]:
+        print(f"    {row[0]:9.2f} {row[1]:7.1f}")
+    if len(front) > 8:
+        print(f"    ... and {len(front) - 8} more")
+
+    # --- does shattering actually help? Same optimiser, same budget. -------
+    # The earlier version compared an NSGA-II-optimised shattered layout against
+    # a coarse grid scan of monolithic layouts with the memory block pinned,
+    # which is not a fair comparison.
+    def monolithic_eval(genomes):
+        maps = torch.zeros((len(genomes), layers, GRID, GRID))
+        for i, g in enumerate(genomes):
+            lx = int(np.clip(round(g[0]), 0, GRID - BLOCK))
+            ly = int(np.clip(round(g[1]), 0, GRID - BLOCK))
+            mx = int(np.clip(round(g[2]), 0, GRID - BLOCK))
+            my = int(np.clip(round(g[3]), 0, GRID - BLOCK))
+            maps[i, 0, ly:ly + BLOCK, lx:lx + BLOCK] = logic_w / (BLOCK * BLOCK)
+            maps[i, 1, my:my + BLOCK, mx:mx + BLOCK] = mem_w / (BLOCK * BLOCK)
+        with torch.no_grad():
+            t = model(maps) * std + mean
+        peak = t[:, 0].amax(dim=(1, 2)).numpy()
+        span = np.array([abs(g[0] - g[2]) + abs(g[1] - g[3]) for g in genomes])
+        return np.stack([peak, span], axis=1)
+
+    mono_lo, mono_hi = np.zeros(4), np.full(4, GRID - BLOCK)
+    mono = nsga2(monolithic_eval, mono_lo, mono_hi, pop_size=args.pop,
+                 generations=args.generations, seed=args.seed)
+    best_mono = float(mono.front[:, 0].min())
+    best_shattered = float(front[:, 0].min())
+    print(f"\n  Shattered vs monolithic logic, identical power and optimiser:")
+    print(f"    monolithic (1 x 4x4 block)  best logic peak Tj : {best_mono:8.2f} C")
+    print(f"    shattered  ({N_SUB} x {SUB}x{SUB} blocks) best logic peak Tj : "
+          f"{best_shattered:8.2f} C")
+    print(f"    headroom recovered by shattering : {best_mono - best_shattered:+.2f} C")
+    print(f"    (both {mono.evaluations} evaluations; same power density per cell)")
+
+    outdir = Path(args.out)
+    outdir.mkdir(parents=True, exist_ok=True)
+    doc = {
+        "method": "NSGA-II (non-dominated sorting + crowding, SBX, polynomial mutation)",
+        "objectives": list(OBJECTIVES),
+        "all_minimised": True,
+        "surrogate": args.model,
+        "evaluations": int(nsga.evaluations),
+        "population": args.pop,
+        "generations": args.generations,
+        "reference_point": reference.tolist(),
+        "hypervolume": {"nsga2": hv_n, "random_search": hv_r,
+                        "improvement_pct": (hv_n / hv_r - 1) * 100 if hv_r else None},
+        "hypervolume_history": nsga.history,
+        "front": [dict(zip(OBJECTIVES, map(float, row))) for row in front[order]],
+        # Key names must cover every variable: zipping against a 4-name tuple
+        # silently truncated a 10-variable genome, so the published front could
+        # not be reproduced from its own JSON.
+        "genome_keys": GENOME_KEYS,
+        "front_genomes": [dict(zip(GENOME_KEYS, map(float, g)))
+                          for g in nsga.genomes[nsga.front_index][order]],
+        "shattered_vs_monolithic": {
+            "best_monolithic_logic_peak_c": best_mono,
+            "best_shattered_logic_peak_c": best_shattered,
+            "headroom_recovered_c": best_mono - best_shattered,
+            "evaluations_each": int(mono.evaluations),
+            "method": "both optimised with NSGA-II at identical budget",
+        },
+        "note": ("Objectives are surrogate predictions. The surrogate's own error "
+                 "band against the grid-converged reference solver is published in "
+                 "reports/thermal_validation.json."),
+    }
+    (outdir / "pareto_front_nsga2.json").write_text(json.dumps(doc, indent=2) + "\n")
+    with open(outdir / "pareto_front_nsga2.csv", "w", newline="") as fh:
+        w = csv.writer(fh)
+        w.writerow(list(OBJECTIVES) + ["lx", "ly", "mx", "my"])
+        for row, g in zip(front[order], nsga.genomes[nsga.front_index][order]):
+            w.writerow([f"{v:.4f}" for v in row] + [int(round(x)) for x in g])
+    print(f"\n  wrote {outdir}/pareto_front_nsga2.json and .csv")
+
+
+if __name__ == "__main__":
+    main()

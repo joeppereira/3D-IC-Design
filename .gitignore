@@ -10,3 +10,6 @@ configs/surrogate_calibration.json
 node_modules/
 web/dist/
 web/.vite/
+
+# the design record is an input, not a build artifact
+!physics_accelerated/results/golden_config.json

@@ -52,10 +52,21 @@ agreement with a commercial tool.
 no crossover, no mutation, no selection. The ten "generations" are ten independent
 random batches.
 
-*Status: fixed.* `rom_pinn_validation.md` was rewritten as an explicit status-and-plan
-document stating that none of it is implemented and what it would take to make the
-claims true. The README now describes `gepa.py` as the random single-objective search
-it is.
+*Status: largely built.* Both gaps have since been closed with measured results
+(`reports/rom_pinn_validation.md`, `reports/multiobjective_search.md`):
+
+* A grid-converged **reference solver** now exists, verified to **1.04e-9 °C** against
+  analytic 1D conduction and **8.4e-12** on global energy balance, giving the project's
+  first defensible peak-Tj number: **83.87 °C** (GCI 0.081%).
+* The **physics residual** is implemented, making this a physics-informed neural
+  *operator* (PINO). At λ = 0.1 it cuts field RMSE 22% (2.604 → 2.031 K) and the PDE
+  residual 59% (0.343 → 0.140 K) against the data-only baseline.
+* **NSGA-II** replaces the random search, verified on ZDT1 to 0.0037 mean distance from
+  the analytic front, beating random sampling at equal budget (hypervolume 0.951 vs
+  0.881, front size 48 vs 20).
+
+POD/ROM and any *vendor* correlation remain not implemented, and are still described
+that way.
 
 ### 2.2 The same quantity had four different values
 
@@ -202,8 +213,10 @@ comparing a full link budget against a channel-only S-parameter.
    dies, none of them DRAM. Either the spec or the die hierarchy is wrong. This is a
    design decision, not a code fix, so the cross-consistency gate is left failing on it
    rather than having it papered over.
-2. **One authoritative thermal number.** §2.2 is only partly resolved; peak Tj still
-   needs a single source that the documents quote rather than restate.
+2. **One authoritative thermal number.** Now available — **83.87 °C** grid-converged
+   from the reference solver — but the older 98.5 °C literal still appears in
+   `final_design_audit.json` and downstream reports, which should quote the measured
+   value instead of restating the literal.
 3. **`.git` is 222 MB.** Untracking `node_modules` stops the growth but does not shrink
    history. A rewrite would, at the cost of breaking existing clones.
 4. **Legacy duplicates.** `netlist_exporter.py`, `gds_export.tcl` and `gen_def.py` hold
@@ -216,6 +229,24 @@ comparing a full link budget against a channel-only S-parameter.
 
 ## 6. What this project can defensibly claim today
 
+Two further defects were found while building the physics verification, both of the
+same family as the original units error:
+
+* `Hybrid_Bond` was missing from `k_map`, so the 5 µm Cu-Cu bond was modelled at the
+  fall-through default of **1.0 W/mK** instead of ~300 — a near-insulator in the most
+  important path of a 3D stack. Correcting it lowered peak Tj by **6.02 °C**, which is
+  the same magnitude as the project's claimed "6.5 °C headroom from shattered macros";
+  that claim cannot be separated from modelling error without a controlled comparison.
+  The solver now raises rather than defaulting.
+* `data_gen.py` capped the label solve at 200 iterations — about 4% of the way to
+  convergence on the corrected solver. Labels peaked at **36.28 °C** where the converged
+  answer is **57.11 °C**, so the network trained on fields 21 °C too cold.
+
+And one that matters for how the results are used: the surrogate's error at
+**optimiser-selected** designs is +8.45 / +11.45 / +40.17 K against a
+training-distribution RMSE of 2.03 K, always over-predicting. The Pareto front is
+sound for *ranking*; absolute temperatures must be re-solved on the reference.
+
 **Can claim** — each is falsifiable by cloning and running:
 
 * A vendor-neutral EDA interchange layer (DEF/LEF, GDSII, SPEF, Liberty, Touchstone,
@@ -223,17 +254,23 @@ comparing a full link budget against a channel-only S-parameter.
   against independently-written parsers and a real circuit simulator.
 * A cross-consistency gate that compares emitted decks against the design flow's own
   outputs, which found six defects on first run.
-* An FNO thermal surrogate of an internal finite-difference solver, and a floorplan
-  generator whose geometry is sound enough that the DEF and GDSII emitters build
-  directly on it.
+* A thermal reference solver verified against analytic conduction and grid convergence,
+  a finite-difference solver that agrees with it to 0.0036 °C, a physics-informed neural
+  operator that improves both field RMSE and PDE residual over a data-only baseline, and
+  NSGA-II verified against a problem with a known analytic front.
+* A measured error band for the surrogate at the designs an optimiser selects — which is
+  the number that governs whether its output can be quoted.
 
 **Cannot claim yet** — and each has a specific blocker:
 
 | Claim | Blocker |
 | :--- | :--- |
-| FEA-correlated accuracy or speedup | No reference dataset. Needs a licensed thermal solver run. |
-| Pareto / multi-objective search | No dominance logic in the loop. |
-| Physics-informed neural network | No residual term in the loss. |
+| ~~Pareto / multi-objective search~~ | ✅ **Closed** — NSGA-II, verified on ZDT1. |
+| ~~Physics-informed training~~ | ✅ **Closed** — heat-equation residual in the loss (PINO). |
+| ~~A defensible peak-Tj number~~ | ✅ **Closed** — 83.87 °C, grid-converged, GCI 0.081%. |
+| Reduced-order model (POD) | Not implemented. The reference solver makes it possible; the modal projection does not exist. |
+| *Vendor*-correlated accuracy ("Ansys-correlated") | No licensed tool has run. The correct phrase is "grid-converged finite-element reference". |
+| Any speedup figure | Only internal ratios exist — this mesh, this hardware, this repo's own solver. |
 | "Validated in Cadence / Synopsys / Siemens" | No vendor tool has opened an artifact. |
 
 The gap between these two lists is the honest measure of the project's current depth.

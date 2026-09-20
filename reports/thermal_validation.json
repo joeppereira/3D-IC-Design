@@ -1,0 +1,54 @@
+{
+  "reference_solver": {
+    "module": "physics_accelerated/src/thermal_reference.py",
+    "method": "finite volume, harmonic-mean face conductance, Robin BCs, direct sparse solve",
+    "verified_against": "analytic 1D slab (1e-9 C) and global energy balance (8e-12 relative)"
+  },
+  "surrogate": "results/fno_model_lam0p1.pt (FNO + heat-equation residual)",
+  "designs": [
+    {
+      "design": "front_coolest",
+      "surrogate_peak_c": 86.0619888305664,
+      "fdm_same_mesh_peak_c": 78.05713653564453,
+      "reference_same_mesh_peak_c": 78.0571678378672,
+      "reference_refined_peak_c": 77.6122624834099,
+      "surrogate_error_vs_reference_k": 8.4497263471565,
+      "fdm_error_vs_reference_k": 0.4448740522346242,
+      "solver_agreement_k": -3.130222266634064e-05
+    },
+    {
+      "design": "front_median",
+      "surrogate_peak_c": 119.42506408691406,
+      "fdm_same_mesh_peak_c": 110.16697692871094,
+      "reference_same_mesh_peak_c": 110.16701106721843,
+      "reference_refined_peak_c": 107.97381815806509,
+      "surrogate_error_vs_reference_k": 11.451245928848977,
+      "fdm_error_vs_reference_k": 2.1931587706458515,
+      "solver_agreement_k": -3.413850748756886e-05
+    },
+    {
+      "design": "front_hottest",
+      "surrogate_peak_c": 235.60989379882812,
+      "fdm_same_mesh_peak_c": 198.34445190429688,
+      "reference_same_mesh_peak_c": 198.34447934798058,
+      "reference_refined_peak_c": 195.4385482436782,
+      "surrogate_error_vs_reference_k": 40.17134555514991,
+      "fdm_error_vs_reference_k": 2.9059036606186623,
+      "solver_agreement_k": -2.744368370599659e-05
+    }
+  ],
+  "surrogate_error_vs_reference_k": {
+    "mean_abs": 20.024105943718464,
+    "max_abs": 40.17134555514991
+  },
+  "solver_agreement_k": {
+    "max_abs": 3.413850748756886e-05
+  },
+  "shattered_vs_monolithic": {
+    "reference_monolithic_peak_c": 119.06672102137877,
+    "reference_shattered_peak_c": 77.6122624834099,
+    "reference_headroom_c": 41.45445853796886,
+    "surrogate_headroom_c": 45.18891143798828
+  },
+  "caveat": "Errors are measured at the designs the optimiser selected, which is where a surrogate is least reliable -- not on a random test split."
+}

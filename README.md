@@ -26,7 +26,8 @@ The tool utilizes a 2026-era hybrid intelligence stack:
 3DIC-X exploration is grounded in high-fidelity industrial engineering principles:
 
 *   [**Die Thinning & 3D Assembly**](reports/assembly_packaging_spec.md): Thinned 30µm/50µm silicon layers for thermal and TSV optimization.
-*   [**Mathematical Solvers (ROM/PINN)**](reports/rom_pinn_validation.md): ⚠️ Planned, not implemented — no POD, no physics-informed loss term, no FEA reference.
+*   [**Physics Validation (reference solver + PINO)**](reports/rom_pinn_validation.md): Grid-converged reference solver verified to **1e-9 °C** against analytic conduction; physics-informed loss cuts field RMSE 22% and PDE residual 59%. POD/ROM remains not implemented.
+*   [**Multi-Objective Search**](reports/multiobjective_search.md): NSGA-II verified on ZDT1; shattered-macro headroom of **+41.45 °C** confirmed on the reference solver.
 *   [**Hierarchical Mesh Audit**](reports/mesh_convergence_audit.json): Variable 1µm/50nm mesh for Regions of Interest (ROI).
 *   [**Technical Audit & Benchmarking**](reports/technical_audit_v5.md): Detailed comparison against Ansys Heatwave and industry-standard sign-off flows.
 *   [**Critical Review**](reports/critical_review.md): Adversarial audit of this repository — which claims the code supports, which it does not, and why.
@@ -46,7 +47,7 @@ python -m integrations.cli verify                       # cross-consistency vs t
 
 Artifacts land in `results/handoff/<run_id>/` with a manifest, SHA-256 per file, and a provenance header declaring whether the data behind them is `SURROGATE` or `SYNTHETIC`. Every claim is currently **T0** (emitted and independently parsed); `T1`/`T2` require licensed vendor tools. Calibration derived from our own output is refused by design.
 
-⚠️ **The cross-consistency gate currently fails with 6 errors.** The artifacts are well-formed, but the silicon flow's own outputs disagree with each other — a stale golden config, two insertion-loss models 61.8 dB apart, and an SI verdict of `FAIL` behind a README that presents the link as proven. The defects are catalogued in [spec section 10](reports/eda_vendor_integration_spec.md); they live in the source data, not the interchange layer.
+⚠️ **The cross-consistency gate currently fails with 1 error** (a 1 TB memory module whose die hierarchy contains no memory die — a design decision, not a code fix).  Five further defects found by that gate have been fixed; all are catalogued in [spec section 10](reports/eda_vendor_integration_spec.md) and [the critical review](reports/critical_review.md).
 
 ### 📖 Performance Documentation
 *   [**Design Evolution**](reports/design_evolution_story.md): The journey from initial failure to the lead 3DIC-X candidate.
@@ -65,6 +66,6 @@ Artifacts land in `results/handoff/<run_id>/` with a manifest, SHA-256 per file,
 
 ## 🚀 Key Features
 *   **224G/112G SerDes Optimization**: AI-driven SI/PI trade-offs for Next-Gen Fabrics.
-*   **3D Thermal Surrogates**: An FNO surrogate trained on this repo's own 16x16x5 finite-difference solver. Speed and accuracy figures are internal to that comparison — there is no FEA reference dataset ([status](reports/rom_pinn_validation.md)).
-*   **Architecture Search**: `gepa.py` samples random macro placements (50 per generation x 10) and ranks them by predicted peak temperature. It is a single-objective random search — there is no Pareto dominance, crossover, or selection in the loop despite the name.
+*   **3D Thermal Surrogates**: A physics-informed neural operator (FNO + heat-equation residual) trained on a finite-difference solver that agrees with an independently-verified reference solver to **0.0036 °C**. Field RMSE **2.03 K**; see the [error band at optimiser-selected designs](reports/multiobjective_search.md#5-the-important-caveat-surrogate-error-at-the-optimum) before quoting absolute temperatures.
+*   **Multi-Objective Architecture Search**: [NSGA-II](reports/multiobjective_search.md) (non-dominated sorting, crowding distance, SBX, polynomial mutation), verified against ZDT1's analytic front to **0.0037** mean distance and beating random sampling at equal budget (hypervolume 0.951 vs 0.881, front size 48 vs 20).
 *   **Vector-Driven Design**: Ingestion of industrial trace files for real-world calibration.

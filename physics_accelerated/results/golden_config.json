@@ -50,8 +50,20 @@
       "Die": 140.0,
       "Metal_Stack": 380.0,
       "C4_BGA": 50.0,
-      "Package": 100.0
-    }
+      "Package": 100.0,
+      "Hybrid_Bond": 300.0,
+      "TSV_Array": 200.0,
+      "TIM": 5.0,
+      "Underfill": 0.8,
+      "Interposer": 140.0
+    },
+    "layer_thickness_um": [
+      50.0,
+      5.0,
+      50.0,
+      40.0,
+      775.0
+    ]
   },
   "constraints": {
     "min_isolation_db": 40,

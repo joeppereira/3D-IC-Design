@@ -70,9 +70,12 @@ def generate_data(args):
         end = min(start + batch_size, args.samples)
         batch_power = power_maps[start:end]
         
-        # Run Solver (simplified iteration count for speed in demo)
-        # Real FNO training needs good data, so we'll do enough iterations to see gradients.
-        batch_temp = solver.solve_steady_state(batch_power, iterations=200) # 200 is decent for small grid
+        # Solve to a residual tolerance. This used to stop at a fixed 200
+        # iterations, which on the corrected SI-unit solver is roughly 4% of the
+        # way to convergence -- the network was being trained on half-relaxed
+        # fields that do not satisfy the heat equation.
+        batch_temp = solver.solve_steady_state(batch_power, iterations=80000,
+                                               tol=1e-6, verbose=(start == 0))
         temperature_maps.append(batch_temp)
         
         if start % 1000 == 0:

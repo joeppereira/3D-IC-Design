@@ -1,24 +1,69 @@
 {
-  "project": "3DIC-X v5.7.0",
-  "audit_type": "Mesh Convergence & Node Complexity",
-  "die_size": "15mm x 15mm",
-  "comparisons": {
-    "uniform_1mm": {
-      "nodes": 225,
-      "latency_ms": 0.5,
-      "accuracy_pct": 72.0
+  "project": "3DIC-X",
+  "audit_type": "Mesh Convergence & Solver Verification (measured)",
+  "generated": "2026-09-20",
+  "generator": "physics_accelerated/src/thermal_reference.py",
+  "note": "Replaces an earlier version of this file that reported accuracy percentages and a 50,400,000 ms latency for a 225-million-node mesh that was never run. Every number below is from an executed solve.",
+  "platform": {
+    "python": "3.14.5",
+    "machine": "arm64"
+  },
+  "verification": {
+    "analytic_1d_slab": {
+      "case": "uniform volumetric heating, insulated bottom, convective top",
+      "analytic_peak_c": 226.66666666666666,
+      "numeric_peak_c": 226.66666666562477,
+      "abs_error_c": 1.0418830242997501e-09,
+      "verdict": "exact to round-off; this discretisation reproduces the benchmark at every mesh, so its formal order of accuracy cannot be measured from this case"
     },
-    "uniform_1um": {
-      "nodes": 225000000,
-      "latency_ms": 50400000,
-      "accuracy_pct": 99.5
-    },
-    "hierarchical_v5.7": {
-      "nodes": 90135,
-      "latency_ms": 50.0,
-      "accuracy_pct": 97.1,
-      "efficiency_gain": "2496x"
+    "global_energy_balance": {
+      "power_in_w": 100.0,
+      "power_out_w": 99.9999999991592,
+      "relative_error": 8.407994300796417e-12
     }
   },
-  "verdict": "The hierarchical mesh achieves <50ms discovery latency with 97%+ accuracy by concentrating 99% of nodes in the 40% critical design fronts."
+  "mesh_convergence": {
+    "case": "3-die 3DIC-X stack, 18x18 mm, 60 W, concentrated logic hotspot",
+    "wall_clock_s": 11.15,
+    "runs": [
+      {
+        "nx": 12,
+        "nz": 6,
+        "unknowns": 864,
+        "t_peak_c": 82.26091544410892,
+        "energy_rel_err": 1.8000415972589204e-14
+      },
+      {
+        "nx": 24,
+        "nz": 12,
+        "unknowns": 6912,
+        "t_peak_c": 83.57903066675154,
+        "energy_rel_err": 7.601623034740139e-13
+      },
+      {
+        "nx": 48,
+        "nz": 24,
+        "unknowns": 55296,
+        "t_peak_c": 83.8203829573511,
+        "energy_rel_err": 7.201824322085789e-12
+      }
+    ],
+    "observed_order_p": 2.449264064477711,
+    "richardson_extrapolated_peak_c": 83.87448114966826,
+    "gci_finest_pct": 0.08067577122722094,
+    "grid_converged": true,
+    "caveat": "observed_order_p is not a meaningful order of accuracy here: the hotspot source is discontinuous, so its discrete footprint changes with refinement and the grids are not in the asymptotic range. The GCI and the extrapolated value are the usable outputs."
+  },
+  "downstream_error_budget": {
+    "fdm_vs_reference_same_mesh_c": 3.413850748756886e-05,
+    "training_mesh_16x16_discretisation_error_c": -0.5,
+    "surrogate_rmse_on_training_distribution_k": 2.031325578689575,
+    "surrogate_error_at_optimiser_selected_designs_k": [
+      8.4497263471565,
+      11.451245928848977,
+      40.17134555514991
+    ],
+    "source": "reports/thermal_validation.json",
+    "note": "The surrogate is far less accurate at the designs an optimiser selects than on its training distribution."
+  }
 }

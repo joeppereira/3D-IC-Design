@@ -1,3 +1,5 @@
+import json
+import sys
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -155,12 +157,38 @@ def train(args):
     scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=10, gamma=0.5)
     
     criterion = nn.MSELoss()
+
+    # --- physics-informed term (PINO) --------------------------------------
+    # An FNO is an architecture; "physics-informed" is a property of the loss.
+    # Adding the discrete heat-equation residual makes this a physics-informed
+    # neural operator: the network is penalised for predicting fields that are
+    # not solutions, independently of whether the labels are any good.
+    # Always construct it: the residual is a *metric* as well as a loss term, so
+    # the plain-MSE baseline must be measured the same way or the comparison is
+    # meaningless.
+    lam = float(args.lambda_physics)
+    if True:
+        sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+        sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                        '..', '..', 'serdes_architect', 'src'))
+        from heat_residual import HeatEquationResidual
+        from thermal.solver import ThermalSolver
+        solver_cfg = args.config
+        residual_op = HeatEquationResidual.from_solver(
+            ThermalSolver(solver_cfg)).to(device)
+        print(f"  Physics term: lambda = {lam:g}"
+              f"{' (metric only, not in the loss)' if lam == 0 else ''}")
+        with torch.no_grad():
+            lab_res = residual_op.rms_k(y_train, x_train)
+        print(f"  Heat-equation residual of the TRAINING LABELS: {lab_res:.3e} K "
+              f"({'labels are converged' if lab_res < 1e-3 else 'LABELS ARE NOT CONVERGED'})")
     
     # Training Loop
     t0 = time.time()
     for epoch in range(args.epochs):
         model.train()
         train_loss = 0
+        epoch_phys = 0.0
         for x, y in train_loader:
             optimizer.zero_grad()
             out = model(x)
@@ -169,18 +197,31 @@ def train(args):
             if args.weighted_loss:
                 # Weight hotspots more (regions where T > 1.0 sigma)
                 weight_map = torch.where(y > 1.0, 5.0, 1.0)
-                loss = (weight_map * (out - y)**2).mean()
+                data_loss = (weight_map * (out - y)**2).mean()
             else:
-                loss = criterion(out, y)
-                
+                data_loss = criterion(out, y)
+
+            loss = data_loss
+            # De-normalise to physical temperature before applying the PDE.
+            t_phys = out * y_std + y_mean
+            r = residual_op(t_phys, x)              # kelvin
+            phys_term = (r ** 2).mean()
+            epoch_phys += float(torch.sqrt(phys_term.detach()))
+            if lam > 0.0:
+                loss = loss + lam * phys_term
+
             loss.backward()
             optimizer.step()
             train_loss += loss.item()
             
         scheduler.step()
         
-        if epoch % 5 == 0:
-            print(f"  Epoch {epoch}/{args.epochs} | Loss: {train_loss/len(train_loader):.6f} | LR: {scheduler.get_last_lr()[0]:.1e}")
+        if epoch % 5 == 0 or epoch == args.epochs - 1:
+            msg = (f"  Epoch {epoch}/{args.epochs} | Loss: "
+                   f"{train_loss/len(train_loader):.6f} | LR: "
+                   f"{scheduler.get_last_lr()[0]:.1e}")
+            msg += f" | physics residual: {epoch_phys/len(train_loader):.4e} K"
+            print(msg)
 
     print(f"✅ Training Complete in {time.time() - t0:.2f}s")
     
@@ -188,16 +229,50 @@ def train(args):
     os.makedirs('results', exist_ok=True)
     torch.save(model.state_dict(), 'results/fno_model.pt')
     
+    # --- final physics audit ----------------------------------------------
+    model.eval()
+    metrics = {}
+    with torch.no_grad():
+        pred = model(x_train) * y_std + y_mean
+        err = pred - y_train
+        metrics = {
+            "data_rmse_k": float(torch.sqrt((err ** 2).mean())),
+            "data_max_abs_k": float(err.abs().max()),
+            "label_peak_c": float(y_train.max()),
+            "pred_peak_c": float(pred.max()),
+            "peak_error_k": float(pred.max() - y_train.max()),
+            "lambda_physics": float(args.lambda_physics),
+            "epochs": int(args.epochs),
+            "samples": int(x_train.shape[0]),
+        }
+        metrics["pred_residual_k"] = residual_op.rms_k(pred, x_train)
+        metrics["label_residual_k"] = residual_op.rms_k(y_train, x_train)
+    print(f"  Data RMSE: {metrics['data_rmse_k']:.4f} K | peak error: "
+          f"{metrics['peak_error_k']:+.4f} K")
+    if "pred_residual_k" in metrics:
+        print(f"  Heat-equation residual -- prediction: "
+              f"{metrics['pred_residual_k']:.4e} K, labels: "
+              f"{metrics['label_residual_k']:.4e} K")
+
     # Save Normalization Stats for Inference
     stats = {'mean': y_mean.item(), 'std': y_std.item()}
     torch.save(stats, 'results/norm_stats.pt')
-    print("  Saved model and stats to results/")
+    suffix = f"_lam{args.lambda_physics:g}".replace(".", "p")
+    torch.save(model.state_dict(), f'results/fno_model{suffix}.pt')
+    with open(f'results/train_metrics{suffix}.json', 'w') as fh:
+        json.dump(metrics, fh, indent=2)
+    print(f"  Saved model, stats and metrics to results/ (variant {suffix})")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--epochs', type=int, default=30, help='Training epochs')
     parser.add_argument('--weighted_loss', type=str, default='false', help='Use hotspot weighting')
     parser.add_argument('--in_channels', type=int, default=5, help='Number of input channels')
+    parser.add_argument('--lambda_physics', type=float, default=0.0,
+                        help='Weight on the heat-equation residual (0 = plain MSE)')
+    parser.add_argument('--config', type=str,
+                        default='results/golden_config.json',
+                        help='Config supplying geometry/materials for the residual')
     args = parser.parse_args()
     
     # Fix boolean parsing
