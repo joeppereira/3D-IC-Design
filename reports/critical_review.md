@@ -206,26 +206,72 @@ comparing a full link budget against a channel-only S-parameter.
 
 ---
 
-## 5. Open issues
+## 5. Open issues — the resume point
 
-1. **A 1 TB CXL memory module with no memory die.** `assembly_packaging_spec.md`
-   documents four layers including a 30 µm DRAM stack; `golden_config.json` has three
-   dies, none of them DRAM. Either the spec or the die hierarchy is wrong. This is a
-   design decision, not a code fix, so the cross-consistency gate is left failing on it
-   rather than having it papered over.
-2. **One authoritative thermal number.** Now available — **83.87 °C** grid-converged
-   from the reference solver — but the older 98.5 °C literal still appears in
-   `final_design_audit.json` and downstream reports, which should quote the measured
-   value instead of restating the literal.
-3. **`.git` is 222 MB.** Untracking `node_modules` stops the growth but does not shrink
-   history. A rewrite would, at the cost of breaking existing clones.
-4. **Legacy duplicates.** `netlist_exporter.py`, `gds_export.tcl` and `gen_def.py` hold
-   logic now superseded by `integrations/` (spec §6, P0-B/C/E). Retiring them is
-   cleanup, not new capability.
-5. **No vendor tool has loaded anything.** Every integration claim is T0. T1/T2 need
-   licences; the driver scripts are written to be run unmodified by a licensee.
+Ordered by effort-to-credibility. This section is the authoritative to-do list; it
+is kept current so no context is carried in anyone's head.
 
----
+### Cheap and high value (half a day each)
+
+1. **Externally validate the remaining formats.** GDSII (gdstk), Touchstone (scikit-rf)
+   and SPICE (ngspice) are checked by independent implementations. DEF, LEF, SPEF,
+   Liberty and IBIS are still validated only by readers written in this repo — if writer
+   and reader share a misreading, both are wrong and the test passes. `klayout` is
+   brew-installable and reads GDSII *and* LEF/DEF; `ibischk7` is distributed free by the
+   IBIS Open Forum and is the exact outstanding item in spec §2.7. Coverage is asserted
+   in `tests/integrations/test_external_parsers.py`, so closing this is a test edit plus
+   an install.
+2. **`transient_solver.py` still carries the magic constants.** It declares
+   `PHYSICAL_SCALE = 500.0` with the comment "Match steady state calibration", then uses
+   `power_map * 2000.0` in the update — it does not match the steady-state solver or
+   itself, and `diffusivity = 0.01` is a relaxation factor, not a diffusivity. This is
+   the same defect class already fixed in `solver.py`; the pattern to copy is there.
+   `solver_snippet.py` is a dead copy of the pre-fix code and should be deleted.
+3. **Quote the measured peak temperature.** `83.87 °C` is grid-converged with a
+   published GCI. `final_design_audit.json`, `final_architectural_solution.md`,
+   `design_evolution_story.md` and `README.md` still assert `98.5 °C`, which was a
+   literal, never a solver output.
+
+### Real capability (1–2 days each)
+
+4. **POD / reduced-order model.** Still the one unimplemented item from the original
+   claims, and now actually possible: the reference solver can generate the snapshot
+   matrix, then SVD → retain leading modes → project. Validate by reproducing held-out
+   snapshots, and report the truncation error rather than a speedup ratio.
+5. **A surrogate trust guard.** The surrogate is +8 to +40 K wrong at optimiser-selected
+   designs (§4). The search should automatically re-solve its top-k candidates on the
+   reference solver, and flag designs outside the training distribution. That converts
+   the current caveat into a feature.
+
+### Decisions only the owner can make
+
+6. **A 1 TB CXL memory module whose die hierarchy contains no memory die.**
+   `assembly_packaging_spec.md` documents a 30 µm DRAM stack; `golden_config.json` has
+   three dies, none of them DRAM. Either the spec or the hierarchy is wrong. This is the
+   single remaining cross-consistency error and it is left failing deliberately.
+7. **`.git` is 222 MB.** Untracking `node_modules` stopped the growth; shrinking history
+   needs a rewrite, which breaks existing clones.
+8. **Legacy duplicates.** `netlist_exporter.py` and `gds_export.tcl` are superseded by
+   `integrations/` (spec P0-C/P0-E) and `gen_def.py` duplicates geometry that now lives
+   in `integrations/canonical.py` (P0-B). Retiring them is cleanup, not new capability.
+
+### Blocked on licences
+
+9. **T1/T2 vendor validation.** Every hook emits and self-checks; no Cadence, Synopsys
+   or Siemens tool has opened an artifact. The driver scripts are written to be run
+   unmodified by a licensee.
+
+### How to resume
+
+```bash
+./regression_suite/run_physics_verification.sh      # solver + PINO + NSGA-II
+./regression_suite/run_interchange_qualification.sh # formats + cross-consistency
+python -m unittest discover -s tests -t .           # 149 tests
+```
+
+Read `reports/rom_pinn_validation.md` (physics, measured),
+`reports/multiobjective_search.md` (search + the surrogate error band), and
+`reports/eda_vendor_integration_spec.md` §10 (integration status).
 
 ## 6. What this project can defensibly claim today
 
