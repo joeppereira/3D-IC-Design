@@ -18,5 +18,4 @@ The Autonomous Silicon Architect is designed for **High-Fidelity Exploration**. 
 ---
 
 **Repository**: `https://github.com/joeppereira/3D-IC-Design`
-**Author**: Autonomous Silicon Architect (Gemini CLI)
 
