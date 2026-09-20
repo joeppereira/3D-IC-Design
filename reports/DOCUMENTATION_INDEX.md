@@ -27,7 +27,10 @@ This index tracks the mandatory documents required for architectural verificatio
 *   [reports/pareto_dashboard.html](pareto_dashboard.html): Interactive trade-off explorer.
 *   [reports/pareto_data.csv](pareto_data.csv): Raw data points for 20-point sweep.
 
-## 📁 5. Industrial Tool Integration (Handoff to Certified Flows)
+## 📁 5. Critical Review & Honest Status
+*   [reports/critical_review.md](critical_review.md): Adversarial review from a new reader's perspective — claims checked against code, the 61.8 dB modeling error and its blast radius, what was fixed, what remains open, and what the project can defensibly claim today.
+
+## 📁 6. Industrial Tool Integration (Handoff to Certified Flows)
 *   [reports/eda_vendor_integration_spec.md](eda_vendor_integration_spec.md): Vendor hook spec — vendor-neutral interchange (DEF/LEF, GDS/OASIS, SPEF, Liberty, Touchstone, IBIS-AMI) plus Cadence / Synopsys / Siemens insertion points and the T0–T3 claim ladder. Section 10 records what is implemented.
 *   [integrations/](../integrations/): The implementation — 17 emit targets, per-format readers, and the vendor-result correlation loop (`python -m integrations.cli status`).
 *   [regression_suite/run_interchange_qualification.sh](../regression_suite/run_interchange_qualification.sh): T0 gate — format round-trips, Touchstone passivity/causality/reciprocity, and ngspice execution of the emitted deck. No vendor licenses required.

@@ -29,6 +29,7 @@ The tool utilizes a 2026-era hybrid intelligence stack:
 *   [**Mathematical Solvers (ROM/PINN)**](reports/rom_pinn_validation.md): ⚠️ Planned, not implemented — no POD, no physics-informed loss term, no FEA reference.
 *   [**Hierarchical Mesh Audit**](reports/mesh_convergence_audit.json): Variable 1µm/50nm mesh for Regions of Interest (ROI).
 *   [**Technical Audit & Benchmarking**](reports/technical_audit_v5.md): Detailed comparison against Ansys Heatwave and industry-standard sign-off flows.
+*   [**Critical Review**](reports/critical_review.md): Adversarial audit of this repository — which claims the code supports, which it does not, and why.
 *   [**EDA Vendor Integration Spec**](reports/eda_vendor_integration_spec.md): Hook architecture and interchange layer for handoff into Cadence, Synopsys, and Siemens flows.
 
 ### 🔌 EDA Handoff (implemented)
