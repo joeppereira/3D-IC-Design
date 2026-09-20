@@ -86,4 +86,3 @@ The tool supports local **QLoRA fine-tuning** of the Gemini 3.1 Pro expert on 10
 ---
 
 **Repository**: `https://github.com/joeppereira/3D-IC-Design`
-**Author**: Autonomous Silicon Architect (Gemini CLI)
