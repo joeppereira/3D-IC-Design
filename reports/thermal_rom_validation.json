@@ -1,0 +1,147 @@
+{
+  "method": "POD-Galerkin on the reference solver's own operator",
+  "note": "Truncation error is the reported quantity. The timing ratio below is internal to this mesh and this hardware; no commercial tool has been run.",
+  "mesh": {
+    "nx": 32,
+    "ny": 32,
+    "nz": 10,
+    "n_unknowns": 10240
+  },
+  "snapshots": {
+    "train": 240,
+    "test": 32,
+    "test_seed_is_separate": true
+  },
+  "basis": {
+    "rank": 240,
+    "retained_energy": 1.0,
+    "singular_values": [
+      75761.90312788465,
+      14211.55969837863,
+      12786.016400030585,
+      7716.911273203384,
+      5985.884570900038,
+      5380.226934914529,
+      3609.865996693666,
+      3215.564780647378,
+      2655.6470465945654,
+      2350.894992444746,
+      1972.5973766804302,
+      1866.7198028491084,
+      1622.4830276981384,
+      1442.4110566543536,
+      1210.5745484638012,
+      1121.16290737006,
+      1068.6382519925417,
+      996.5939757803325,
+      950.7642943648685,
+      843.2970349008172,
+      794.3838623004286,
+      705.3057399086625,
+      635.1065972072179,
+      599.8497903537251,
+      576.7111395346093,
+      567.5381676848399,
+      511.33420669105305,
+      502.45291701212733,
+      462.9348239746473,
+      430.9811978406209,
+      391.0473097936168,
+      368.1796586962656
+    ]
+  },
+  "offline_cost_s": 9.417711207875982,
+  "held_out": {
+    "n_test": 32,
+    "projection_relative_l2": {
+      "mean": 0.0061458602260039165,
+      "max": 0.015351681601059135
+    },
+    "rom_relative_l2": {
+      "mean": 0.006545746446724642,
+      "max": 0.016898472107101204
+    },
+    "peak_error_c": {
+      "mean_abs": 0.375093444749786,
+      "max_abs": 1.4254964343883358,
+      "signed_mean": 0.29427991820440713
+    },
+    "timing_s": {
+      "full_solve_mean": 0.0391225793864578,
+      "reduced_solve_mean": 0.03774443623115076,
+      "caveat": "internal ratio on this mesh and this hardware, against this repo's own sparse solve. It is not a speedup against any commercial tool."
+    }
+  },
+  "rank_sweep": [
+    {
+      "rank": 1,
+      "retained_energy": 0.9126005061663096,
+      "projection_relative_l2_max": 0.45945964827671487,
+      "rom_relative_l2_max": 0.45976203321840137,
+      "peak_error_c_max_abs": 96.89358769242367
+    },
+    {
+      "rank": 2,
+      "retained_energy": 0.9447121428658871,
+      "projection_relative_l2_max": 0.3979568634870155,
+      "rom_relative_l2_max": 0.3988637063302132,
+      "peak_error_c_max_abs": 82.33793327065081
+    },
+    {
+      "rank": 4,
+      "retained_energy": 0.9801728958827911,
+      "projection_relative_l2_max": 0.24618808884498716,
+      "rom_relative_l2_max": 0.24974406099282018,
+      "peak_error_c_max_abs": 54.05900060874259
+    },
+    {
+      "rank": 8,
+      "retained_energy": 0.9941879441152411,
+      "projection_relative_l2_max": 0.15551613572050277,
+      "rom_relative_l2_max": 0.16454345833957915,
+      "peak_error_c_max_abs": 40.609364917611785
+    },
+    {
+      "rank": 16,
+      "retained_energy": 0.9985428433916442,
+      "projection_relative_l2_max": 0.07395534216623444,
+      "rom_relative_l2_max": 0.08347062737328934,
+      "peak_error_c_max_abs": 19.853081072019876
+    },
+    {
+      "rank": 32,
+      "retained_energy": 0.9997351530436318,
+      "projection_relative_l2_max": 0.04258459270407856,
+      "rom_relative_l2_max": 0.045594279076948095,
+      "peak_error_c_max_abs": 8.713056956370323
+    },
+    {
+      "rank": 64,
+      "retained_energy": 0.9999477588262213,
+      "projection_relative_l2_max": 0.021231942145519513,
+      "rom_relative_l2_max": 0.02252536324463322,
+      "peak_error_c_max_abs": 7.425788308631269
+    },
+    {
+      "rank": 120,
+      "retained_energy": 0.9999903898760081,
+      "projection_relative_l2_max": 0.01739811476723468,
+      "rom_relative_l2_max": 0.01880733974513101,
+      "peak_error_c_max_abs": 2.324946039679702
+    },
+    {
+      "rank": 180,
+      "retained_energy": 0.9999982847753378,
+      "projection_relative_l2_max": 0.016338181624738424,
+      "rom_relative_l2_max": 0.01788638638864663,
+      "peak_error_c_max_abs": 1.7193685371195784
+    },
+    {
+      "rank": 240,
+      "retained_energy": 1.0,
+      "projection_relative_l2_max": 0.015351681601059135,
+      "rom_relative_l2_max": 0.016898472107101204,
+      "peak_error_c_max_abs": 1.4254964343883358
+    }
+  ]
+}

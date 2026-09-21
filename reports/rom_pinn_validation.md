@@ -100,11 +100,67 @@ Honest note: at λ = 0.1 on only 60 samples the physics term *hurt* (RMSE
 2.604 → 2.605 → worse), a gradient-imbalance pathology. The benefit above needs
 the larger sample count.
 
-## 4. What is still not claimed
+## 4. POD reduced-order model: implemented and measured
 
-* **No POD / reduced-order model.** Still not implemented. The reference solver
-  makes one possible (snapshot matrix → SVD → modal projection) but it does not
-  exist.
+`physics_accelerated/src/thermal_rom.py`. This was the last unimplemented item
+from the original claims — the documents described a ROM with a *"1.9M ×
+speedup"* against Ansys Icepak while no POD, SVD or modal decomposition existed
+anywhere in the repository.
+
+**Method.** The reference solver assembles `A T = b`, where `A` depends only on
+geometry and boundary conditions and `b` carries the load. Moving a hotspot
+therefore moves `b` while `A` stays fixed — the textbook setting for a
+parameterised POD-Galerkin ROM. Snapshots are solved for 240 sampled parameters
+(hotspot position, tightness, logic/memory power split), an SVD gives the modes,
+and the *same operator* is projected: solve `(Uᵣᵀ A Uᵣ) a = Uᵣᵀ b`, then
+`T ≈ Uᵣ a`. It is a Galerkin projection carrying the physics, not a regression
+fitted to the outputs.
+
+**Measured on 32 held-out parameters** (a separate random stream; never in the
+snapshot matrix). Mesh 32×32×10 = 10,240 unknowns:
+
+| Rank | Retained energy | Projection floor (rel. L2) | ROM (rel. L2) | Peak Tj error |
+| ---: | ---: | ---: | ---: | ---: |
+| 8 | 0.99419 | 1.56e-01 | 1.65e-01 | 40.61 °C |
+| 16 | 0.99854 | 7.40e-02 | 8.35e-02 | 19.85 °C |
+| 32 | 0.99974 | 4.26e-02 | 4.56e-02 | 8.71 °C |
+| 64 | 0.99995 | 2.12e-02 | 2.25e-02 | 7.43 °C |
+| 120 | 0.99999 | 1.74e-02 | 1.88e-02 | 2.32 °C |
+| 240 | 1.00000 | 1.54e-02 | 1.69e-02 | **1.43 °C** |
+
+The *projection floor* is the distance from the held-out field to the span of
+the retained modes — the best any ROM with that basis could do. The ROM sits
+just above it throughout, which is what says the projection is working and the
+basis is the limitation.
+
+**The finding worth carrying forward: retained energy is not accuracy.** At rank
+32 the basis holds **99.974%** of the snapshot energy while the held-out peak
+temperature is still **8.71 °C** wrong. A ROM advertised as "99.97% accurate"
+on the strength of its energy fraction would be off by nearly nine degrees on
+the one number a thermal designer quotes. The truncation error is the honest
+figure, and it is what this report leads with.
+
+**Why convergence is slow.** A localised source that *translates* across the
+die has a slow Kolmogorov n-width: no small linear basis represents every
+position of a moving hotspot well. This is a property of the problem, not a
+defect in the implementation — and it is why the table above runs to rank 240
+rather than stopping at "99% of the energy".
+
+**For context**, the FNO surrogate is +8.45 to +40.17 K at optimiser-selected
+designs (§3 and `thermal_validation.json`). At full rank the ROM's worst
+held-out peak error is 1.43 °C, and unlike the network it carries a
+projection-error bound rather than an empirical band.
+
+**No speedup figure is quoted.** The reduced system is 240×240 against 10,240
+unknowns, and the timing ratio recorded in
+`reports/thermal_rom_validation.json` is explicitly labelled as internal to this
+mesh and this hardware, against this repository's own sparse solve.
+
+## 5. What is still not claimed
+
+* **The ROM is not validated outside its sampled parameter space.** It is
+  measured on held-out hotspot positions drawn from the same distribution as the
+  snapshots. A design outside that box has no error bound here.
 * **No Ansys or Cadence correlation.** The reference is an independently-verified
   in-house FVM solver, not a commercial tool. The correct phrase is
   *"correlated against a grid-converged finite-element reference"*, never
@@ -113,9 +169,10 @@ the larger sample count.
 * **No speedup claim.** Any surrogate-vs-solver ratio here is internal to this
   repository, at this mesh, on this hardware.
 
-## 5. Related
+## 6. Related
 
 * `reports/mesh_convergence_audit.json` — the measured convergence study.
+* `reports/thermal_rom_validation.json` — the POD rank sweep and held-out errors.
 * `reports/thermal_validation.json` — surrogate error at optimiser-selected designs.
 * `reports/pareto_front_nsga2.json` — the multi-objective front and its hypervolume baseline.
 * `reports/critical_review.md` — how these claims came to be audited.

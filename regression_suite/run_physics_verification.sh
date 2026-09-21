@@ -5,6 +5,7 @@
 #   FDM solver        <- the reference solver (different method, same equations)
 #   transient solver  <- the exact matrix exponential of the same ODE system,
 #                        and the FDM solver's field as a fixed point
+#   POD ROM           <- held-out snapshots from the reference solver
 #   heat residual     <- a converged field (residual must vanish)
 #   NSGA-II           <- ZDT1, whose Pareto front is known analytically
 #
@@ -18,16 +19,16 @@ echo "=================================================================="
 echo " PHYSICS VERIFICATION"
 echo "=================================================================="
 
-echo "--- [1/5] Solver self-check (geometry, energy, gradient) ----------"
+echo "--- [1/6] Solver self-check (geometry, energy, gradient) ----------"
 (cd serdes_architect && ../$PY src/thermal/solver.py --verify --mode 3d_6neighbor)
 
 echo
-echo "--- [2/5] Transient solver self-check -----------------------------"
+echo "--- [2/6] Transient solver self-check -----------------------------"
 $PY serdes_architect/src/thermal/transient_solver.py \
     --config physics_accelerated/results/golden_config.json --verify
 
 echo
-echo "--- [3/5] Verification test suite --------------------------------"
+echo "--- [3/6] Verification test suite --------------------------------"
 # tail -5 used to swallow the summary line, so a failing suite could read as a
 # passing gate. Assert on the result instead of printing near it.
 LOG=$(mktemp)
@@ -42,7 +43,7 @@ fi
 rm -f "$LOG"
 
 echo
-echo "--- [4/5] Reference solver: analytic benchmark + convergence ------"
+echo "--- [4/6] Reference solver: analytic benchmark + convergence ------"
 $PY - <<'PYEOF'
 import sys, json; sys.path.insert(0, "physics_accelerated/src")
 doc = json.load(open("reports/mesh_convergence_audit.json"))
@@ -56,7 +57,11 @@ print(f"  grid-converged peak Tj : {m['richardson_extrapolated_peak_c']:.3f} C "
 PYEOF
 
 echo
-echo "--- [5/5] Surrogate error band at optimiser-selected designs ------"
+echo "--- [5/6] POD reduced-order model on held-out snapshots -----------"
+(cd physics_accelerated/src && ../../$PY thermal_rom.py --verify)
+
+echo
+echo "--- [6/6] Surrogate error band at optimiser-selected designs ------"
 $PY - <<'PYEOF'
 import json, os
 p = "reports/thermal_validation.json"

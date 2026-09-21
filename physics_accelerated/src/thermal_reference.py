@@ -117,12 +117,24 @@ class ThermalReference:
         return q
 
     # -- assembly ------------------------------------------------------------
-    def solve(self, nx: int = 32, ny: int = 32, refine_z: int = 1,
-              hotspots: dict[int, tuple[float, float, float]] | None = None) -> Solution:
+    def assemble(self, nx: int = 32, ny: int = 32, refine_z: int = 1,
+                 hotspots: dict[int, tuple[float, float, float]] | None = None,
+                 power_map: np.ndarray | None = None):
+        """Build the linear system A T = b for this mesh and load.
+
+        Split out of solve() so a reduced-order model can project the same
+        operator it was trained on, rather than rebuilding a second one. A
+        depends only on geometry and boundary conditions; b carries the load,
+        which is what makes a parameterised ROM over hotspot position possible
+        with a single factorisation of A.
+        """
         dz, kz, layer_of, dx, dy = self._mesh(nx, ny, refine_z)
         nz = len(dz)
         n = nx * ny * nz
-        q = self._power_density(nx, ny, layer_of, hotspots)
+        q = (self._power_density(nx, ny, layer_of, hotspots)
+             if power_map is None else np.asarray(power_map, dtype=float))
+        if q.shape != (nz, ny, nx):
+            raise ValueError(f"power_map {q.shape} != mesh {(nz, ny, nx)}")
 
         def idx(iz, iy, ix):
             return (iz * ny + iy) * nx + ix
@@ -177,9 +189,13 @@ class ThermalReference:
                     rows.append(p); cols.append(p); vals.append(diag)
 
         a = sp.csr_matrix((vals, (rows, cols)), shape=(n, n))
-        t = spla.spsolve(a, rhs)
-        field = t.reshape(nz, ny, nx)
+        return a, rhs, {"dz": dz, "kz": kz, "layer_of": layer_of, "dx": dx,
+                        "dy": dy, "nx": nx, "ny": ny, "nz": nz, "q": q}
 
+    def solution_from_field(self, field, mesh) -> Solution:
+        """Wrap a solved field in a Solution, with its energy balance."""
+        nx, ny, nz = mesh["nx"], mesh["ny"], mesh["nz"]
+        layer_of = mesh["layer_of"]
         peak_flat = int(np.argmax(field))
         hotspot = np.unravel_index(peak_flat, field.shape)
         return Solution(
@@ -187,11 +203,19 @@ class ThermalReference:
             t_peak_c=float(field.max()),
             t_mean_c=float(field.mean()),
             hotspot_index=(int(hotspot[0]), int(hotspot[1]), int(hotspot[2])),
-            nx=nx, ny=ny, nz=nz, n_unknowns=n,
-            energy_balance=self._energy_balance(field, dz, kz, dx, dy, q),
+            nx=nx, ny=ny, nz=nz, n_unknowns=nx * ny * nz,
+            energy_balance=self._energy_balance(field, mesh["dz"], mesh["kz"],
+                                                mesh["dx"], mesh["dy"], mesh["q"]),
             layer_peaks_c={self.layers[li].name: float(field[layer_of == li].max())
                            for li in range(len(self.layers))},
         )
+
+    def solve(self, nx: int = 32, ny: int = 32, refine_z: int = 1,
+              hotspots: dict[int, tuple[float, float, float]] | None = None,
+              power_map: np.ndarray | None = None) -> Solution:
+        a, rhs, mesh = self.assemble(nx, ny, refine_z, hotspots, power_map)
+        field = spla.spsolve(a, rhs).reshape(mesh["nz"], mesh["ny"], mesh["nx"])
+        return self.solution_from_field(field, mesh)
 
     def _energy_balance(self, field, dz, kz, dx, dy, q) -> dict:
         """Heat leaving through the convective faces must equal power in."""

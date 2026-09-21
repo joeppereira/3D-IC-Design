@@ -211,65 +211,126 @@ comparing a full link budget against a channel-only S-parameter.
 Ordered by effort-to-credibility. This section is the authoritative to-do list; it
 is kept current so no context is carried in anyone's head.
 
-### Cheap and high value (half a day each)
+**Last worked: 2026-09-20.** Items 1–4 are closed; item 5 is the next thing to pick up.
 
-1. **Externally validate the remaining formats.** GDSII (gdstk), Touchstone (scikit-rf)
-   and SPICE (ngspice) are checked by independent implementations. DEF, LEF, SPEF,
-   Liberty and IBIS are still validated only by readers written in this repo — if writer
-   and reader share a misreading, both are wrong and the test passes. `klayout` is
-   brew-installable and reads GDSII *and* LEF/DEF; `ibischk7` is distributed free by the
-   IBIS Open Forum and is the exact outstanding item in spec §2.7. Coverage is asserted
-   in `tests/integrations/test_external_parsers.py`, so closing this is a test edit plus
-   an install.
-2. **`transient_solver.py` still carries the magic constants.** It declares
-   `PHYSICAL_SCALE = 500.0` with the comment "Match steady state calibration", then uses
-   `power_map * 2000.0` in the update — it does not match the steady-state solver or
-   itself, and `diffusivity = 0.01` is a relaxation factor, not a diffusivity. This is
-   the same defect class already fixed in `solver.py`; the pattern to copy is there.
-   `solver_snippet.py` is a dead copy of the pre-fix code and should be deleted.
-3. **Quote the measured peak temperature.** `83.87 °C` is grid-converged with a
-   published GCI. `final_design_audit.json`, `final_architectural_solution.md`,
-   `design_evolution_story.md` and `README.md` still assert `98.5 °C`, which was a
-   literal, never a solver output.
+### Closed
 
-### Real capability (1–2 days each)
+1. ~~**Externally validate the remaining formats.**~~ ✅ **Closed for DEF, LEF and
+   Liberty.** `klayout` reads the DEF/LEF and `liberty-parser` (a lark grammar,
+   not regexes) reads the `.lib`; both are asserted in
+   `tests/integrations/test_external_parsers.py`. Dependencies are pinned in
+   `requirements.txt`.
 
-4. **POD / reduced-order model.** Still the one unimplemented item from the original
-   claims, and now actually possible: the reference solver can generate the snapshot
-   matrix, then SVD → retain leading modes → project. Validate by reproducing held-out
-   snapshots, and report the truncation error rather than a speedup ratio.
-5. **A surrogate trust guard.** The surrogate is +8 to +40 K wrong at optimiser-selected
-   designs (§4). The search should automatically re-solve its top-k candidates on the
-   reference solver, and flag designs outside the training distribution. That converts
-   the current caveat into a feature.
+   Bringing in a third parser found **two real defects**, both invisible to the
+   round-trip tests because those compare numbers and these are geometry:
+
+   * **Two macros physically overlapped.** The N/S SERDES rows and the E/W UCIe
+     columns both started at a 1000 µm offset, so `SERDES_S_0` (1000–1600 ×
+     500–1400 µm) and `UCIE_W_0` (500–1100 × 1000–1900 µm) intersected over
+     100 × 400 µm. DEF places the lower-left of the bounding box *after* ORIENT
+     is applied, so a 900 × 600 PHY placed `E` occupies 600 × 900 — reasoning
+     about the unrotated size is how it was missed. `canonical.derive_macros`
+     now clears the corner and raises if a placement cannot fit.
+   * **Two RoT guard-bands, 7 mm apart.** `def_io` put the 250 µm EM shield at
+     the die centre; `gen_def.py` placed the Caliptra RoT at (w/2, 2000 µm).
+     `canonical.rot_origin_um` now owns it and both consume it. `gen_def.py`
+     also consumes `derive_macros`, which closes the P0-B duplication.
+
+   *Still open:* **SPEF** (no independent Python reader exists on PyPI; needs
+   OpenROAD or PrimeTime) and **IBIS** (`ibischk7` is not a direct download —
+   the IBIS Open Forum gates it behind licence acceptance, so it is an owner
+   action). See item 9.
+
+2. ~~**`transient_solver.py` still carries the magic constants.**~~ ✅ **Closed.**
+   Rewritten as `TransientThermalSolver(ThermalSolver)` on the finite-volume
+   energy equation `C dT/dt = Σ g ΔT + P`, sharing the steady-state solver's
+   verified conductances. `PHYSICAL_SCALE = 500`, the bare `* 2000.0` source
+   multiplier and `diffusivity = 0.01` are gone; the explicit stability limit is
+   **computed** (1.61 µs) and sub-stepped automatically. Volumetric heat
+   capacity raises on a missing material rather than defaulting, the same rule
+   as the `k_map`. Verified three ways: exact matrix exponential of the same ODE
+   system (**4.3e-5 °C**), `solver.py`'s converged field as a fixed point
+   (**8.5e-6** relative), energy closure (**2.9e-6**). `solver_snippet.py`
+   deleted.
+
+   *Worth knowing:* a single lumped exponential is the **wrong** reference for
+   this stack — it has modes from 1.5 µs to 259 ms, so the first version of that
+   check failed for the wrong reason.
+
+3. ~~**Quote the measured peak temperature.**~~ ✅ **Closed.** **83.87 °C**
+   (grid-converged, GCI 0.081%) replaces the 98.5 °C literal in
+   `final_design_audit.json`, `final_architectural_solution.md`,
+   `design_evolution_story.md`, `README.md`, the spec, the Cadence hook, the web
+   dashboard and the legacy exporters. `canonical.py` now **raises** if the
+   operating point is not a solver output instead of defaulting — that value
+   sets Liberty's `nom_temperature` and the SPICE `.temp` line. The unmeasured
+   *"6.5 °C headroom from shattered macros"* is replaced by the measured
+   **41.45 °C** against an exhaustive scan of monolithic placements. The
+   synthetic Celsius fixture was shifted by −14.6255 °C with the shift recorded
+   in its header. `transient_roi_solver.py` was deleted: unreferenced, and it
+   returned a fabricated `peak_tj` alongside a "100,000×" speedup.
+
+4. ~~**POD / reduced-order model.**~~ ✅ **Closed.**
+   `physics_accelerated/src/thermal_rom.py` — a POD-**Galerkin** ROM, not a
+   regression: snapshots from the reference solver, SVD, then the *same
+   operator* projected as `(Uᵣᵀ A Uᵣ) a = Uᵣᵀ b`. Measured on 32 held-out
+   parameters at 10,240 unknowns: worst held-out peak-Tj error **1.43 °C** at
+   rank 240, with the ROM sitting just above the projection floor at every rank
+   (so the basis, not the projection, is the limit). Reported as truncation
+   error; the timing ratio is labelled as internal. See
+   `reports/rom_pinn_validation.md` §4 and `reports/thermal_rom_validation.json`.
+
+   *The finding worth carrying forward:* **retained energy is not accuracy.** At
+   rank 32 the basis holds 99.974% of the snapshot energy while the held-out
+   peak temperature is still **8.71 °C** wrong. Convergence is slow because a
+   *translating* localised source has a slow Kolmogorov n-width — a property of
+   the problem, not a defect.
+
+### Next up
+
+5. **A surrogate trust guard.** The surrogate is +8 to +40 K wrong at
+   optimiser-selected designs (§4). The search should automatically re-solve its
+   top-k candidates on the reference solver, and flag designs outside the
+   training distribution. That converts the current caveat into a feature.
+
+   *Now easier than when this was written:* the POD ROM from item 4 is a
+   cheaper-than-full re-solve with a projection-error bound, so the guard can
+   re-rank on the ROM and reserve the full solve for the final few.
 
 ### Decisions only the owner can make
 
 6. **A 1 TB CXL memory module whose die hierarchy contains no memory die.**
-   `assembly_packaging_spec.md` documents a 30 µm DRAM stack; `golden_config.json` has
-   three dies, none of them DRAM. Either the spec or the hierarchy is wrong. This is the
-   single remaining cross-consistency error and it is left failing deliberately.
-7. **`.git` is 222 MB.** Untracking `node_modules` stopped the growth; shrinking history
-   needs a rewrite, which breaks existing clones.
-8. **Legacy duplicates.** `netlist_exporter.py` and `gds_export.tcl` are superseded by
-   `integrations/` (spec P0-C/P0-E) and `gen_def.py` duplicates geometry that now lives
-   in `integrations/canonical.py` (P0-B). Retiring them is cleanup, not new capability.
+   `assembly_packaging_spec.md` documents a 30 µm DRAM stack; `golden_config.json`
+   has three dies, none of them DRAM. Either the spec or the hierarchy is wrong.
+   This is the single remaining cross-consistency error and it is left failing
+   deliberately.
+7. **`.git` is 222 MB.** Untracking `node_modules` stopped the growth; shrinking
+   history needs a rewrite, which breaks existing clones.
+8. **Legacy duplicates.** `netlist_exporter.py` and `gds_export.tcl` are
+   superseded by `integrations/` (spec P0-C/P0-E). `gen_def.py` no longer
+   duplicates the placement geometry — it consumes `canonical.derive_macros`
+   (item 1) — but the file is still a second serializer and retiring it is
+   cleanup, not new capability.
 
-### Blocked on licences
+### Blocked on licences or downloads
 
-9. **T1/T2 vendor validation.** Every hook emits and self-checks; no Cadence, Synopsys
-   or Siemens tool has opened an artifact. The driver scripts are written to be run
-   unmodified by a licensee.
+9. **T1/T2 vendor validation.** Every hook emits and self-checks; no Cadence,
+   Synopsys or Siemens tool has opened an artifact. The driver scripts are
+   written to be run unmodified by a licensee. This also covers the two
+   remaining external validators from item 1: SPEF needs OpenROAD or PrimeTime,
+   and IBIS needs `ibischk7`, whose download requires accepting the IBIS Open
+   Forum licence.
 
 ### How to resume
 
 ```bash
-./regression_suite/run_physics_verification.sh      # solver + PINO + NSGA-II
+pip install -r requirements.txt                     # validators included
+./regression_suite/run_physics_verification.sh      # solver, transient, ROM, PINO, NSGA-II
 ./regression_suite/run_interchange_qualification.sh # formats + cross-consistency
-python -m unittest discover -s tests -t .           # 149 tests
+python -m unittest discover -s tests -t .           # 185 tests
 ```
 
-Read `reports/rom_pinn_validation.md` (physics, measured),
+Read `reports/rom_pinn_validation.md` (physics, measured — §4 is the POD ROM),
 `reports/multiobjective_search.md` (search + the surrogate error band), and
 `reports/eda_vendor_integration_spec.md` §10 (integration status).
 
@@ -306,6 +367,16 @@ sound for *ranking*; absolute temperatures must be re-solved on the reference.
   NSGA-II verified against a problem with a known analytic front.
 * A measured error band for the surrogate at the designs an optimiser selects — which is
   the number that governs whether its output can be quoted.
+* A transient solver verified against the exact matrix exponential of the system it
+  integrates, against the steady-state solver's field as a fixed point, and by closing
+  its own energy budget.
+* A POD-Galerkin reduced-order model with measured truncation error on held-out
+  snapshots — including the measurement that its "99.974% retained energy" corresponds
+  to an 8.71 °C peak-temperature error, which is why energy fractions are not quoted
+  here as accuracy.
+* DEF, LEF and Liberty read back by independently-written parsers (KLayout,
+  liberty-parser), which found two placement defects that number-comparing round-trip
+  tests could not see.
 
 **Cannot claim yet** — and each has a specific blocker:
 
@@ -314,7 +385,7 @@ sound for *ranking*; absolute temperatures must be re-solved on the reference.
 | ~~Pareto / multi-objective search~~ | ✅ **Closed** — NSGA-II, verified on ZDT1. |
 | ~~Physics-informed training~~ | ✅ **Closed** — heat-equation residual in the loss (PINO). |
 | ~~A defensible peak-Tj number~~ | ✅ **Closed** — 83.87 °C, grid-converged, GCI 0.081%. |
-| Reduced-order model (POD) | Not implemented. The reference solver makes it possible; the modal projection does not exist. |
+| ~~Reduced-order model (POD)~~ | ✅ **Closed** — POD-Galerkin, 1.43 °C worst held-out peak error. |
 | *Vendor*-correlated accuracy ("Ansys-correlated") | No licensed tool has run. The correct phrase is "grid-converged finite-element reference". |
 | Any speedup figure | Only internal ratios exist — this mesh, this hardware, this repo's own solver. |
 | "Validated in Cadence / Synopsys / Siemens" | No vendor tool has opened an artifact. |

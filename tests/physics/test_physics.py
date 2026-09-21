@@ -28,6 +28,7 @@ from heat_residual import HeatEquationResidual                          # noqa: 
 from thermal.solver import ThermalSolver                                # noqa: E402
 from thermal.transient_solver import TransientThermalSolver             # noqa: E402
 import pareto as P                                                      # noqa: E402
+import thermal_rom as rom_mod                                           # noqa: E402
 
 GOLDEN = os.path.join(ROOT, "physics_accelerated", "results", "golden_config.json")
 
@@ -363,6 +364,97 @@ class TestHeatResidual(unittest.TestCase):
         """Residual and solver must share geometry, materials and BCs."""
         self.assertEqual(self.res.layers, self.solver.layers)
         torch.testing.assert_close(self.res.gx.flatten(), self.solver.gx)
+
+
+class TestThermalROM(unittest.TestCase):
+    """The POD-Galerkin ROM -- the last unimplemented item from the original
+    claims, which used to be described with a 1.9M x speedup against a tool
+    nobody had run."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.ref = rom_mod.build_reference()
+        cls.rom = rom_mod.ThermalROM(cls.ref, nx=16, ny=16, refine_z=1)
+        cls.train = rom_mod.sample_params(48, seed=1)
+        cls.test = rom_mod.sample_params(8, seed=2)
+        cls.basis = cls.rom.fit(cls.train, rank=48)
+
+    def _rel(self, p, rank=None):
+        if rank is not None:
+            self.rom.set_rank(rank)
+        t_full = self.rom.solve_full(p)
+        t_rom = self.rom.solve_reduced(p)
+        return (float(np.linalg.norm(t_rom - t_full) / np.linalg.norm(t_full)),
+                float(abs(t_rom.max() - t_full.max())))
+
+    def test_assemble_and_solve_agree(self):
+        """The ROM projects the operator solve() uses, so the split-out
+        assembly must reproduce solve() exactly."""
+        import scipy.sparse.linalg as spla
+        a, b, mesh = self.ref.assemble(nx=12, ny=12, refine_z=1)
+        field = spla.spsolve(a, b).reshape(mesh["nz"], mesh["ny"], mesh["nx"])
+        direct = self.ref.solve(nx=12, ny=12, refine_z=1)
+        np.testing.assert_allclose(field, direct.t_field_c, rtol=0, atol=1e-9)
+
+    def test_basis_is_orthonormal(self):
+        m = self.basis.modes
+        np.testing.assert_allclose(m.T @ m, np.eye(m.shape[1]), atol=1e-10)
+
+    def test_full_rank_basis_spans_the_training_snapshots(self):
+        """The defining property of POD: at rank M the span contains every
+        snapshot, so the projection error on training data is round-off."""
+        self.rom.set_rank(self.basis.max_rank)
+        for p in self.train[:4]:
+            t_full = self.rom.solve_full(p)
+            err = np.linalg.norm(self.rom.project(t_full) - t_full) \
+                / np.linalg.norm(t_full)
+            self.assertLess(err, 1e-10)
+
+    def test_reduced_operator_is_a_galerkin_projection(self):
+        """U^T A U, not a regression fitted to the outputs."""
+        self.rom.set_rank(12)
+        m = self.rom.basis.modes
+        np.testing.assert_allclose(self.rom._a_reduced,
+                                   m.T @ (self.rom.a @ m), atol=1e-12)
+        # A is symmetric, so its projection must be too.
+        np.testing.assert_allclose(self.rom._a_reduced, self.rom._a_reduced.T,
+                                   rtol=1e-9, atol=1e-12)
+
+    def test_error_falls_as_modes_are_retained(self):
+        errs = [max(self._rel(p, rank=r)[0] for p in self.test)
+                for r in (4, 12, 24, 48)]
+        self.assertEqual(errs, sorted(errs, reverse=True), errs)
+
+    def test_set_rank_can_grow_as_well_as_shrink(self):
+        """Regression guard: set_rank used to discard the tail of the basis, so
+        every rank after the first was capped at the smallest one requested and
+        the rank sweep reported a flat line."""
+        self.rom.set_rank(4)
+        self.assertEqual(4, self.rom.basis.rank)
+        self.rom.set_rank(40)
+        self.assertEqual(40, self.rom.basis.rank)
+        self.assertEqual(40, self.rom.basis.modes.shape[1])
+
+    def test_retained_energy_overstates_accuracy(self):
+        """The finding worth carrying forward: 99.98% 'retained energy' is not
+        99.98% accuracy. Quoting the energy fraction is how a ROM gets
+        advertised at an accuracy it does not have."""
+        self.rom.set_rank(24)
+        self.assertGreater(self.rom.basis.retained_energy, 0.999)
+        worst_l2, worst_peak = max((self._rel(p) for p in self.test),
+                                   key=lambda e: e[0])
+        self.assertGreater(worst_l2, 1e-2)
+        self.assertGreater(worst_peak, 1.0)
+
+    def test_reduced_solve_beats_the_neural_surrogate_on_peak_error(self):
+        """Context for the number: the FNO surrogate is +8 to +40 K at
+        optimiser-selected designs (reports/thermal_validation.json)."""
+        self.rom.set_rank(self.basis.max_rank)
+        worst = max(self._rel(p)[1] for p in self.test)
+        self.assertLess(worst, 8.0)
+
+    def test_held_out_parameters_are_not_training_parameters(self):
+        self.assertEqual(set(), set(self.train) & set(self.test))
 
 
 class TestNsga2(unittest.TestCase):
