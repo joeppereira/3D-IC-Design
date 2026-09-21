@@ -65,8 +65,10 @@ random batches.
   the analytic front, beating random sampling at equal budget (hypervolume 0.951 vs
   0.881, front size 48 vs 20).
 
-POD/ROM and any *vendor* correlation remain not implemented, and are still described
-that way.
+The POD/ROM claim has since been closed too (§5 item 4: a POD-Galerkin ROM with
+measured truncation error, replacing a document that quoted a 1.9M× speedup against a
+tool nobody had run). Any *vendor* correlation remains not implemented, and is
+described that way.
 
 ### 2.2 The same quantity had four different values
 
@@ -211,7 +213,8 @@ comparing a full link budget against a channel-only S-parameter.
 Ordered by effort-to-credibility. This section is the authoritative to-do list; it
 is kept current so no context is carried in anyone's head.
 
-**Last worked: 2026-09-20.** Items 1–4 are closed; item 5 is the next thing to pick up.
+**Last worked: 2026-09-20.** Items 1–5 are closed; item 10 is the next thing to
+pick up.
 
 ### Closed
 
@@ -286,16 +289,54 @@ is kept current so no context is carried in anyone's head.
    *translating* localised source has a slow Kolmogorov n-width — a property of
    the problem, not a defect.
 
+5. ~~**A surrogate trust guard.**~~ ✅ **Closed.**
+   `physics_accelerated/src/trust_guard.py`, run automatically at the end of
+   every search. The front is no longer published with temperatures the
+   surrogate predicted: all 48 members are re-solved on the reference solver
+   (**2.0 ms each** — the operator is parameter-independent, so one
+   factorisation serves every design), the three worth quoting are re-solved
+   again on a 64×64×20 mesh, and each front entry carries
+   `reference_peak_tj_c`, `surrogate_error_k` and `in_training_distribution`.
+   A test re-derives a published temperature from its own genome, so the
+   artifact cannot drift back to predictions.
+
+   *The finding worth carrying forward:* **the whole search space is outside
+   the surrogate's training distribution.** Not the extremes of it — all of
+   it. `data_gen.py` trained on random r=3 discs and *single hot cells* on the
+   memory die; the optimiser places 2×2 blocks and a solid 4×4 memory macro.
+   Mahalanobis distance on shape features: training p99 **4.7**, every front
+   member **36.4–71.8**, with `memory_active_fraction` at **+24.6 σ**. The
+   +8…+40 K error band was never bad luck at the extremes of a well-sampled
+   space.
+
+   Splitting the error says which fix applies: **+14.21 K** mean network
+   extrapolation, **+2.76 K** training-mesh discretisation, 0.00003 K solver
+   disagreement, closing on the +16.98 K total to **0.0 K**. The same network
+   error measured in-distribution is **2.10 K** — 6.8× better than where the
+   optimiser looks. The ranking survives across the whole front (Kendall
+   τ **0.986**, selection regret **0.00 °C**), which is the first time that
+   claim rested on more than three sampled designs.
+
+   *And the plan that did not survive measurement:* re-ranking on the POD ROM
+   from item 4 does not pay at this mesh. A ROM accurate to 1 °C over block
+   layouts needs ~300 snapshots — 300 exact solves of offline cost — and then
+   runs at 1.45 ms against a 1.89 ms exact back-substitution. The cause is the
+   prefactorisation, not the ROM; at a mesh where factorisation is
+   unaffordable the same basis wins by 40×. `--calibrate-screen` keeps the
+   measurement reproducible instead of the conclusion asserted.
+
 ### Next up
 
-5. **A surrogate trust guard.** The surrogate is +8 to +40 K wrong at
-   optimiser-selected designs (§4). The search should automatically re-solve its
-   top-k candidates on the reference solver, and flag designs outside the
-   training distribution. That converts the current caveat into a feature.
-
-   *Now easier than when this was written:* the POD ROM from item 4 is a
-   cheaper-than-full re-solve with a projection-error bound, so the guard can
-   re-rank on the ROM and reserve the full solve for the final few.
+10. **Retrain the surrogate on the distribution the optimiser searches.** Item
+    5 turned the error band from a caveat into a measurement, and the
+    measurement points at one thing: the network is asked to predict block
+    layouts it never saw. `data_gen.py` generates discs and single cells;
+    `pareto_search.py` evaluates blocks. Regenerating the training set from the
+    search's own parameterisation and retraining is well-defined work, and the
+    success criterion already exists — the guard's flagged fraction and its
+    in-distribution-vs-optimum network error ratio (today 2.10 K → 14.21 K).
+    The guard stays either way: it is what would catch the *next* distribution
+    shift.
 
 ### Decisions only the owner can make
 
@@ -325,14 +366,15 @@ is kept current so no context is carried in anyone's head.
 
 ```bash
 pip install -r requirements.txt                     # validators included
-./regression_suite/run_physics_verification.sh      # solver, transient, ROM, PINO, NSGA-II
+./regression_suite/run_physics_verification.sh      # solver, transient, ROM, PINO, NSGA-II, trust guard
 ./regression_suite/run_interchange_qualification.sh # formats + cross-consistency
-python -m unittest discover -s tests -t .           # 185 tests
+python -m unittest discover -s tests -t .           # 202 tests
 ```
 
 Read `reports/rom_pinn_validation.md` (physics, measured — §4 is the POD ROM),
-`reports/multiobjective_search.md` (search + the surrogate error band), and
-`reports/eda_vendor_integration_spec.md` §10 (integration status).
+`reports/multiobjective_search.md` (search, the surrogate error band, and §6 the
+trust guard), and `reports/eda_vendor_integration_spec.md` §10 (integration
+status).
 
 ## 6. What this project can defensibly claim today
 
@@ -352,7 +394,9 @@ same family as the original units error:
 And one that matters for how the results are used: the surrogate's error at
 **optimiser-selected** designs is +8.45 / +11.45 / +40.17 K against a
 training-distribution RMSE of 2.03 K, always over-predicting. The Pareto front is
-sound for *ranking*; absolute temperatures must be re-solved on the reference.
+sound for *ranking* (Kendall τ 0.986 against the reference across the whole
+front); absolute temperatures are now re-solved on the reference automatically
+by the trust guard rather than left to the reader (item 5).
 
 **Can claim** — each is falsifiable by cloning and running:
 
@@ -366,7 +410,12 @@ sound for *ranking*; absolute temperatures must be re-solved on the reference.
   operator that improves both field RMSE and PDE residual over a data-only baseline, and
   NSGA-II verified against a problem with a known analytic front.
 * A measured error band for the surrogate at the designs an optimiser selects — which is
-  the number that governs whether its output can be quoted.
+  the number that governs whether its output can be quoted — split into network
+  extrapolation, solver disagreement and mesh discretisation, the three closing on the
+  total to 0.0 K.
+* A trust guard that re-solves every published design on the reference solver and flags
+  designs outside the surrogate's training distribution, with the flag calibrated
+  against an in-distribution control rather than asserted.
 * A transient solver verified against the exact matrix exponential of the system it
   integrates, against the steady-state solver's field as a fixed point, and by closing
   its own energy budget.

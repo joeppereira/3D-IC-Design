@@ -81,6 +81,13 @@ def monolithic_power_map(logic_w: float, mem_w: float, layers: int,
     return maps
 
 
+def surrogate_peaks(model, mean, std, maps) -> np.ndarray:
+    """Predicted logic-die peak temperature for already-built power maps."""
+    t = maps if torch.is_tensor(maps) else torch.from_numpy(np.asarray(maps)).float()
+    with torch.no_grad():
+        return ((model(t) * std + mean)[:, 0].amax(dim=(1, 2))).numpy()
+
+
 def make_evaluator(model, mean, std, logic_w, mem_w, layers=5, counter=None):
     def evaluate(genomes: np.ndarray) -> np.ndarray:
         maps = build_power_maps(genomes, logic_w, mem_w, layers)
@@ -102,6 +109,79 @@ def make_evaluator(model, mean, std, logic_w, mem_w, layers=5, counter=None):
     return evaluate
 
 
+def run_trust_guard(genomes: np.ndarray, surrogate_peaks: np.ndarray, args,
+                    logic_w: float, mem_w: float, layers: int,
+                    surrogate_fn=None) -> dict:
+    """Re-solve what the search selected, before any of it is published.
+
+    The surrogate is 8-47 K optimistic at these designs and every one of them is
+    outside its training distribution -- see reports/surrogate_trust_report.json
+    for the measurement. The search therefore does not get to publish a
+    temperature it predicted itself.
+    """
+    from trust_guard import (DistributionGuard, SurrogateTrustGuard,   # noqa: E402
+                             build_context, load_training_maps, print_report)
+
+    solver, cascade = build_context(Path(args.config))
+    guard = SurrogateTrustGuard(cascade,
+                                DistributionGuard.fit(load_training_maps()))
+    maps = build_power_maps(genomes, logic_w, mem_w, layers)
+    fdm = solver.solve_steady_state(maps)[:, 0].amax(dim=(1, 2)).numpy()
+
+    print()
+    report = guard.audit(maps.numpy(), surrogate_peaks,
+                         top_k=args.trust_k or None,
+                         confirm_k=args.confirm_k, fdm_peaks=fdm)
+    if surrogate_fn is not None:
+        report["in_distribution_control"] = guard.in_distribution_control(
+            surrogate_fn,
+            fdm_fn=lambda m: solver.solve_steady_state(
+                torch.from_numpy(np.asarray(m)).float())[:, 0]
+            .amax(dim=(1, 2)).numpy())
+    print_report(report)
+    out = Path(args.out) / "surrogate_trust_report.json"
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(json.dumps(report, indent=2) + "\n")
+    print(f"  wrote {out}")
+    return report
+
+
+def _front_entry(row: np.ndarray, trust: dict | None, i: int) -> dict:
+    """One published front member: the surrogate's objectives, plus the
+    reference temperature for the members the guard re-solved."""
+    entry = dict(zip(OBJECTIVES, map(float, row)))
+    if trust is None:
+        return entry
+    checked = {d["index"]: d for d in trust["designs"]}
+    d = checked.get(i)
+    if d is None:
+        return entry                 # outside --trust-k; surrogate only
+    entry["reference_peak_tj_c"] = d["reference_peak_c"]
+    entry["surrogate_error_k"] = d["surrogate_error_k"]
+    entry["in_training_distribution"] = d["in_distribution"]
+    return entry
+
+
+def _trust_summary(trust: dict) -> dict:
+    t2 = trust.get("tier_2", {})
+    return {
+        "report": "reports/surrogate_trust_report.json",
+        "resolved_on_reference": trust["n_resolved"],
+        "of_designs": trust["n_designs"],
+        "mesh": trust["tier_1"]["mesh"],
+        "surrogate_error_vs_reference_k": trust["surrogate_error_vs_reference"],
+        "ranking": trust["ranking"],
+        "out_of_distribution_fraction":
+            trust["distribution_guard"]["flagged_fraction"],
+        "refined_confirmation": {
+            "mesh": t2.get("mesh"),
+            "quotable_peak_c": t2.get("quotable_peak_c"),
+            "max_abs_discretisation_delta_c":
+                t2.get("max_abs_discretisation_delta_c"),
+        } if t2 else None,
+    }
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--model", default="results/fno_model_lam0p1.pt")
@@ -111,6 +191,15 @@ def main():
     ap.add_argument("--generations", type=int, default=60)
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--out", default="../reports")
+    ap.add_argument("--trust-k", type=int, default=0,
+                    help="re-solve the k coolest front members on the reference "
+                         "solver; 0 means the whole front")
+    ap.add_argument("--confirm-k", type=int, default=3,
+                    help="of those, how many to re-solve again on the refined "
+                         "mesh; 0 skips the refined tier")
+    ap.add_argument("--no-trust-guard", action="store_true",
+                    help="publish surrogate predictions unchecked (not advised: "
+                         "they are 8-47 K optimistic at these designs)")
     args = ap.parse_args()
 
     cfg = json.loads(Path(args.config).read_text())
@@ -188,6 +277,21 @@ def main():
     print(f"    headroom recovered by shattering : {best_mono - best_shattered:+.2f} C")
     print(f"    (both {mono.evaluations} evaluations; same power density per cell)")
 
+    # --- trust guard: nothing here is published as a temperature until the
+    # reference solver has seen it. ---------------------------------------
+    front_genomes = nsga.genomes[nsga.front_index][order]
+    front_sorted = front[order]
+    trust = None
+    if not args.no_trust_guard:
+        # front_genomes and the objectives must be in the same order: passing
+        # the unsorted objectives alongside sorted genomes pairs each design
+        # with another design's prediction, which shows up as a Kendall tau
+        # near zero rather than as an error.
+        trust = run_trust_guard(front_genomes, front_sorted[:, 0], args,
+                                logic_w, mem_w, layers,
+                                surrogate_fn=lambda m: surrogate_peaks(model, mean,
+                                                                       std, m))
+
     outdir = Path(args.out)
     outdir.mkdir(parents=True, exist_ok=True)
     doc = {
@@ -202,7 +306,8 @@ def main():
         "hypervolume": {"nsga2": hv_n, "random_search": hv_r,
                         "improvement_pct": (hv_n / hv_r - 1) * 100 if hv_r else None},
         "hypervolume_history": nsga.history,
-        "front": [dict(zip(OBJECTIVES, map(float, row))) for row in front[order]],
+        "front": [_front_entry(row, trust, i)
+                  for i, row in enumerate(front_sorted)],
         # Key names must cover every variable: zipping against a 4-name tuple
         # silently truncated a 10-variable genome, so the published front could
         # not be reproduced from its own JSON.
@@ -216,16 +321,24 @@ def main():
             "evaluations_each": int(mono.evaluations),
             "method": "both optimised with NSGA-II at identical budget",
         },
-        "note": ("Objectives are surrogate predictions. The surrogate's own error "
-                 "band against the grid-converged reference solver is published in "
-                 "reports/thermal_validation.json."),
+        "note": ("Objectives are surrogate predictions. Every front member also "
+                 "carries reference_peak_tj_c, solved on the grid-converged "
+                 "reference solver by the trust guard -- quote that one."),
     }
+    if trust is not None:
+        doc["trust_guard"] = _trust_summary(trust)
     (outdir / "pareto_front_nsga2.json").write_text(json.dumps(doc, indent=2) + "\n")
     with open(outdir / "pareto_front_nsga2.csv", "w", newline="") as fh:
         w = csv.writer(fh)
-        w.writerow(list(OBJECTIVES) + ["lx", "ly", "mx", "my"])
-        for row, g in zip(front[order], nsga.genomes[nsga.front_index][order]):
-            w.writerow([f"{v:.4f}" for v in row] + [int(round(x)) for x in g])
+        # The header used to name four variables (lx, ly, mx, my) for a
+        # ten-variable genome, so every row was six columns wider than its
+        # header -- the same defect class as the truncated genome_keys above.
+        w.writerow(list(OBJECTIVES) + ["reference_peak_tj_c"] + GENOME_KEYS)
+        for i, (row, g) in enumerate(zip(front_sorted, front_genomes)):
+            ref_c = doc["front"][i].get("reference_peak_tj_c")
+            w.writerow([f"{v:.4f}" for v in row]
+                       + [f"{ref_c:.4f}" if ref_c is not None else ""]
+                       + [int(round(x)) for x in g])
     print(f"\n  wrote {outdir}/pareto_front_nsga2.json and .csv")
 
 

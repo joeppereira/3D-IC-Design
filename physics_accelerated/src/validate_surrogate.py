@@ -24,45 +24,26 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 sys.path.insert(0, os.path.join(HERE, "..", "..", "serdes_architect", "src"))
 
-from thermal_reference import ThermalReference, Layer, Boundary  # noqa: E402
 from thermal.solver import ThermalSolver                          # noqa: E402
+# reference_from_solver moved to trust_guard when the guard took over the
+# solver cascade; re-exported here because this script's name is the one the
+# reports cite.
+from trust_guard import ReferenceCascade, reference_from_solver   # noqa: E402
 from pareto_search import (load_surrogate, build_power_maps, GRID, BLOCK,  # noqa: E402
                            SUB, N_SUB)
 
 
-def reference_from_solver(solver: ThermalSolver) -> ThermalReference:
-    layers = [Layer(m, float(solver.dz[i]), float(solver.k[i]), 0.0, n_cells_z=1)
-              for i, m in enumerate(solver.layer_materials)]
-    return ThermalReference(layers, solver.width_m, solver.depth_m,
-                            Boundary(h_top_w_m2k=solver.h_top,
-                                     h_bottom_w_m2k=solver.h_bottom,
-                                     h_side_w_m2k=0.0,
-                                     t_ambient_c=solver.t_ambient))
-
-
-def solve_reference(ref: ThermalReference, power_map: torch.Tensor,
+def solve_reference(cascade: ReferenceCascade, power_map: torch.Tensor,
                     refine: int = 1) -> float:
-    """Peak temperature of layer 0 on a mesh `refine` times finer than the map."""
-    q = power_map[0].numpy()
-    layers_n = q.shape[0]
+    """Peak temperature of layer 0 on a mesh `refine` times finer than the map.
 
-    def density(nx, ny, layer_of, hotspots):
-        out = np.zeros((len(layer_of), ny, nx))
-        f = nx // GRID
-        for li in range(layers_n):
-            cells = np.where(layer_of == li)[0]
-            up = np.repeat(np.repeat(q[li], f, axis=0), f, axis=1) / (f * f)
-            for cz in cells:
-                out[cz] = up / len(cells)
-        return out
-
-    original = ref._power_density
-    ref._power_density = density
-    try:
-        sol = ref.solve(nx=GRID * refine, ny=GRID * refine, refine_z=refine)
-    finally:
-        ref._power_density = original
-    return float(sol.t_field_c[0].max())
+    This used to monkeypatch the reference solver's private `_power_density` and
+    re-assemble the matrix on every call. `ReferenceCascade` assembles and
+    factorises each mesh once and takes the power map through the solver's
+    public `power_map=` argument, so the exhaustive monolithic scan below costs
+    one factorisation rather than twenty-five.
+    """
+    return cascade.peak(power_map[0].numpy(), refine)
 
 
 def main():
@@ -73,7 +54,7 @@ def main():
     layers = int(cfg["voxel_stack_params"]["layers"])
 
     solver = ThermalSolver(cfg_path)
-    ref = reference_from_solver(solver)
+    cascade = ReferenceCascade(reference_from_solver(solver))
     model, mean, std = load_surrogate("results/fno_model_lam0p1.pt",
                                       "results/norm_stats.pt", layers)
 
@@ -95,8 +76,8 @@ def main():
         with torch.no_grad():
             surro = float((model(pmap) * std + mean)[0, 0].max())
         fdm = float(solver.solve_steady_state(pmap)[0, 0].max())
-        r1 = solve_reference(ref, pmap, refine=1)
-        r2 = solve_reference(ref, pmap, refine=2)
+        r1 = solve_reference(cascade, pmap, refine=1)
+        r2 = solve_reference(cascade, pmap, refine=2)
         rows.append({
             "design": label,
             "surrogate_peak_c": surro,
@@ -115,7 +96,7 @@ def main():
     sv = front_doc["shattered_vs_monolithic"]
     best_sh = np.array([[genomes[0][k] for k in keys]])
     sh_map = build_power_maps(best_sh, logic_w, mem_w, layers)
-    sh_ref = solve_reference(ref, sh_map, refine=2)
+    sh_ref = solve_reference(cascade, sh_map, refine=2)
 
     # best monolithic: scan every placement on the reference solver directly
     mono_best, mono_at = float("inf"), None
@@ -124,7 +105,7 @@ def main():
             m = torch.zeros((1, layers, GRID, GRID))
             m[0, 0, ly:ly + BLOCK, lx:lx + BLOCK] = logic_w / (BLOCK * BLOCK)
             m[0, 1, 6:6 + BLOCK, 6:6 + BLOCK] = mem_w / (BLOCK * BLOCK)
-            t = solve_reference(ref, m, refine=1)
+            t = solve_reference(cascade, m, refine=1)
             if t < mono_best:
                 mono_best, mono_at = t, (lx, ly)
     print(f"\n  shattering claim, checked on the reference solver:")

@@ -1,0 +1,728 @@
+{
+  "n_designs": 48,
+  "n_resolved": 48,
+  "tier_1": {
+    "mesh": "32x32x10",
+    "unknowns": 10240,
+    "assemble_s": 0.03692612494342029,
+    "factorise_s": 0.13643604214303195,
+    "ms_per_design": 1.9183871675825988,
+    "total_s": 0.09208258404396474
+  },
+  "surrogate_error_vs_reference": {
+    "mean_signed_k": 16.97510717809287,
+    "mean_abs_k": 16.97510717809287,
+    "max_abs_k": 46.83952155464951,
+    "min_signed_k": 5.039848976978931,
+    "max_signed_k": 46.83952155464951
+  },
+  "ranking": {
+    "kendall_tau": 0.9858156028368794,
+    "selection_regret_c": 0.0,
+    "note": "regret is how much hotter the surrogate's own pick is than the coolest design the reference solver finds, in the set that was re-solved"
+  },
+  "distribution_guard": {
+    "training_set": "serdes_architect/data/x_physics.pt",
+    "n_train": 240,
+    "features": [
+      "total_power_w",
+      "logic_power_fraction",
+      "logic_peak_to_mean",
+      "logic_active_fraction",
+      "logic_gyration_cells",
+      "memory_peak_to_mean",
+      "memory_active_fraction",
+      "memory_gyration_cells"
+    ],
+    "threshold_mahalanobis": 4.686605121088157,
+    "train_distance": {
+      "mean": 2.7271702622939205,
+      "p99": 4.686605121088157,
+      "max": 8.091846239495043
+    },
+    "audited_distance": {
+      "min": 36.41723931740302,
+      "max": 71.82853557768493
+    },
+    "flagged_fraction": 1.0,
+    "mean_z_by_feature": {
+      "total_power_w": -2.271740454303114,
+      "logic_power_fraction": 0.5660540216388518,
+      "logic_peak_to_mean": 16.474582515374838,
+      "logic_active_fraction": -5.867832811511781,
+      "logic_gyration_cells": -4.020521055058759,
+      "memory_peak_to_mean": -5.1639527842170825,
+      "memory_active_fraction": 24.585737174490323,
+      "memory_gyration_cells": -2.2767714383137876
+    }
+  },
+  "designs": [
+    {
+      "index": 0,
+      "surrogate_rank": 0,
+      "surrogate_peak_c": 86.0619888305664,
+      "reference_peak_c": 77.61226248340999,
+      "surrogate_error_k": 8.449726347156414,
+      "mahalanobis": 36.46896277646693,
+      "in_distribution": false,
+      "dominant_feature": "memory_active_fraction",
+      "dominant_feature_z": 24.58573717449034
+    },
+    {
+      "index": 1,
+      "surrogate_rank": 1,
+      "surrogate_peak_c": 86.68209075927734,
+      "reference_peak_c": 78.53864807938061,
+      "surrogate_error_k": 8.143442679896737,
+      "mahalanobis": 36.46896277646693,
+      "in_distribution": false,
+      "dominant_feature": "memory_active_fraction",
+      "dominant_feature_z": 24.58573717449034
+    },
+    {
+      "index": 2,
+      "surrogate_rank": 2,
+      "surrogate_peak_c": 87.09976196289062,
+      "reference_peak_c": 79.61133186709527,
+      "surrogate_error_k": 7.488430095795351,
+      "mahalanobis": 36.47262812403063,
+      "in_distribution": false,
+      "dominant_feature": "memory_active_fraction",
+      "dominant_feature_z": 24.58573717449034
+    },
+    {
+      "index": 3,
+      "surrogate_rank": 3,
+      "surrogate_peak_c": 87.43186950683594,
+      "reference_peak_c": 79.66734796926907,
+      "surrogate_error_k": 7.764521537566864,
+      "mahalanobis": 36.47262812403063,
+      "in_distribution": false,
+      "dominant_feature": "memory_active_fraction",
+      "dominant_feature_z": 24.58573717449034
+    },
+    {
+      "index": 4,
+      "surrogate_rank": 4,
+      "surrogate_peak_c": 87.7066650390625,
+      "reference_peak_c": 79.85322566451077,
+      "surrogate_error_k": 7.853439374551726,
+      "mahalanobis": 36.460873762650316,
+      "in_distribution": false,
+      "dominant_feature": "memory_active_fraction",
+      "dominant_feature_z": 24.58573717449034
+    },
+    {
+      "index": 5,
+      "surrogate_rank": 5,
+      "surrogate_peak_c": 87.96064758300781,
+      "reference_peak_c": 80.983837840156,
+      "surrogate_error_k": 6.976809742851813,
+      "mahalanobis": 36.4491282414805,
+      "in_distribution": false,
+      "dominant_feature": "memory_active_fraction",
+      "dominant_feature_z": 24.58573717449034
+    },
+    {
+      "index": 6,
+      "surrogate_rank": 6,
+      "surrogate_peak_c": 90.32234191894531,
+      "reference_peak_c": 81.41194100045317,
+      "surrogate_error_k": 8.910400918492144,
+      "mahalanobis": 36.443091198722854,
+      "in_distribution": false,
+      "dominant_feature": "memory_active_fraction",
+      "dominant_feature_z": 24.58573717449034
+    },
+    {
+      "index": 7,
+      "surrogate_rank": 7,
+      "surrogate_peak_c": 90.33486938476562,
+      "reference_peak_c": 83.04927311822134,
+      "surrogate_error_k": 7.285596266544289,
+      "mahalanobis": 36.43309453629743,
+      "in_distribution": false,
+      "dominant_feature": "memory_active_fraction",
+      "dominant_feature_z": 24.58573717449034
+    },
+    {
+      "index": 8,
+      "surrogate_rank": 8,
+      "surrogate_peak_c": 90.58108520507812,
+      "reference_peak_c": 83.18383605683036,
+      "surrogate_error_k": 7.3972491482477665,
+      "mahalanobis": 36.43309453629743,
+      "in_distribution": false,
+      "dominant_feature": "memory_active_fraction",
+      "dominant_feature_z": 24.58573717449034
+    },
+    {
+      "index": 9,
+      "surrogate_rank": 9,
+      "surrogate_peak_c": 91.97409057617188,
+      "reference_peak_c": 83.50893230258698,
+      "surrogate_error_k": 8.46515827358489,
+      "mahalanobis": 36.43071065673489,
+      "in_distribution": false,
+      "dominant_feature": "memory_active_fraction",
+      "dominant_feature_z": 24.58573717449034
+    },
+    {
+      "index": 10,
+      "surrogate_rank": 10,
+      "surrogate_peak_c": 92.92160034179688,
+      "reference_peak_c": 85.73201334545062,
+      "surrogate_error_k": 7.18958699634625,
+      "mahalanobis": 36.42583024194115,
+      "in_distribution": false,
+      "dominant_feature": "memory_active_fraction",
+      "dominant_feature_z": 24.58573717449034
+    },
+    {
+      "index": 11,
+      "surrogate_rank": 11,
+      "surrogate_peak_c": 95.06344604492188,
+      "reference_peak_c": 88.60228565787118,
+      "surrogate_error_k": 6.461160387050697,
+      "mahalanobis": 36.42501109041153,
+      "in_distribution": false,
+      "dominant_feature": "memory_active_fraction",
+      "dominant_feature_z": 24.58573717449034
+    },
+    {
+      "index": 12,
+      "surrogate_rank": 12,
+      "surrogate_peak_c": 96.79751586914062,
+      "reference_peak_c": 86.18225694653316,
+      "surrogate_error_k": 10.615258922607467,
+      "mahalanobis": 36.4255536261884,
+      "in_distribution": false,
+      "dominant_feature": "memory_active_fraction",
+      "dominant_feature_z": 24.58573717449034
+    },
+    {
+      "index": 13,
+      "surrogate_rank": 13,
+      "surrogate_peak_c": 97.84083557128906,
+      "reference_peak_c": 87.91394010912126,
+      "surrogate_error_k": 9.926895462167806,
+      "mahalanobis": 36.41956804592412,
+      "in_distribution": false,
+      "dominant_feature": "memory_active_fraction",
+      "dominant_feature_z": 24.58573717449034
+    },
+    {
+      "index": 14,
+      "surrogate_rank": 14,
+      "surrogate_peak_c": 99.51731872558594,
+      "reference_peak_c": 87.186027843849,
+      "surrogate_error_k": 12.331290881736933,
+      "mahalanobis": 36.42474524699275,
+      "in_distribution": false,
+      "dominant_feature": "memory_active_fraction",
+      "dominant_feature_z": 24.58573717449034
+    },
+    {
+      "index": 15,
+      "surrogate_rank": 15,
+      "surrogate_peak_c": 100.01002502441406,
+      "reference_peak_c": 89.0244854271681,
+      "surrogate_error_k": 10.98553959724596,
+      "mahalanobis": 36.42347186990434,
+      "in_distribution": false,
+      "dominant_feature": "memory_active_fraction",
+      "dominant_feature_z": 24.58573717449034
+    },
+    {
+      "index": 16,
+      "surrogate_rank": 16,
+      "surrogate_peak_c": 100.87791442871094,
+      "reference_peak_c": 92.68894895056928,
+      "surrogate_error_k": 8.188965478141654,
+      "mahalanobis": 36.41956804592412,
+      "in_distribution": false,
+      "dominant_feature": "memory_active_fraction",
+      "dominant_feature_z": 24.58573717449034
+    },
+    {
+      "index": 17,
+      "surrogate_rank": 17,
+      "surrogate_peak_c": 103.59033203125,
+      "reference_peak_c": 94.94887476851851,
+      "surrogate_error_k": 8.641457262731493,
+      "mahalanobis": 36.41726606994589,
+      "in_distribution": false,
+      "dominant_feature": "memory_active_fraction",
+      "dominant_feature_z": 24.58573717449034
+    },
+    {
+      "index": 18,
+      "surrogate_rank": 18,
+      "surrogate_peak_c": 107.36247253417969,
+      "reference_peak_c": 99.83786197982249,
+      "surrogate_error_k": 7.524610554357196,
+      "mahalanobis": 36.4202568290237,
+      "in_distribution": false,
+      "dominant_feature": "memory_active_fraction",
+      "dominant_feature_z": 24.58573717449034
+    },
+    {
+      "index": 19,
+      "surrogate_rank": 19,
+      "surrogate_peak_c": 109.71734619140625,
+      "reference_peak_c": 104.67749721442732,
+      "surrogate_error_k": 5.039848976978931,
+      "mahalanobis": 36.41973308136081,
+      "in_distribution": false,
+      "dominant_feature": "memory_active_fraction",
+      "dominant_feature_z": 24.58573717449034
+    },
+    {
+      "index": 20,
+      "surrogate_rank": 20,
+      "surrogate_peak_c": 112.30055236816406,
+      "reference_peak_c": 101.58033395850073,
+      "surrogate_error_k": 10.720218409663332,
+      "mahalanobis": 36.41789139631788,
+      "in_distribution": false,
+      "dominant_feature": "memory_active_fraction",
+      "dominant_feature_z": 24.58573717449034
+    },
+    {
+      "index": 21,
+      "surrogate_rank": 21,
+      "surrogate_peak_c": 112.6867446899414,
+      "reference_peak_c": 105.99408869326315,
+      "surrogate_error_k": 6.692655996678255,
+      "mahalanobis": 36.41723931740302,
+      "in_distribution": false,
+      "dominant_feature": "memory_active_fraction",
+      "dominant_feature_z": 24.58573717449034
+    },
+    {
+      "index": 22,
+      "surrogate_rank": 22,
+      "surrogate_peak_c": 114.78294372558594,
+      "reference_peak_c": 106.8409123249782,
+      "surrogate_error_k": 7.942031400607732,
+      "mahalanobis": 36.41723931740302,
+      "in_distribution": false,
+      "dominant_feature": "memory_active_fraction",
+      "dominant_feature_z": 24.58573717449034
+    },
+    {
+      "index": 23,
+      "surrogate_rank": 23,
+      "surrogate_peak_c": 118.33509826660156,
+      "reference_peak_c": 109.47321342492198,
+      "surrogate_error_k": 8.861884841679583,
+      "mahalanobis": 36.41733991927089,
+      "in_distribution": false,
+      "dominant_feature": "memory_active_fraction",
+      "dominant_feature_z": 24.58573717449034
+    },
+    {
+      "index": 24,
+      "surrogate_rank": 24,
+      "surrogate_peak_c": 119.42506408691406,
+      "reference_peak_c": 107.9738181580652,
+      "surrogate_error_k": 11.451245928848863,
+      "mahalanobis": 36.417386799567915,
+      "in_distribution": false,
+      "dominant_feature": "memory_active_fraction",
+      "dominant_feature_z": 24.58573717449034
+    },
+    {
+      "index": 25,
+      "surrogate_rank": 25,
+      "surrogate_peak_c": 120.44105529785156,
+      "reference_peak_c": 108.50173515033076,
+      "surrogate_error_k": 11.939320147520803,
+      "mahalanobis": 36.41733991927089,
+      "in_distribution": false,
+      "dominant_feature": "memory_active_fraction",
+      "dominant_feature_z": 24.58573717449034
+    },
+    {
+      "index": 26,
+      "surrogate_rank": 26,
+      "surrogate_peak_c": 123.39125061035156,
+      "reference_peak_c": 113.71417733707979,
+      "surrogate_error_k": 9.677073273271773,
+      "mahalanobis": 36.417841282422415,
+      "in_distribution": false,
+      "dominant_feature": "memory_active_fraction",
+      "dominant_feature_z": 24.58573717449034
+    },
+    {
+      "index": 27,
+      "surrogate_rank": 27,
+      "surrogate_peak_c": 123.6041259765625,
+      "reference_peak_c": 113.8329441867479,
+      "surrogate_error_k": 9.771181789814605,
+      "mahalanobis": 36.417841282422415,
+      "in_distribution": false,
+      "dominant_feature": "memory_active_fraction",
+      "dominant_feature_z": 24.58573717449034
+    },
+    {
+      "index": 28,
+      "surrogate_rank": 28,
+      "surrogate_peak_c": 127.15733337402344,
+      "reference_peak_c": 115.06821787059457,
+      "surrogate_error_k": 12.089115503428872,
+      "mahalanobis": 36.420848849567584,
+      "in_distribution": false,
+      "dominant_feature": "memory_active_fraction",
+      "dominant_feature_z": 24.58573717449034
+    },
+    {
+      "index": 29,
+      "surrogate_rank": 29,
+      "surrogate_peak_c": 131.79116821289062,
+      "reference_peak_c": 118.07053085217034,
+      "surrogate_error_k": 13.72063736072029,
+      "mahalanobis": 36.420848849567584,
+      "in_distribution": false,
+      "dominant_feature": "memory_active_fraction",
+      "dominant_feature_z": 24.58573717449034
+    },
+    {
+      "index": 30,
+      "surrogate_rank": 30,
+      "surrogate_peak_c": 144.44293212890625,
+      "reference_peak_c": 125.81255543758839,
+      "surrogate_error_k": 18.630376691317863,
+      "mahalanobis": 36.42208603383755,
+      "in_distribution": false,
+      "dominant_feature": "memory_active_fraction",
+      "dominant_feature_z": 24.58573717449034
+    },
+    {
+      "index": 31,
+      "surrogate_rank": 31,
+      "surrogate_peak_c": 145.83546447753906,
+      "reference_peak_c": 127.30957223062269,
+      "surrogate_error_k": 18.52589224691637,
+      "mahalanobis": 36.42208603383755,
+      "in_distribution": false,
+      "dominant_feature": "memory_active_fraction",
+      "dominant_feature_z": 24.58573717449034
+    },
+    {
+      "index": 32,
+      "surrogate_rank": 32,
+      "surrogate_peak_c": 147.69293212890625,
+      "reference_peak_c": 127.57319227692624,
+      "surrogate_error_k": 20.119739851980015,
+      "mahalanobis": 44.74424878378234,
+      "in_distribution": false,
+      "dominant_feature": "memory_active_fraction",
+      "dominant_feature_z": 24.58573717449034
+    },
+    {
+      "index": 33,
+      "surrogate_rank": 33,
+      "surrogate_peak_c": 154.46173095703125,
+      "reference_peak_c": 135.6277139755492,
+      "surrogate_error_k": 18.83401698148205,
+      "mahalanobis": 44.74424878378234,
+      "in_distribution": false,
+      "dominant_feature": "memory_active_fraction",
+      "dominant_feature_z": 24.58573717449034
+    },
+    {
+      "index": 34,
+      "surrogate_rank": 34,
+      "surrogate_peak_c": 162.87557983398438,
+      "reference_peak_c": 138.3532009333548,
+      "surrogate_error_k": 24.522378900629576,
+      "mahalanobis": 44.71779100997097,
+      "in_distribution": false,
+      "dominant_feature": "memory_active_fraction",
+      "dominant_feature_z": 24.58573717449034
+    },
+    {
+      "index": 35,
+      "surrogate_rank": 35,
+      "surrogate_peak_c": 166.583984375,
+      "reference_peak_c": 143.1204970719772,
+      "surrogate_error_k": 23.463487303022788,
+      "mahalanobis": 44.69693808151953,
+      "in_distribution": false,
+      "dominant_feature": "memory_active_fraction",
+      "dominant_feature_z": 24.58573717449034
+    },
+    {
+      "index": 36,
+      "surrogate_rank": 36,
+      "surrogate_peak_c": 167.977783203125,
+      "reference_peak_c": 143.67364023494963,
+      "surrogate_error_k": 24.30414296817537,
+      "mahalanobis": 44.67025693951495,
+      "in_distribution": false,
+      "dominant_feature": "memory_active_fraction",
+      "dominant_feature_z": 24.58573717449034
+    },
+    {
+      "index": 37,
+      "surrogate_rank": 37,
+      "surrogate_peak_c": 176.46568298339844,
+      "reference_peak_c": 148.95660643495515,
+      "surrogate_error_k": 27.50907654844329,
+      "mahalanobis": 44.66843279707738,
+      "in_distribution": false,
+      "dominant_feature": "memory_active_fraction",
+      "dominant_feature_z": 24.58573717449034
+    },
+    {
+      "index": 38,
+      "surrogate_rank": 38,
+      "surrogate_peak_c": 179.0376434326172,
+      "reference_peak_c": 151.42893767034843,
+      "surrogate_error_k": 27.608705762268755,
+      "mahalanobis": 44.639882308894194,
+      "in_distribution": false,
+      "dominant_feature": "memory_active_fraction",
+      "dominant_feature_z": 24.58573717449034
+    },
+    {
+      "index": 39,
+      "surrogate_rank": 39,
+      "surrogate_peak_c": 179.5751953125,
+      "reference_peak_c": 150.8566766124401,
+      "surrogate_error_k": 28.71851870005989,
+      "mahalanobis": 44.641755017645536,
+      "in_distribution": false,
+      "dominant_feature": "memory_active_fraction",
+      "dominant_feature_z": 24.58573717449034
+    },
+    {
+      "index": 40,
+      "surrogate_rank": 40,
+      "surrogate_peak_c": 185.5171356201172,
+      "reference_peak_c": 153.8325970347698,
+      "surrogate_error_k": 31.684538585347383,
+      "mahalanobis": 44.55102350648809,
+      "in_distribution": false,
+      "dominant_feature": "memory_active_fraction",
+      "dominant_feature_z": 24.58573717449034
+    },
+    {
+      "index": 41,
+      "surrogate_rank": 41,
+      "surrogate_peak_c": 186.34634399414062,
+      "reference_peak_c": 157.25149361293492,
+      "surrogate_error_k": 29.094850381205703,
+      "mahalanobis": 44.54318997953246,
+      "in_distribution": false,
+      "dominant_feature": "memory_active_fraction",
+      "dominant_feature_z": 24.58573717449034
+    },
+    {
+      "index": 42,
+      "surrogate_rank": 42,
+      "surrogate_peak_c": 201.74620056152344,
+      "reference_peak_c": 166.25929760634205,
+      "surrogate_error_k": 35.48690295518139,
+      "mahalanobis": 57.18531923847709,
+      "in_distribution": false,
+      "dominant_feature": "logic_peak_to_mean",
+      "dominant_feature_z": 35.67033440665625
+    },
+    {
+      "index": 43,
+      "surrogate_rank": 43,
+      "surrogate_peak_c": 226.32513427734375,
+      "reference_peak_c": 181.53612628944438,
+      "surrogate_error_k": 44.78900798789937,
+      "mahalanobis": 71.82853557768493,
+      "in_distribution": false,
+      "dominant_feature": "logic_peak_to_mean",
+      "dominant_feature_z": 49.02390093972158
+    },
+    {
+      "index": 44,
+      "surrogate_rank": 44,
+      "surrogate_peak_c": 228.62966918945312,
+      "reference_peak_c": 181.79014763480362,
+      "surrogate_error_k": 46.83952155464951,
+      "mahalanobis": 71.82241098626162,
+      "in_distribution": false,
+      "dominant_feature": "logic_peak_to_mean",
+      "dominant_feature_z": 49.02390093972158
+    },
+    {
+      "index": 45,
+      "surrogate_rank": 45,
+      "surrogate_peak_c": 229.62490844726562,
+      "reference_peak_c": 185.4978408858267,
+      "surrogate_error_k": 44.127067561438935,
+      "mahalanobis": 71.7294962813802,
+      "in_distribution": false,
+      "dominant_feature": "logic_peak_to_mean",
+      "dominant_feature_z": 49.02390093972158
+    },
+    {
+      "index": 46,
+      "surrogate_rank": 46,
+      "surrogate_peak_c": 232.7710723876953,
+      "reference_peak_c": 190.9002519306919,
+      "surrogate_error_k": 41.87082045700342,
+      "mahalanobis": 71.63419954797126,
+      "in_distribution": false,
+      "dominant_feature": "logic_peak_to_mean",
+      "dominant_feature_z": 49.02390093972158
+    },
+    {
+      "index": 47,
+      "surrogate_rank": 47,
+      "surrogate_peak_c": 235.60989379882812,
+      "reference_peak_c": 195.43854824367853,
+      "surrogate_error_k": 40.1713455551496,
+      "mahalanobis": 71.63419954797126,
+      "in_distribution": false,
+      "dominant_feature": "logic_peak_to_mean",
+      "dominant_feature_z": 49.02390093972158
+    }
+  ],
+  "error_budget_k": {
+    "network_extrapolation": {
+      "mean_signed_k": 14.211787382761637,
+      "mean_abs_k": 14.211787382761637,
+      "max_abs_k": 38.17970275878906,
+      "min_signed_k": 2.8383712768554688,
+      "max_signed_k": 38.17970275878906
+    },
+    "solver_agreement_same_mesh": {
+      "mean_signed_k": -3.237911702639688e-05,
+      "mean_abs_k": 3.237911702639688e-05,
+      "max_abs_k": 4.211645216400939e-05,
+      "min_signed_k": -4.211645216400939e-05,
+      "max_signed_k": -2.6960664342823293e-05
+    },
+    "training_mesh_discretisation": {
+      "mean_signed_k": 2.763352174448259,
+      "mean_abs_k": 2.763352174448259,
+      "max_abs_k": 10.02467695075427,
+      "min_signed_k": 0.28655112624748824,
+      "max_signed_k": 10.02467695075427
+    },
+    "total": {
+      "mean_signed_k": 16.97510717809287,
+      "mean_abs_k": 16.97510717809287,
+      "max_abs_k": 46.83952155464951,
+      "min_signed_k": 5.039848976978931,
+      "max_signed_k": 46.83952155464951
+    },
+    "closes_to_k": 0.0,
+    "note": "network_extrapolation is the surrogate against the solver that produced its training labels, on the mesh it was trained on; discretisation is that mesh against 32x32x10. Retraining fixes only the first."
+  },
+  "tier_2": {
+    "mesh": "64x64x20",
+    "unknowns": 81920,
+    "assemble_s": 0.31060974998399615,
+    "factorise_s": 13.987488416954875,
+    "ms_per_design": 79.90861133051415,
+    "designs": [
+      {
+        "index": 0,
+        "reference_peak_c": 77.61226248340999,
+        "refined_peak_c": 77.41703503835365,
+        "discretisation_delta_c": 0.19522744505634648
+      },
+      {
+        "index": 1,
+        "reference_peak_c": 78.53864807938061,
+        "refined_peak_c": 78.351497385879,
+        "discretisation_delta_c": 0.18715069350160718
+      },
+      {
+        "index": 2,
+        "reference_peak_c": 79.61133186709527,
+        "refined_peak_c": 79.46755216548628,
+        "discretisation_delta_c": 0.14377970160899167
+      }
+    ],
+    "max_abs_discretisation_delta_c": 0.19522744505634648,
+    "quotable_peak_c": 77.41703503835365
+  },
+  "in_distribution_control": {
+    "n": 32,
+    "source": "training maps, re-solved on the same reference mesh",
+    "mahalanobis": {
+      "min": 1.193135456269184,
+      "max": 4.809355078273704
+    },
+    "flagged_fraction": 0.03125,
+    "surrogate_error_vs_reference": {
+      "mean_signed_k": 5.712673133827602,
+      "mean_abs_k": 6.820762858573495,
+      "max_abs_k": 13.366798390930427,
+      "min_signed_k": -13.366798390930427,
+      "max_signed_k": 11.098217280901963
+    },
+    "network_error_k": {
+      "mean_signed_k": -1.4816579818725586,
+      "mean_abs_k": 2.104790687561035,
+      "max_abs_k": 13.326240539550781,
+      "min_signed_k": -13.326240539550781,
+      "max_signed_k": 2.7678451538085938
+    }
+  },
+  "rom_screen_calibration": {
+    "mesh": "32x32x10",
+    "unknowns": 10240,
+    "exact_ms_per_design": 1.8554124994860852,
+    "exact_factorise_s": 0.13643604214303195,
+    "offline_snapshots": 300,
+    "offline_s": 0.6958436670247465,
+    "ranks": [
+      {
+        "rank": 8,
+        "retained_energy": 0.9833452522244106,
+        "rom_relative_l2_max": 0.20657915668231186,
+        "peak_error_c_max_abs": 42.61619053368298,
+        "ms_per_design": 0.11080312542617321
+      },
+      {
+        "rank": 32,
+        "retained_energy": 0.9977776068205119,
+        "rom_relative_l2_max": 0.0742535912302979,
+        "peak_error_c_max_abs": 22.29224865712878,
+        "ms_per_design": 0.17469375161454082
+      },
+      {
+        "rank": 64,
+        "retained_energy": 0.9994844068421306,
+        "rom_relative_l2_max": 0.040029767827262426,
+        "peak_error_c_max_abs": 12.124938551916102,
+        "ms_per_design": 0.2442697703372687
+      },
+      {
+        "rank": 128,
+        "retained_energy": 0.9999649593074389,
+        "rom_relative_l2_max": 0.01880836243051194,
+        "peak_error_c_max_abs": 5.75817896610782,
+        "ms_per_design": 0.3792500006966293
+      },
+      {
+        "rank": 200,
+        "retained_energy": 0.9999996356345147,
+        "rom_relative_l2_max": 0.004606491298992941,
+        "peak_error_c_max_abs": 1.5006236044173562,
+        "ms_per_design": 0.7096562534570694
+      },
+      {
+        "rank": 300,
+        "retained_energy": 1.0,
+        "rom_relative_l2_max": 0.0007430297127958398,
+        "peak_error_c_max_abs": 0.11050175297165765,
+        "ms_per_design": 1.442353124730289
+      }
+    ],
+    "rank_for_1c": 300,
+    "verdict": "exact solve",
+    "why": "A is parameter-independent and prefactorised, so an exact solve is one back-substitution. A ROM only pays where that factorisation is unaffordable or where the number of designs far exceeds the snapshots its basis needs."
+  }
+}

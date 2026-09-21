@@ -26,8 +26,8 @@ The tool utilizes a 2026-era hybrid intelligence stack:
 3DIC-X exploration is grounded in high-fidelity industrial engineering principles:
 
 *   [**Die Thinning & 3D Assembly**](reports/assembly_packaging_spec.md): Thinned 30µm/50µm silicon layers for thermal and TSV optimization.
-*   [**Physics Validation (reference solver + PINO)**](reports/rom_pinn_validation.md): Grid-converged reference solver verified to **1e-9 °C** against analytic conduction; physics-informed loss cuts field RMSE 22% and PDE residual 59%. POD/ROM remains not implemented.
-*   [**Multi-Objective Search**](reports/multiobjective_search.md): NSGA-II verified on ZDT1; shattered-macro headroom of **+41.45 °C** confirmed on the reference solver.
+*   [**Physics Validation (reference solver + PINO + POD ROM)**](reports/rom_pinn_validation.md): Grid-converged reference solver verified to **1e-9 °C** against analytic conduction; physics-informed loss cuts field RMSE 22% and PDE residual 59%; POD-Galerkin ROM with **1.43 °C** worst held-out peak error.
+*   [**Multi-Objective Search**](reports/multiobjective_search.md): NSGA-II verified on ZDT1; shattered-macro headroom of **+41.45 °C** confirmed on the reference solver; every published design re-solved and distribution-checked by the [trust guard](reports/multiobjective_search.md#6-the-trust-guard).
 *   [**Mesh Convergence Audit**](reports/mesh_convergence_audit.json): measured 12/24/48 grid-refinement study with Richardson extrapolation and a published GCI. (It is not the variable 1 µm/50 nm ROI mesh an earlier README described — that mesh was never run.)
 *   [**Technical Audit & Benchmarking**](reports/technical_audit_v5.md): Detailed comparison against Ansys Heatwave and industry-standard sign-off flows.
 *   [**Critical Review**](reports/critical_review.md): Adversarial audit of this repository — which claims the code supports, which it does not, and why.
@@ -66,6 +66,6 @@ Artifacts land in `results/handoff/<run_id>/` with a manifest, SHA-256 per file,
 
 ## 🚀 Key Features
 *   **224G/112G SerDes Optimization**: AI-driven SI/PI trade-offs for Next-Gen Fabrics.
-*   **3D Thermal Surrogates**: A physics-informed neural operator (FNO + heat-equation residual) trained on a finite-difference solver that agrees with an independently-verified reference solver to **0.0036 °C**. Field RMSE **2.03 K**; see the [error band at optimiser-selected designs](reports/multiobjective_search.md#5-the-important-caveat-surrogate-error-at-the-optimum) before quoting absolute temperatures.
-*   **Multi-Objective Architecture Search**: [NSGA-II](reports/multiobjective_search.md) (non-dominated sorting, crowding distance, SBX, polynomial mutation), verified against ZDT1's analytic front to **0.0037** mean distance and beating random sampling at equal budget (hypervolume 0.951 vs 0.881, front size 48 vs 20).
+*   **3D Thermal Surrogates**: A physics-informed neural operator (FNO + heat-equation residual) trained on a finite-difference solver that agrees with an independently-verified reference solver to **0.0036 °C**. Field RMSE **2.03 K** in-distribution, **+14.21 K** mean at optimiser-selected designs — where 100% of the search space sits outside the training distribution, measured. Absolute temperatures come from the reference solver, not the surrogate: see [the trust guard](reports/multiobjective_search.md#6-the-trust-guard).
+*   **Multi-Objective Architecture Search**: [NSGA-II](reports/multiobjective_search.md) (non-dominated sorting, crowding distance, SBX, polynomial mutation), verified against ZDT1's analytic front to **0.0037** mean distance and beating random sampling at equal budget (hypervolume 0.951 vs 0.881, front size 48 vs 20). Every front member is re-solved on the reference solver before publication (Kendall τ **0.986** against the surrogate's ranking, selection regret **0.00 °C**).
 *   **Vector-Driven Design**: Ingestion of industrial trace files for real-world calibration.

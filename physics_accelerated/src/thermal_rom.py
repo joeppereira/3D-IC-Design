@@ -132,6 +132,23 @@ class ThermalROM:
         self.basis: PODBasis | None = None
         self._a_reduced: np.ndarray | None = None
 
+    @classmethod
+    def from_operator(cls, ref: ThermalReference, a, mesh: dict, lu,
+                      refine_z: int) -> "ThermalROM":
+        """Reuse an operator that has already been assembled and factorised.
+
+        The trust guard builds A once for its solver cascade; re-assembling and
+        re-factorising the same matrix here would be the bulk of the ROM's
+        offline cost and would make the ROM-vs-exact comparison meaningless.
+        """
+        rom = cls.__new__(cls)
+        rom.ref, rom.refine_z = ref, refine_z
+        rom.nx, rom.ny = mesh["nx"], mesh["ny"]
+        rom.a, rom.mesh, rom.lu = a, mesh, lu
+        rom.n = mesh["nx"] * mesh["ny"] * mesh["nz"]
+        rom.basis, rom._a_reduced = None, None
+        return rom
+
     # -- loads ------------------------------------------------------------
     def rhs(self, p: HotspotParams) -> np.ndarray:
         """b(mu): the load vector for one parameter point."""
@@ -166,7 +183,18 @@ class ThermalROM:
     def fit(self, params: list[HotspotParams], rank: int | None = None,
             energy: float = 1.0 - 1e-10) -> PODBasis:
         """Snapshots -> SVD -> leading modes -> project the operator."""
-        x = np.column_stack([self.solve_full(p) for p in params])
+        return self.fit_rhs([self.rhs(p) for p in params], rank, energy)
+
+    def fit_rhs(self, loads: list[np.ndarray], rank: int | None = None,
+                energy: float = 1.0 - 1e-10) -> PODBasis:
+        """The same fit from right-hand sides directly.
+
+        Any load the solver accepts can parameterise the basis, not only the
+        hotspot family: the trust guard builds its snapshots from the block
+        layouts the optimiser searches, which is the distribution its ROM has
+        to be accurate on.
+        """
+        x = np.column_stack([self.lu.solve(b) for b in loads])
         u, s, _ = np.linalg.svd(x, full_matrices=False)
 
         if rank is None:
@@ -192,9 +220,11 @@ class ThermalROM:
 
     # -- reduced solve ----------------------------------------------------
     def solve_reduced(self, p: HotspotParams) -> np.ndarray:
+        return self.solve_reduced_rhs(self.rhs(p))
+
+    def solve_reduced_rhs(self, b: np.ndarray) -> np.ndarray:
         if self.basis is None:
             raise RuntimeError("fit() first")
-        b = self.rhs(p)
         coeffs = np.linalg.solve(self._a_reduced, self.basis.modes.T @ b)
         return self.basis.modes @ coeffs
 

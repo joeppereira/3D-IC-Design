@@ -8,6 +8,8 @@ trustworthy than itself.
     FDM solver        <- the reference solver (different method, same equations)
     heat residual     <- a converged field (residual must vanish)
     NSGA-II           <- ZDT1, whose Pareto front is known analytically
+    trust guard       <- an independent solve of the design it re-solved, and
+                         its own training set, which it must not flag
 """
 from __future__ import annotations
 
@@ -29,6 +31,8 @@ from thermal.solver import ThermalSolver                                # noqa: 
 from thermal.transient_solver import TransientThermalSolver             # noqa: E402
 import pareto as P                                                      # noqa: E402
 import thermal_rom as rom_mod                                           # noqa: E402
+import trust_guard as tg                                                # noqa: E402
+from pareto_search import build_power_maps, GRID, SUB, N_SUB      # noqa: E402
 
 GOLDEN = os.path.join(ROOT, "physics_accelerated", "results", "golden_config.json")
 
@@ -546,6 +550,193 @@ class TestNsga2(unittest.TestCase):
         r = P.nsga2(zdt1, np.zeros(6), np.ones(6), pop_size=40, generations=60,
                     seed=4, reference=ref, ideal=ideal)
         self.assertGreater(r.history[-1], r.history[0])
+
+
+class TestTrustGuard(unittest.TestCase):
+    """The guard exists so no surrogate prediction reaches a report unchecked.
+    These tests check the two things it asserts: that what it publishes is a
+    reference solve, and that its out-of-distribution flag means something."""
+
+    @classmethod
+    def setUpClass(cls):
+        solver = ThermalSolver(GOLDEN)
+        cls.solver = solver
+        cls.ref = tg.reference_from_solver(solver)
+        cls.cascade = tg.ReferenceCascade(cls.ref)
+        cls.layers = solver.layers
+        cls.logic_w, cls.mem_w = 45.0, 15.0
+        cls.maps = build_power_maps(
+            np.random.default_rng(7).uniform(0, GRID - SUB, (6, 2 * N_SUB + 2)),
+            cls.logic_w, cls.mem_w, cls.layers).numpy()
+        cls.train_maps = tg.load_training_maps()
+        cls.guard = tg.DistributionGuard.fit(cls.train_maps)
+
+    # -- the cascade publishes solver output, not an approximation of it ----
+    def test_expansion_conserves_power(self):
+        lv = self.cascade.level(2)
+        q = tg.expand_power_map(self.maps[0], 2, lv.mesh["layer_of"])
+        self.assertAlmostEqual(q.sum(), float(self.maps[0].sum()), places=9)
+        self.assertEqual(q.shape, (lv.mesh["nz"], lv.mesh["ny"], lv.mesh["nx"]))
+
+    def test_rhs_shortcut_matches_a_fresh_assembly(self):
+        """The cascade subtracts the assembly's own load once and adds each
+        design's instead. If that shortcut were wrong, every temperature it
+        reports would be wrong by a constant nobody would notice."""
+        lv = self.cascade.level(1)
+        q = tg.expand_power_map(self.maps[0], 1, lv.mesh["layer_of"])
+        _, b_fresh, _ = self.ref.assemble(GRID, GRID, 1, power_map=q)
+        np.testing.assert_allclose(self.cascade.rhs(self.maps[0], 1), b_fresh,
+                                   rtol=0, atol=1e-12)
+
+    def test_peak_matches_an_independent_solve(self):
+        lv = self.cascade.level(2)
+        q = tg.expand_power_map(self.maps[1], 2, lv.mesh["layer_of"])
+        direct = self.ref.solve(nx=GRID * 2, ny=GRID * 2, refine_z=2, power_map=q)
+        self.assertAlmostEqual(self.cascade.peak(self.maps[1], 2),
+                               float(direct.t_field_c[0].max()), places=9)
+
+    def test_finer_mesh_is_a_smaller_correction_than_the_error_it_checks(self):
+        """refine=2 is the working mesh because refine=4 barely moves it."""
+        m = self.maps[0]
+        self.assertLess(abs(self.cascade.peak(m, 2) - self.cascade.peak(m, 4)),
+                        abs(self.cascade.peak(m, 1) - self.cascade.peak(m, 2)))
+
+    # -- the distribution flag ----------------------------------------------
+    def test_does_not_flag_its_own_training_set(self):
+        d = self.guard.distance(self.train_maps)
+        flagged = float((d > self.guard.threshold).mean())
+        self.assertLessEqual(flagged, 0.02,
+                             "a detector that flags the training data flags "
+                             "everything and means nothing")
+
+    def test_flags_every_design_the_optimiser_can_express(self):
+        """The search places 2x2 blocks and a solid 4x4 memory macro;
+        data_gen.py trained on r=3 discs and single hot cells. This is the
+        measured reason the surrogate is tens of kelvin out at the optimum."""
+        d = self.guard.distance(self.maps)
+        self.assertTrue((d > self.guard.threshold).all())
+        self.assertGreater(d.min(), 4 * self.guard.threshold)
+
+    def test_names_the_feature_responsible(self):
+        name, z = self.guard.dominant_feature(self.maps[0])
+        self.assertIn(name, tg.FEATURE_NAMES)
+        self.assertGreater(abs(z), 3.0)
+
+    def test_features_separate_a_block_from_a_spread_source(self):
+        block = np.zeros((self.layers, GRID, GRID))
+        block[0, 4:8, 4:8] = 1.0
+        block[1, 6:10, 6:10] = 1.0
+        spread = np.zeros((self.layers, GRID, GRID))
+        spread[0] = 1.0
+        spread[1] = 1.0
+        f_block = tg.power_map_features(block)
+        f_spread = tg.power_map_features(spread)
+        i_active = tg.FEATURE_NAMES.index("logic_active_fraction")
+        i_ptm = tg.FEATURE_NAMES.index("logic_peak_to_mean")
+        self.assertLess(f_block[i_active], f_spread[i_active])
+        self.assertGreater(f_block[i_ptm], f_spread[i_ptm])
+
+    def test_refuses_a_power_map_with_no_power(self):
+        with self.assertRaises(ValueError):
+            tg.power_map_features(np.zeros((self.layers, GRID, GRID)))
+
+    # -- the audit -----------------------------------------------------------
+    def _audit(self, surrogate_peaks, **kw):
+        g = tg.SurrogateTrustGuard(self.cascade, self.guard)
+        return g.audit(self.maps, surrogate_peaks, **kw)
+
+    def test_reports_the_reference_not_the_prediction(self):
+        truth = self.cascade.peaks(self.maps, 2)
+        r = self._audit(truth + 20.0)
+        for d in r["designs"]:
+            self.assertAlmostEqual(d["reference_peak_c"],
+                                   float(truth[d["index"]]), places=9)
+            self.assertAlmostEqual(d["surrogate_error_k"], 20.0, places=6)
+
+    def test_error_budget_closes_on_the_total(self):
+        maps_t = torch.from_numpy(self.maps).float()
+        fdm = self.solver.solve_steady_state(maps_t)[:, 0].amax(dim=(1, 2)).numpy()
+        surro = fdm + 5.0
+        r = self._audit(surro, fdm_peaks=fdm)
+        self.assertLess(r["error_budget_k"]["closes_to_k"], 1e-9)
+        self.assertLess(
+            r["error_budget_k"]["solver_agreement_same_mesh"]["max_abs_k"], 1e-3,
+            "the split assumes the FDM solver and the reference agree on the "
+            "training mesh; if they do not, the attribution is meaningless")
+
+    def test_regret_and_tau_catch_a_misranking_surrogate(self):
+        truth = self.cascade.peaks(self.maps, 2)
+        good = self._audit(truth)
+        bad = self._audit(-truth)            # perfectly reversed ordering
+        self.assertAlmostEqual(good["ranking"]["kendall_tau"], 1.0, places=9)
+        self.assertAlmostEqual(good["ranking"]["selection_regret_c"], 0.0, places=9)
+        self.assertAlmostEqual(bad["ranking"]["kendall_tau"], -1.0, places=9)
+        self.assertGreater(bad["ranking"]["selection_regret_c"], 0.0)
+
+    def test_top_k_resolves_the_coolest_designs_only(self):
+        truth = self.cascade.peaks(self.maps, 2)
+        r = self._audit(truth, top_k=2)
+        self.assertEqual(r["n_resolved"], 2)
+        self.assertEqual([d["index"] for d in r["designs"]],
+                         list(np.argsort(truth)[:2]))
+
+    def test_refuses_a_prediction_per_design_mismatch(self):
+        with self.assertRaises(ValueError):
+            self._audit(np.zeros(len(self.maps) - 1))
+
+    # -- the published artifact ---------------------------------------------
+    def test_published_front_temperatures_are_reference_solves(self):
+        """Re-derive one published number from its own genome. This is what
+        stops the front from drifting back to surrogate predictions."""
+        path = os.path.join(ROOT, "reports", "pareto_front_nsga2.json")
+        if not os.path.exists(path):
+            self.skipTest("front not generated")
+        import json
+        with open(path) as fh:
+            doc = json.load(fh)
+        keys = doc["genome_keys"]
+        entry, genome = doc["front"][0], doc["front_genomes"][0]
+        self.assertIn("reference_peak_tj_c", entry,
+                      "the published front must carry a solved temperature")
+        pmap = build_power_maps(np.array([[genome[k] for k in keys]]),
+                                self.logic_w, self.mem_w, self.layers).numpy()
+        self.assertAlmostEqual(self.cascade.peak(pmap[0], 2),
+                               entry["reference_peak_tj_c"], places=6)
+        self.assertGreater(entry["logic_peak_tj_c"], entry["reference_peak_tj_c"],
+                           "the surrogate over-predicts at these designs")
+
+
+class TestRomAcceptsArbitraryLoads(unittest.TestCase):
+    """fit_rhs/from_operator exist so the trust guard can build a POD basis
+    over the layouts the optimiser searches, using the operator it already
+    factorised, without a second copy of the POD code."""
+
+    def test_fit_rhs_matches_fit_on_the_same_snapshots(self):
+        ref = rom_mod.build_reference()
+        a = rom_mod.ThermalROM(ref, nx=12, ny=12, refine_z=1)
+        b = rom_mod.ThermalROM(ref, nx=12, ny=12, refine_z=1)
+        params = rom_mod.sample_params(8, seed=3)
+        a.fit(params, rank=8)
+        b.fit_rhs([b.rhs(p) for p in params], rank=8)
+        test = rom_mod.sample_params(1, seed=9)[0]
+        np.testing.assert_allclose(a.solve_reduced(test), b.solve_reduced(test),
+                                   rtol=1e-10, atol=1e-8)
+
+    def test_from_operator_reuses_the_factorisation(self):
+        ref = rom_mod.build_reference()
+        cascade = tg.ReferenceCascade(ref, grid=GRID)
+        lv = cascade.level(1)
+        rom = rom_mod.ThermalROM.from_operator(ref, lv.a, lv.mesh, lv.lu, 1)
+        self.assertIs(rom.a, lv.a)
+        self.assertEqual(rom.n, lv.n)
+        loads = [cascade.rhs(m, 1) for m in
+                 build_power_maps(np.random.default_rng(2)
+                                  .uniform(0, GRID - SUB, (6, 2 * N_SUB + 2)),
+                                  45.0, 15.0, len(ref.layers)).numpy()]
+        rom.fit_rhs(loads[:4], rank=4)
+        approx = rom.solve_reduced_rhs(loads[0])
+        np.testing.assert_allclose(approx, lv.lu.solve(loads[0]),
+                                   rtol=0, atol=1e-6)
 
 
 if __name__ == "__main__":
