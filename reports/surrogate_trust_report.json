@@ -4,26 +4,26 @@
   "tier_1": {
     "mesh": "32x32x10",
     "unknowns": 10240,
-    "assemble_s": 0.03692612494342029,
-    "factorise_s": 0.13643604214303195,
-    "ms_per_design": 1.9183871675825988,
-    "total_s": 0.09208258404396474
+    "assemble_s": 0.053644750034436584,
+    "factorise_s": 0.18596574990078807,
+    "ms_per_design": 2.4965321257089577,
+    "total_s": 0.11983354203402996
   },
   "surrogate_error_vs_reference": {
-    "mean_signed_k": 16.97510717809287,
-    "mean_abs_k": 16.97510717809287,
-    "max_abs_k": 46.83952155464951,
-    "min_signed_k": 5.039848976978931,
-    "max_signed_k": 46.83952155464951
+    "mean_signed_k": 0.5879899447951061,
+    "mean_abs_k": 0.9751512675328309,
+    "max_abs_k": 5.206684119549834,
+    "min_signed_k": -2.16037846603065,
+    "max_signed_k": 5.206684119549834
   },
   "ranking": {
-    "kendall_tau": 0.9858156028368794,
+    "kendall_tau": 0.9964539007092199,
     "selection_regret_c": 0.0,
     "note": "regret is how much hotter the surrogate's own pick is than the coolest design the reference solver finds, in the set that was re-solved"
   },
   "distribution_guard": {
     "training_set": "serdes_architect/data/x_physics.pt",
-    "n_train": 240,
+    "n_train": 3000,
     "features": [
       "total_power_w",
       "logic_power_fraction",
@@ -34,586 +34,586 @@
       "memory_active_fraction",
       "memory_gyration_cells"
     ],
-    "threshold_mahalanobis": 4.686605121088157,
+    "threshold_mahalanobis": 6.667232741691674,
     "train_distance": {
-      "mean": 2.7271702622939205,
-      "p99": 4.686605121088157,
-      "max": 8.091846239495043
+      "mean": 2.650883900235113,
+      "p99": 6.667232741691674,
+      "max": 8.457661729089844
     },
     "audited_distance": {
-      "min": 36.41723931740302,
-      "max": 71.82853557768493
+      "min": 1.9951712727478454,
+      "max": 6.135298191462898
     },
-    "flagged_fraction": 1.0,
+    "flagged_fraction": 0.0,
     "mean_z_by_feature": {
-      "total_power_w": -2.271740454303114,
-      "logic_power_fraction": 0.5660540216388518,
-      "logic_peak_to_mean": 16.474582515374838,
-      "logic_active_fraction": -5.867832811511781,
-      "logic_gyration_cells": -4.020521055058759,
-      "memory_peak_to_mean": -5.1639527842170825,
-      "memory_active_fraction": 24.585737174490323,
-      "memory_gyration_cells": -2.2767714383137876
+      "total_power_w": -0.4002670705592781,
+      "logic_power_fraction": 0.36129307723397536,
+      "logic_peak_to_mean": 1.2980126752181118,
+      "logic_active_fraction": -1.5218180959953038,
+      "logic_gyration_cells": -1.8219615632464814,
+      "memory_peak_to_mean": -1.0091743852589017,
+      "memory_active_fraction": 0.7392280724283635,
+      "memory_gyration_cells": -0.8210859302475905
     }
   },
   "designs": [
     {
       "index": 0,
       "surrogate_rank": 0,
-      "surrogate_peak_c": 86.0619888305664,
-      "reference_peak_c": 77.61226248340999,
-      "surrogate_error_k": 8.449726347156414,
-      "mahalanobis": 36.46896277646693,
-      "in_distribution": false,
-      "dominant_feature": "memory_active_fraction",
-      "dominant_feature_z": 24.58573717449034
+      "surrogate_peak_c": 71.11616516113281,
+      "reference_peak_c": 72.07347836050788,
+      "surrogate_error_k": -0.957313199375065,
+      "mahalanobis": 2.1745202118665627,
+      "in_distribution": true,
+      "dominant_feature": "logic_active_fraction",
+      "dominant_feature_z": -1.4752121209360545
     },
     {
       "index": 1,
       "surrogate_rank": 1,
-      "surrogate_peak_c": 86.68209075927734,
-      "reference_peak_c": 78.53864807938061,
-      "surrogate_error_k": 8.143442679896737,
-      "mahalanobis": 36.46896277646693,
-      "in_distribution": false,
-      "dominant_feature": "memory_active_fraction",
-      "dominant_feature_z": 24.58573717449034
+      "surrogate_peak_c": 72.53064727783203,
+      "reference_peak_c": 72.7757326034615,
+      "surrogate_error_k": -0.24508532562947494,
+      "mahalanobis": 2.1259230832463527,
+      "in_distribution": true,
+      "dominant_feature": "logic_active_fraction",
+      "dominant_feature_z": -1.4752121209360545
     },
     {
       "index": 2,
       "surrogate_rank": 2,
-      "surrogate_peak_c": 87.09976196289062,
-      "reference_peak_c": 79.61133186709527,
-      "surrogate_error_k": 7.488430095795351,
-      "mahalanobis": 36.47262812403063,
-      "in_distribution": false,
-      "dominant_feature": "memory_active_fraction",
-      "dominant_feature_z": 24.58573717449034
+      "surrogate_peak_c": 72.93206787109375,
+      "reference_peak_c": 73.08139934585478,
+      "surrogate_error_k": -0.14933147476102704,
+      "mahalanobis": 2.0094182485901713,
+      "in_distribution": true,
+      "dominant_feature": "logic_active_fraction",
+      "dominant_feature_z": -1.4752121209360545
     },
     {
       "index": 3,
       "surrogate_rank": 3,
-      "surrogate_peak_c": 87.43186950683594,
-      "reference_peak_c": 79.66734796926907,
-      "surrogate_error_k": 7.764521537566864,
-      "mahalanobis": 36.47262812403063,
-      "in_distribution": false,
-      "dominant_feature": "memory_active_fraction",
-      "dominant_feature_z": 24.58573717449034
+      "surrogate_peak_c": 74.127197265625,
+      "reference_peak_c": 74.79906299464282,
+      "surrogate_error_k": -0.6718657290178243,
+      "mahalanobis": 2.0014312482620555,
+      "in_distribution": true,
+      "dominant_feature": "logic_active_fraction",
+      "dominant_feature_z": -1.4752121209360545
     },
     {
       "index": 4,
       "surrogate_rank": 4,
-      "surrogate_peak_c": 87.7066650390625,
-      "reference_peak_c": 79.85322566451077,
-      "surrogate_error_k": 7.853439374551726,
-      "mahalanobis": 36.460873762650316,
-      "in_distribution": false,
-      "dominant_feature": "memory_active_fraction",
-      "dominant_feature_z": 24.58573717449034
+      "surrogate_peak_c": 74.26948547363281,
+      "reference_peak_c": 74.36033364864475,
+      "surrogate_error_k": -0.09084817501194209,
+      "mahalanobis": 1.9951712727478454,
+      "in_distribution": true,
+      "dominant_feature": "logic_active_fraction",
+      "dominant_feature_z": -1.4752121209360545
     },
     {
       "index": 5,
       "surrogate_rank": 5,
-      "surrogate_peak_c": 87.96064758300781,
-      "reference_peak_c": 80.983837840156,
-      "surrogate_error_k": 6.976809742851813,
-      "mahalanobis": 36.4491282414805,
-      "in_distribution": false,
-      "dominant_feature": "memory_active_fraction",
-      "dominant_feature_z": 24.58573717449034
+      "surrogate_peak_c": 75.0862045288086,
+      "reference_peak_c": 75.6804475180137,
+      "surrogate_error_k": -0.5942429892050995,
+      "mahalanobis": 1.9986930625221657,
+      "in_distribution": true,
+      "dominant_feature": "logic_active_fraction",
+      "dominant_feature_z": -1.4752121209360545
     },
     {
       "index": 6,
       "surrogate_rank": 6,
-      "surrogate_peak_c": 90.32234191894531,
-      "reference_peak_c": 81.41194100045317,
-      "surrogate_error_k": 8.910400918492144,
-      "mahalanobis": 36.443091198722854,
-      "in_distribution": false,
-      "dominant_feature": "memory_active_fraction",
-      "dominant_feature_z": 24.58573717449034
+      "surrogate_peak_c": 75.73025512695312,
+      "reference_peak_c": 75.77519132702801,
+      "surrogate_error_k": -0.0449362000748863,
+      "mahalanobis": 1.996709510808097,
+      "in_distribution": true,
+      "dominant_feature": "logic_active_fraction",
+      "dominant_feature_z": -1.4752121209360545
     },
     {
       "index": 7,
       "surrogate_rank": 7,
-      "surrogate_peak_c": 90.33486938476562,
-      "reference_peak_c": 83.04927311822134,
-      "surrogate_error_k": 7.285596266544289,
-      "mahalanobis": 36.43309453629743,
-      "in_distribution": false,
-      "dominant_feature": "memory_active_fraction",
-      "dominant_feature_z": 24.58573717449034
+      "surrogate_peak_c": 76.47965240478516,
+      "reference_peak_c": 76.52666200496665,
+      "surrogate_error_k": -0.04700960018149658,
+      "mahalanobis": 2.017357918691668,
+      "in_distribution": true,
+      "dominant_feature": "logic_active_fraction",
+      "dominant_feature_z": -1.4752121209360545
     },
     {
       "index": 8,
       "surrogate_rank": 8,
-      "surrogate_peak_c": 90.58108520507812,
-      "reference_peak_c": 83.18383605683036,
-      "surrogate_error_k": 7.3972491482477665,
-      "mahalanobis": 36.43309453629743,
-      "in_distribution": false,
-      "dominant_feature": "memory_active_fraction",
-      "dominant_feature_z": 24.58573717449034
+      "surrogate_peak_c": 76.82579040527344,
+      "reference_peak_c": 77.30413416157332,
+      "surrogate_error_k": -0.47834375629987846,
+      "mahalanobis": 2.0208088495981897,
+      "in_distribution": true,
+      "dominant_feature": "logic_active_fraction",
+      "dominant_feature_z": -1.4752121209360545
     },
     {
       "index": 9,
       "surrogate_rank": 9,
-      "surrogate_peak_c": 91.97409057617188,
-      "reference_peak_c": 83.50893230258698,
-      "surrogate_error_k": 8.46515827358489,
-      "mahalanobis": 36.43071065673489,
-      "in_distribution": false,
-      "dominant_feature": "memory_active_fraction",
-      "dominant_feature_z": 24.58573717449034
+      "surrogate_peak_c": 77.45417022705078,
+      "reference_peak_c": 77.81380047459436,
+      "surrogate_error_k": -0.35963024754357775,
+      "mahalanobis": 2.038809076437564,
+      "in_distribution": true,
+      "dominant_feature": "logic_active_fraction",
+      "dominant_feature_z": -1.4752121209360545
     },
     {
       "index": 10,
       "surrogate_rank": 10,
-      "surrogate_peak_c": 92.92160034179688,
-      "reference_peak_c": 85.73201334545062,
-      "surrogate_error_k": 7.18958699634625,
-      "mahalanobis": 36.42583024194115,
-      "in_distribution": false,
-      "dominant_feature": "memory_active_fraction",
-      "dominant_feature_z": 24.58573717449034
+      "surrogate_peak_c": 81.27123260498047,
+      "reference_peak_c": 81.42768063722876,
+      "surrogate_error_k": -0.15644803224829218,
+      "mahalanobis": 1.9953669293442566,
+      "in_distribution": true,
+      "dominant_feature": "logic_active_fraction",
+      "dominant_feature_z": -1.4752121209360545
     },
     {
       "index": 11,
       "surrogate_rank": 11,
-      "surrogate_peak_c": 95.06344604492188,
-      "reference_peak_c": 88.60228565787118,
-      "surrogate_error_k": 6.461160387050697,
-      "mahalanobis": 36.42501109041153,
-      "in_distribution": false,
-      "dominant_feature": "memory_active_fraction",
-      "dominant_feature_z": 24.58573717449034
+      "surrogate_peak_c": 81.50212860107422,
+      "reference_peak_c": 81.35230307090104,
+      "surrogate_error_k": 0.14982553017317457,
+      "mahalanobis": 2.2406015394644014,
+      "in_distribution": true,
+      "dominant_feature": "logic_active_fraction",
+      "dominant_feature_z": -1.4752121209360545
     },
     {
       "index": 12,
       "surrogate_rank": 12,
-      "surrogate_peak_c": 96.79751586914062,
-      "reference_peak_c": 86.18225694653316,
-      "surrogate_error_k": 10.615258922607467,
-      "mahalanobis": 36.4255536261884,
-      "in_distribution": false,
-      "dominant_feature": "memory_active_fraction",
-      "dominant_feature_z": 24.58573717449034
+      "surrogate_peak_c": 84.58868408203125,
+      "reference_peak_c": 83.7169755323458,
+      "surrogate_error_k": 0.8717085496854509,
+      "mahalanobis": 2.3532960021496416,
+      "in_distribution": true,
+      "dominant_feature": "logic_gyration_cells",
+      "dominant_feature_z": -1.4971273143533563
     },
     {
       "index": 13,
       "surrogate_rank": 13,
-      "surrogate_peak_c": 97.84083557128906,
-      "reference_peak_c": 87.91394010912126,
-      "surrogate_error_k": 9.926895462167806,
-      "mahalanobis": 36.41956804592412,
-      "in_distribution": false,
-      "dominant_feature": "memory_active_fraction",
-      "dominant_feature_z": 24.58573717449034
+      "surrogate_peak_c": 86.06672668457031,
+      "reference_peak_c": 84.76366051126101,
+      "surrogate_error_k": 1.303066173309304,
+      "mahalanobis": 2.4141020980824814,
+      "in_distribution": true,
+      "dominant_feature": "logic_gyration_cells",
+      "dominant_feature_z": -1.5790246539443638
     },
     {
       "index": 14,
       "surrogate_rank": 14,
-      "surrogate_peak_c": 99.51731872558594,
-      "reference_peak_c": 87.186027843849,
-      "surrogate_error_k": 12.331290881736933,
-      "mahalanobis": 36.42474524699275,
-      "in_distribution": false,
-      "dominant_feature": "memory_active_fraction",
-      "dominant_feature_z": 24.58573717449034
+      "surrogate_peak_c": 86.73278045654297,
+      "reference_peak_c": 85.44543293321995,
+      "surrogate_error_k": 1.287347523323021,
+      "mahalanobis": 2.4141020980824814,
+      "in_distribution": true,
+      "dominant_feature": "logic_gyration_cells",
+      "dominant_feature_z": -1.5790246539443638
     },
     {
       "index": 15,
       "surrogate_rank": 15,
-      "surrogate_peak_c": 100.01002502441406,
-      "reference_peak_c": 89.0244854271681,
-      "surrogate_error_k": 10.98553959724596,
-      "mahalanobis": 36.42347186990434,
-      "in_distribution": false,
-      "dominant_feature": "memory_active_fraction",
-      "dominant_feature_z": 24.58573717449034
+      "surrogate_peak_c": 88.87181091308594,
+      "reference_peak_c": 88.31290581158457,
+      "surrogate_error_k": 0.5589051015013666,
+      "mahalanobis": 2.5843584883178687,
+      "in_distribution": true,
+      "dominant_feature": "logic_gyration_cells",
+      "dominant_feature_z": -1.787880693743881
     },
     {
       "index": 16,
       "surrogate_rank": 16,
-      "surrogate_peak_c": 100.87791442871094,
-      "reference_peak_c": 92.68894895056928,
-      "surrogate_error_k": 8.188965478141654,
-      "mahalanobis": 36.41956804592412,
-      "in_distribution": false,
-      "dominant_feature": "memory_active_fraction",
-      "dominant_feature_z": 24.58573717449034
+      "surrogate_peak_c": 92.07557678222656,
+      "reference_peak_c": 90.12105113301791,
+      "surrogate_error_k": 1.954525649208648,
+      "mahalanobis": 2.5208612430950494,
+      "in_distribution": true,
+      "dominant_feature": "logic_gyration_cells",
+      "dominant_feature_z": -1.7128584181453326
     },
     {
       "index": 17,
       "surrogate_rank": 17,
-      "surrogate_peak_c": 103.59033203125,
-      "reference_peak_c": 94.94887476851851,
-      "surrogate_error_k": 8.641457262731493,
-      "mahalanobis": 36.41726606994589,
-      "in_distribution": false,
-      "dominant_feature": "memory_active_fraction",
-      "dominant_feature_z": 24.58573717449034
+      "surrogate_peak_c": 93.5721206665039,
+      "reference_peak_c": 92.60122000761775,
+      "surrogate_error_k": 0.9709006588861513,
+      "mahalanobis": 2.577045253425328,
+      "in_distribution": true,
+      "dominant_feature": "logic_gyration_cells",
+      "dominant_feature_z": -1.779385664069759
     },
     {
       "index": 18,
       "surrogate_rank": 18,
-      "surrogate_peak_c": 107.36247253417969,
-      "reference_peak_c": 99.83786197982249,
-      "surrogate_error_k": 7.524610554357196,
-      "mahalanobis": 36.4202568290237,
-      "in_distribution": false,
-      "dominant_feature": "memory_active_fraction",
-      "dominant_feature_z": 24.58573717449034
+      "surrogate_peak_c": 94.64395141601562,
+      "reference_peak_c": 94.1563577376262,
+      "surrogate_error_k": 0.48759367838943035,
+      "mahalanobis": 2.577045253425328,
+      "in_distribution": true,
+      "dominant_feature": "logic_gyration_cells",
+      "dominant_feature_z": -1.779385664069759
     },
     {
       "index": 19,
       "surrogate_rank": 19,
-      "surrogate_peak_c": 109.71734619140625,
-      "reference_peak_c": 104.67749721442732,
-      "surrogate_error_k": 5.039848976978931,
-      "mahalanobis": 36.41973308136081,
-      "in_distribution": false,
-      "dominant_feature": "memory_active_fraction",
-      "dominant_feature_z": 24.58573717449034
+      "surrogate_peak_c": 97.34199523925781,
+      "reference_peak_c": 96.57045436790021,
+      "surrogate_error_k": 0.7715408713576011,
+      "mahalanobis": 2.6941138840864385,
+      "in_distribution": true,
+      "dominant_feature": "logic_gyration_cells",
+      "dominant_feature_z": -1.9115002325179764
     },
     {
       "index": 20,
       "surrogate_rank": 20,
-      "surrogate_peak_c": 112.30055236816406,
-      "reference_peak_c": 101.58033395850073,
-      "surrogate_error_k": 10.720218409663332,
-      "mahalanobis": 36.41789139631788,
-      "in_distribution": false,
-      "dominant_feature": "memory_active_fraction",
-      "dominant_feature_z": 24.58573717449034
+      "surrogate_peak_c": 100.27911376953125,
+      "reference_peak_c": 99.45596644406571,
+      "surrogate_error_k": 0.8231473254655413,
+      "mahalanobis": 2.7818641955757872,
+      "in_distribution": true,
+      "dominant_feature": "logic_gyration_cells",
+      "dominant_feature_z": -2.0059462759503743
     },
     {
       "index": 21,
       "surrogate_rank": 21,
-      "surrogate_peak_c": 112.6867446899414,
-      "reference_peak_c": 105.99408869326315,
-      "surrogate_error_k": 6.692655996678255,
-      "mahalanobis": 36.41723931740302,
-      "in_distribution": false,
-      "dominant_feature": "memory_active_fraction",
-      "dominant_feature_z": 24.58573717449034
+      "surrogate_peak_c": 101.91049194335938,
+      "reference_peak_c": 100.86662949026255,
+      "surrogate_error_k": 1.0438624530968212,
+      "mahalanobis": 2.7818641955757872,
+      "in_distribution": true,
+      "dominant_feature": "logic_gyration_cells",
+      "dominant_feature_z": -2.0059462759503743
     },
     {
       "index": 22,
       "surrogate_rank": 22,
-      "surrogate_peak_c": 114.78294372558594,
-      "reference_peak_c": 106.8409123249782,
-      "surrogate_error_k": 7.942031400607732,
-      "mahalanobis": 36.41723931740302,
-      "in_distribution": false,
-      "dominant_feature": "memory_active_fraction",
-      "dominant_feature_z": 24.58573717449034
+      "surrogate_peak_c": 104.39402770996094,
+      "reference_peak_c": 103.44061013076691,
+      "surrogate_error_k": 0.9534175791940243,
+      "mahalanobis": 2.772700298594718,
+      "in_distribution": true,
+      "dominant_feature": "logic_gyration_cells",
+      "dominant_feature_z": -1.9962390996964363
     },
     {
       "index": 23,
       "surrogate_rank": 23,
-      "surrogate_peak_c": 118.33509826660156,
-      "reference_peak_c": 109.47321342492198,
-      "surrogate_error_k": 8.861884841679583,
-      "mahalanobis": 36.41733991927089,
-      "in_distribution": false,
-      "dominant_feature": "memory_active_fraction",
-      "dominant_feature_z": 24.58573717449034
+      "surrogate_peak_c": 107.22482299804688,
+      "reference_peak_c": 105.86337584754352,
+      "surrogate_error_k": 1.361447150503352,
+      "mahalanobis": 2.9204821640135266,
+      "in_distribution": true,
+      "dominant_feature": "logic_gyration_cells",
+      "dominant_feature_z": -2.149018069046057
     },
     {
       "index": 24,
       "surrogate_rank": 24,
-      "surrogate_peak_c": 119.42506408691406,
-      "reference_peak_c": 107.9738181580652,
-      "surrogate_error_k": 11.451245928848863,
-      "mahalanobis": 36.417386799567915,
-      "in_distribution": false,
-      "dominant_feature": "memory_active_fraction",
-      "dominant_feature_z": 24.58573717449034
+      "surrogate_peak_c": 108.63582611083984,
+      "reference_peak_c": 107.05928951804059,
+      "surrogate_error_k": 1.5765365927992576,
+      "mahalanobis": 2.9420265500525495,
+      "in_distribution": true,
+      "dominant_feature": "logic_gyration_cells",
+      "dominant_feature_z": -2.1706900665044735
     },
     {
       "index": 25,
       "surrogate_rank": 25,
-      "surrogate_peak_c": 120.44105529785156,
-      "reference_peak_c": 108.50173515033076,
-      "surrogate_error_k": 11.939320147520803,
-      "mahalanobis": 36.41733991927089,
-      "in_distribution": false,
-      "dominant_feature": "memory_active_fraction",
-      "dominant_feature_z": 24.58573717449034
+      "surrogate_peak_c": 113.67645263671875,
+      "reference_peak_c": 111.95123845257277,
+      "surrogate_error_k": 1.7252141841459832,
+      "mahalanobis": 3.0214260283586656,
+      "in_distribution": true,
+      "dominant_feature": "logic_gyration_cells",
+      "dominant_feature_z": -2.2494381929597416
     },
     {
       "index": 26,
       "surrogate_rank": 26,
-      "surrogate_peak_c": 123.39125061035156,
-      "reference_peak_c": 113.71417733707979,
-      "surrogate_error_k": 9.677073273271773,
-      "mahalanobis": 36.417841282422415,
-      "in_distribution": false,
-      "dominant_feature": "memory_active_fraction",
-      "dominant_feature_z": 24.58573717449034
+      "surrogate_peak_c": 116.84066772460938,
+      "reference_peak_c": 117.57872120373084,
+      "surrogate_error_k": -0.7380534791214615,
+      "mahalanobis": 2.637462768792802,
+      "in_distribution": true,
+      "dominant_feature": "logic_gyration_cells",
+      "dominant_feature_z": -1.8485507001199637
     },
     {
       "index": 27,
       "surrogate_rank": 27,
-      "surrogate_peak_c": 123.6041259765625,
-      "reference_peak_c": 113.8329441867479,
-      "surrogate_error_k": 9.771181789814605,
-      "mahalanobis": 36.417841282422415,
-      "in_distribution": false,
-      "dominant_feature": "memory_active_fraction",
-      "dominant_feature_z": 24.58573717449034
+      "surrogate_peak_c": 118.22161865234375,
+      "reference_peak_c": 120.3819971183744,
+      "surrogate_error_k": -2.16037846603065,
+      "mahalanobis": 2.7818641955757872,
+      "in_distribution": true,
+      "dominant_feature": "logic_gyration_cells",
+      "dominant_feature_z": -2.0059462759503743
     },
     {
       "index": 28,
       "surrogate_rank": 28,
-      "surrogate_peak_c": 127.15733337402344,
-      "reference_peak_c": 115.06821787059457,
-      "surrogate_error_k": 12.089115503428872,
-      "mahalanobis": 36.420848849567584,
-      "in_distribution": false,
-      "dominant_feature": "memory_active_fraction",
-      "dominant_feature_z": 24.58573717449034
+      "surrogate_peak_c": 121.447509765625,
+      "reference_peak_c": 121.59963686523398,
+      "surrogate_error_k": -0.1521270996089754,
+      "mahalanobis": 2.736929943348836,
+      "in_distribution": true,
+      "dominant_feature": "logic_gyration_cells",
+      "dominant_feature_z": -1.9580115794245432
     },
     {
       "index": 29,
       "surrogate_rank": 29,
-      "surrogate_peak_c": 131.79116821289062,
-      "reference_peak_c": 118.07053085217034,
-      "surrogate_error_k": 13.72063736072029,
-      "mahalanobis": 36.420848849567584,
-      "in_distribution": false,
-      "dominant_feature": "memory_active_fraction",
-      "dominant_feature_z": 24.58573717449034
+      "surrogate_peak_c": 124.04312133789062,
+      "reference_peak_c": 124.31781890319262,
+      "surrogate_error_k": -0.27469756530199163,
+      "mahalanobis": 2.7818641955757872,
+      "in_distribution": true,
+      "dominant_feature": "logic_gyration_cells",
+      "dominant_feature_z": -2.0059462759503743
     },
     {
       "index": 30,
       "surrogate_rank": 30,
-      "surrogate_peak_c": 144.44293212890625,
-      "reference_peak_c": 125.81255543758839,
-      "surrogate_error_k": 18.630376691317863,
-      "mahalanobis": 36.42208603383755,
-      "in_distribution": false,
-      "dominant_feature": "memory_active_fraction",
-      "dominant_feature_z": 24.58573717449034
+      "surrogate_peak_c": 126.83982849121094,
+      "reference_peak_c": 127.3656744103976,
+      "surrogate_error_k": -0.5258459191866649,
+      "mahalanobis": 2.9420265500525495,
+      "in_distribution": true,
+      "dominant_feature": "logic_gyration_cells",
+      "dominant_feature_z": -2.1706900665044735
     },
     {
       "index": 31,
       "surrogate_rank": 31,
-      "surrogate_peak_c": 145.83546447753906,
-      "reference_peak_c": 127.30957223062269,
-      "surrogate_error_k": 18.52589224691637,
-      "mahalanobis": 36.42208603383755,
-      "in_distribution": false,
-      "dominant_feature": "memory_active_fraction",
-      "dominant_feature_z": 24.58573717449034
+      "surrogate_peak_c": 129.53253173828125,
+      "reference_peak_c": 129.5388207654207,
+      "surrogate_error_k": -0.006289027139445125,
+      "mahalanobis": 2.4864014731144723,
+      "in_distribution": true,
+      "dominant_feature": "logic_gyration_cells",
+      "dominant_feature_z": -2.2847168944856944
     },
     {
       "index": 32,
       "surrogate_rank": 32,
-      "surrogate_peak_c": 147.69293212890625,
-      "reference_peak_c": 127.57319227692624,
-      "surrogate_error_k": 20.119739851980015,
-      "mahalanobis": 44.74424878378234,
-      "in_distribution": false,
-      "dominant_feature": "memory_active_fraction",
-      "dominant_feature_z": 24.58573717449034
+      "surrogate_peak_c": 131.50132751464844,
+      "reference_peak_c": 131.47051203479162,
+      "surrogate_error_k": 0.030815479856812544,
+      "mahalanobis": 2.4864014731144723,
+      "in_distribution": true,
+      "dominant_feature": "logic_gyration_cells",
+      "dominant_feature_z": -2.2847168944856944
     },
     {
       "index": 33,
       "surrogate_rank": 33,
-      "surrogate_peak_c": 154.46173095703125,
-      "reference_peak_c": 135.6277139755492,
-      "surrogate_error_k": 18.83401698148205,
-      "mahalanobis": 44.74424878378234,
-      "in_distribution": false,
-      "dominant_feature": "memory_active_fraction",
-      "dominant_feature_z": 24.58573717449034
+      "surrogate_peak_c": 133.51390075683594,
+      "reference_peak_c": 132.33900594718187,
+      "surrogate_error_k": 1.174894809654063,
+      "mahalanobis": 2.4945483791808503,
+      "in_distribution": true,
+      "dominant_feature": "logic_gyration_cells",
+      "dominant_feature_z": -2.2967015910800628
     },
     {
       "index": 34,
       "surrogate_rank": 34,
-      "surrogate_peak_c": 162.87557983398438,
-      "reference_peak_c": 138.3532009333548,
-      "surrogate_error_k": 24.522378900629576,
-      "mahalanobis": 44.71779100997097,
-      "in_distribution": false,
-      "dominant_feature": "memory_active_fraction",
-      "dominant_feature_z": 24.58573717449034
+      "surrogate_peak_c": 133.75375366210938,
+      "reference_peak_c": 132.61262530753874,
+      "surrogate_error_k": 1.1411283545706397,
+      "mahalanobis": 2.5379380942035823,
+      "in_distribution": true,
+      "dominant_feature": "logic_gyration_cells",
+      "dominant_feature_z": -2.3584703765130564
     },
     {
       "index": 35,
       "surrogate_rank": 35,
-      "surrogate_peak_c": 166.583984375,
-      "reference_peak_c": 143.1204970719772,
-      "surrogate_error_k": 23.463487303022788,
-      "mahalanobis": 44.69693808151953,
-      "in_distribution": false,
-      "dominant_feature": "memory_active_fraction",
-      "dominant_feature_z": 24.58573717449034
+      "surrogate_peak_c": 135.65379333496094,
+      "reference_peak_c": 135.3946049648052,
+      "surrogate_error_k": 0.2591883701557265,
+      "mahalanobis": 2.5379380942035823,
+      "in_distribution": true,
+      "dominant_feature": "logic_gyration_cells",
+      "dominant_feature_z": -2.3584703765130564
     },
     {
       "index": 36,
       "surrogate_rank": 36,
-      "surrogate_peak_c": 167.977783203125,
-      "reference_peak_c": 143.67364023494963,
-      "surrogate_error_k": 24.30414296817537,
-      "mahalanobis": 44.67025693951495,
-      "in_distribution": false,
-      "dominant_feature": "memory_active_fraction",
-      "dominant_feature_z": 24.58573717449034
+      "surrogate_peak_c": 144.39743041992188,
+      "reference_peak_c": 143.54733499795998,
+      "surrogate_error_k": 0.8500954219618961,
+      "mahalanobis": 2.5379380942035823,
+      "in_distribution": true,
+      "dominant_feature": "logic_gyration_cells",
+      "dominant_feature_z": -2.3584703765130564
     },
     {
       "index": 37,
       "surrogate_rank": 37,
-      "surrogate_peak_c": 176.46568298339844,
-      "reference_peak_c": 148.95660643495515,
-      "surrogate_error_k": 27.50907654844329,
-      "mahalanobis": 44.66843279707738,
-      "in_distribution": false,
-      "dominant_feature": "memory_active_fraction",
-      "dominant_feature_z": 24.58573717449034
+      "surrogate_peak_c": 148.5198974609375,
+      "reference_peak_c": 145.71391116143562,
+      "surrogate_error_k": 2.805986299501882,
+      "mahalanobis": 2.6061504376368125,
+      "in_distribution": true,
+      "dominant_feature": "logic_gyration_cells",
+      "dominant_feature_z": -2.450897243001667
     },
     {
       "index": 38,
       "surrogate_rank": 38,
-      "surrogate_peak_c": 179.0376434326172,
-      "reference_peak_c": 151.42893767034843,
-      "surrogate_error_k": 27.608705762268755,
-      "mahalanobis": 44.639882308894194,
-      "in_distribution": false,
-      "dominant_feature": "memory_active_fraction",
-      "dominant_feature_z": 24.58573717449034
+      "surrogate_peak_c": 157.92642211914062,
+      "reference_peak_c": 158.55846872382727,
+      "surrogate_error_k": -0.63204660468665,
+      "mahalanobis": 2.7515126340708904,
+      "in_distribution": true,
+      "dominant_feature": "logic_gyration_cells",
+      "dominant_feature_z": -2.6313099352424043
     },
     {
       "index": 39,
       "surrogate_rank": 39,
-      "surrogate_peak_c": 179.5751953125,
-      "reference_peak_c": 150.8566766124401,
-      "surrogate_error_k": 28.71851870005989,
-      "mahalanobis": 44.641755017645536,
-      "in_distribution": false,
-      "dominant_feature": "memory_active_fraction",
-      "dominant_feature_z": 24.58573717449034
+      "surrogate_peak_c": 161.19898986816406,
+      "reference_peak_c": 159.11059882235887,
+      "surrogate_error_k": 2.0883910458051957,
+      "mahalanobis": 2.7570623909806335,
+      "in_distribution": true,
+      "dominant_feature": "logic_gyration_cells",
+      "dominant_feature_z": -2.6313099352424043
     },
     {
       "index": 40,
       "surrogate_rank": 40,
-      "surrogate_peak_c": 185.5171356201172,
-      "reference_peak_c": 153.8325970347698,
-      "surrogate_error_k": 31.684538585347383,
-      "mahalanobis": 44.55102350648809,
-      "in_distribution": false,
-      "dominant_feature": "memory_active_fraction",
-      "dominant_feature_z": 24.58573717449034
+      "surrogate_peak_c": 162.74403381347656,
+      "reference_peak_c": 161.33814045690275,
+      "surrogate_error_k": 1.405893356573813,
+      "mahalanobis": 2.7437198393242563,
+      "in_distribution": true,
+      "dominant_feature": "logic_gyration_cells",
+      "dominant_feature_z": -2.6149086779151114
     },
     {
       "index": 41,
       "surrogate_rank": 41,
-      "surrogate_peak_c": 186.34634399414062,
-      "reference_peak_c": 157.25149361293492,
-      "surrogate_error_k": 29.094850381205703,
-      "mahalanobis": 44.54318997953246,
-      "in_distribution": false,
-      "dominant_feature": "memory_active_fraction",
-      "dominant_feature_z": 24.58573717449034
+      "surrogate_peak_c": 169.26287841796875,
+      "reference_peak_c": 167.2370912407028,
+      "surrogate_error_k": 2.025787177265954,
+      "mahalanobis": 2.7437198393242563,
+      "in_distribution": true,
+      "dominant_feature": "logic_gyration_cells",
+      "dominant_feature_z": -2.6149086779151114
     },
     {
       "index": 42,
       "surrogate_rank": 42,
-      "surrogate_peak_c": 201.74620056152344,
-      "reference_peak_c": 166.25929760634205,
-      "surrogate_error_k": 35.48690295518139,
-      "mahalanobis": 57.18531923847709,
-      "in_distribution": false,
+      "surrogate_peak_c": 169.90728759765625,
+      "reference_peak_c": 167.9500222757986,
+      "surrogate_error_k": 1.9572653218576477,
+      "mahalanobis": 4.043878925155706,
+      "in_distribution": true,
       "dominant_feature": "logic_peak_to_mean",
-      "dominant_feature_z": 35.67033440665625
+      "dominant_feature_z": 3.5934198822415517
     },
     {
       "index": 43,
       "surrogate_rank": 43,
-      "surrogate_peak_c": 226.32513427734375,
-      "reference_peak_c": 181.53612628944438,
-      "surrogate_error_k": 44.78900798789937,
-      "mahalanobis": 71.82853557768493,
-      "in_distribution": false,
+      "surrogate_peak_c": 179.7136688232422,
+      "reference_peak_c": 178.40765678115207,
+      "surrogate_error_k": 1.3060120420901171,
+      "mahalanobis": 4.067287392513485,
+      "in_distribution": true,
       "dominant_feature": "logic_peak_to_mean",
-      "dominant_feature_z": 49.02390093972158
+      "dominant_feature_z": 3.5934198822415517
     },
     {
       "index": 44,
       "surrogate_rank": 44,
-      "surrogate_peak_c": 228.62966918945312,
-      "reference_peak_c": 181.79014763480362,
-      "surrogate_error_k": 46.83952155464951,
-      "mahalanobis": 71.82241098626162,
-      "in_distribution": false,
+      "surrogate_peak_c": 181.60311889648438,
+      "reference_peak_c": 182.61049775176537,
+      "surrogate_error_k": -1.0073788552809901,
+      "mahalanobis": 4.067287392513485,
+      "in_distribution": true,
       "dominant_feature": "logic_peak_to_mean",
-      "dominant_feature_z": 49.02390093972158
+      "dominant_feature_z": 3.5934198822415517
     },
     {
       "index": 45,
       "surrogate_rank": 45,
-      "surrogate_peak_c": 229.62490844726562,
-      "reference_peak_c": 185.4978408858267,
-      "surrogate_error_k": 44.127067561438935,
-      "mahalanobis": 71.7294962813802,
-      "in_distribution": false,
+      "surrogate_peak_c": 197.70440673828125,
+      "reference_peak_c": 192.49772261873142,
+      "surrogate_error_k": 5.206684119549834,
+      "mahalanobis": 6.135298191462898,
+      "in_distribution": true,
       "dominant_feature": "logic_peak_to_mean",
-      "dominant_feature_z": 49.02390093972158
+      "dominant_feature_z": 5.167413395629053
     },
     {
       "index": 46,
       "surrogate_rank": 46,
-      "surrogate_peak_c": 232.7710723876953,
-      "reference_peak_c": 190.9002519306919,
-      "surrogate_error_k": 41.87082045700342,
-      "mahalanobis": 71.63419954797126,
-      "in_distribution": false,
+      "surrogate_peak_c": 197.9178924560547,
+      "reference_peak_c": 196.58934041218768,
+      "surrogate_error_k": 1.3285520438670062,
+      "mahalanobis": 6.098048387130092,
+      "in_distribution": true,
       "dominant_feature": "logic_peak_to_mean",
-      "dominant_feature_z": 49.02390093972158
+      "dominant_feature_z": 5.167413395629053
     },
     {
       "index": 47,
       "surrogate_rank": 47,
-      "surrogate_peak_c": 235.60989379882812,
-      "reference_peak_c": 195.43854824367853,
-      "surrogate_error_k": 40.1713455551496,
-      "mahalanobis": 71.63419954797126,
-      "in_distribution": false,
+      "surrogate_peak_c": 201.7042236328125,
+      "reference_peak_c": 201.60856740069173,
+      "surrogate_error_k": 0.09565623212077412,
+      "mahalanobis": 6.098048387130092,
+      "in_distribution": true,
       "dominant_feature": "logic_peak_to_mean",
-      "dominant_feature_z": 49.02390093972158
+      "dominant_feature_z": 5.167413395629053
     }
   ],
   "error_budget_k": {
     "network_extrapolation": {
-      "mean_signed_k": 14.211787382761637,
-      "mean_abs_k": 14.211787382761637,
-      "max_abs_k": 38.17970275878906,
-      "min_signed_k": 2.8383712768554688,
-      "max_signed_k": 38.17970275878906
+      "mean_signed_k": -1.296890099843343,
+      "mean_abs_k": 1.3344518343607585,
+      "max_abs_k": 3.4118499755859375,
+      "min_signed_k": -3.4118499755859375,
+      "max_signed_k": 0.6414031982421875
     },
     "solver_agreement_same_mesh": {
-      "mean_signed_k": -3.237911702639688e-05,
-      "mean_abs_k": 3.237911702639688e-05,
-      "max_abs_k": 4.211645216400939e-05,
-      "min_signed_k": -4.211645216400939e-05,
-      "max_signed_k": -2.6960664342823293e-05
+      "mean_signed_k": -3.292315782044142e-05,
+      "mean_abs_k": 3.292315782044142e-05,
+      "max_abs_k": 4.182665344387715e-05,
+      "min_signed_k": -4.182665344387715e-05,
+      "max_signed_k": -2.6204814474795057e-05
     },
     "training_mesh_discretisation": {
-      "mean_signed_k": 2.763352174448259,
-      "mean_abs_k": 2.763352174448259,
-      "max_abs_k": 10.02467695075427,
-      "min_signed_k": 0.28655112624748824,
-      "max_signed_k": 10.02467695075427
+      "mean_signed_k": 1.8849129677962697,
+      "mean_abs_k": 1.8849129677962697,
+      "max_abs_k": 7.515707075886468,
+      "min_signed_k": 0.40447684875333323,
+      "max_signed_k": 7.515707075886468
     },
     "total": {
-      "mean_signed_k": 16.97510717809287,
-      "mean_abs_k": 16.97510717809287,
-      "max_abs_k": 46.83952155464951,
-      "min_signed_k": 5.039848976978931,
-      "max_signed_k": 46.83952155464951
+      "mean_signed_k": 0.5879899447951061,
+      "mean_abs_k": 0.9751512675328309,
+      "max_abs_k": 5.206684119549834,
+      "min_signed_k": -2.16037846603065,
+      "max_signed_k": 5.206684119549834
     },
     "closes_to_k": 0.0,
     "note": "network_extrapolation is the surrogate against the solver that produced its training labels, on the mesh it was trained on; discretisation is that mesh against 32x32x10. Retraining fixes only the first."
@@ -621,104 +621,104 @@
   "tier_2": {
     "mesh": "64x64x20",
     "unknowns": 81920,
-    "assemble_s": 0.31060974998399615,
-    "factorise_s": 13.987488416954875,
-    "ms_per_design": 79.90861133051415,
+    "assemble_s": 0.44931979198008776,
+    "factorise_s": 19.222424042178318,
+    "ms_per_design": 127.97768064774573,
     "designs": [
       {
         "index": 0,
-        "reference_peak_c": 77.61226248340999,
-        "refined_peak_c": 77.41703503835365,
-        "discretisation_delta_c": 0.19522744505634648
+        "reference_peak_c": 72.07347836050788,
+        "refined_peak_c": 71.891142198984,
+        "discretisation_delta_c": 0.1823361615238781
       },
       {
         "index": 1,
-        "reference_peak_c": 78.53864807938061,
-        "refined_peak_c": 78.351497385879,
-        "discretisation_delta_c": 0.18715069350160718
+        "reference_peak_c": 72.7757326034615,
+        "refined_peak_c": 72.61846111491029,
+        "discretisation_delta_c": 0.15727148855121698
       },
       {
         "index": 2,
-        "reference_peak_c": 79.61133186709527,
-        "refined_peak_c": 79.46755216548628,
-        "discretisation_delta_c": 0.14377970160899167
+        "reference_peak_c": 73.08139934585478,
+        "refined_peak_c": 72.85419871527857,
+        "discretisation_delta_c": 0.2272006305762062
       }
     ],
-    "max_abs_discretisation_delta_c": 0.19522744505634648,
-    "quotable_peak_c": 77.41703503835365
+    "max_abs_discretisation_delta_c": 0.2272006305762062,
+    "quotable_peak_c": 71.891142198984
   },
   "in_distribution_control": {
     "n": 32,
     "source": "training maps, re-solved on the same reference mesh",
     "mahalanobis": {
-      "min": 1.193135456269184,
-      "max": 4.809355078273704
+      "min": 1.2533342680612205,
+      "max": 4.42191590692589
     },
-    "flagged_fraction": 0.03125,
+    "flagged_fraction": 0.0,
     "surrogate_error_vs_reference": {
-      "mean_signed_k": 5.712673133827602,
-      "mean_abs_k": 6.820762858573495,
-      "max_abs_k": 13.366798390930427,
-      "min_signed_k": -13.366798390930427,
-      "max_signed_k": 11.098217280901963
+      "mean_signed_k": 3.434523636778246,
+      "mean_abs_k": 4.054015773494104,
+      "max_abs_k": 11.535916415199196,
+      "min_signed_k": -8.689889505432035,
+      "max_signed_k": 11.535916415199196
     },
     "network_error_k": {
-      "mean_signed_k": -1.4816579818725586,
-      "mean_abs_k": 2.104790687561035,
-      "max_abs_k": 13.326240539550781,
-      "min_signed_k": -13.326240539550781,
-      "max_signed_k": 2.7678451538085938
+      "mean_signed_k": -0.008066296577453613,
+      "mean_abs_k": 0.8953174352645874,
+      "max_abs_k": 9.083740234375,
+      "min_signed_k": -9.083740234375,
+      "max_signed_k": 3.26910400390625
     }
   },
   "rom_screen_calibration": {
     "mesh": "32x32x10",
     "unknowns": 10240,
-    "exact_ms_per_design": 1.8554124994860852,
-    "exact_factorise_s": 0.13643604214303195,
+    "exact_ms_per_design": 2.7410786763271866,
+    "exact_factorise_s": 0.18596574990078807,
     "offline_snapshots": 300,
-    "offline_s": 0.6958436670247465,
+    "offline_s": 1.063206332968548,
     "ranks": [
       {
         "rank": 8,
         "retained_energy": 0.9833452522244106,
         "rom_relative_l2_max": 0.20657915668231186,
         "peak_error_c_max_abs": 42.61619053368298,
-        "ms_per_design": 0.11080312542617321
+        "ms_per_design": 0.15170000260695815
       },
       {
         "rank": 32,
         "retained_energy": 0.9977776068205119,
         "rom_relative_l2_max": 0.0742535912302979,
         "peak_error_c_max_abs": 22.29224865712878,
-        "ms_per_design": 0.17469375161454082
+        "ms_per_design": 0.2890114497859031
       },
       {
         "rank": 64,
         "retained_energy": 0.9994844068421306,
         "rom_relative_l2_max": 0.040029767827262426,
         "peak_error_c_max_abs": 12.124938551916102,
-        "ms_per_design": 0.2442697703372687
+        "ms_per_design": 0.3642729250714183
       },
       {
         "rank": 128,
         "retained_energy": 0.9999649593074389,
         "rom_relative_l2_max": 0.01880836243051194,
         "peak_error_c_max_abs": 5.75817896610782,
-        "ms_per_design": 0.3792500006966293
+        "ms_per_design": 0.5718427011743188
       },
       {
         "rank": 200,
         "retained_energy": 0.9999996356345147,
         "rom_relative_l2_max": 0.004606491298992941,
         "peak_error_c_max_abs": 1.5006236044173562,
-        "ms_per_design": 0.7096562534570694
+        "ms_per_design": 1.3791437493637204
       },
       {
         "rank": 300,
         "retained_energy": 1.0,
         "rom_relative_l2_max": 0.0007430297127958398,
         "peak_error_c_max_abs": 0.11050175297165765,
-        "ms_per_design": 1.442353124730289
+        "ms_per_design": 3.0800229287706316
       }
     ],
     "rank_for_1c": 300,

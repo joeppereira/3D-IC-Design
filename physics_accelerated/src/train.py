@@ -1,5 +1,7 @@
 import json
 import sys
+
+import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -117,30 +119,76 @@ class FNO2d(nn.Module):
         # Return to (Batch, Channels, X, Y)
         return x.permute(0, 3, 1, 2)
 
+# --- Data ---
+
+def load_dataset(args, device):
+    """Return {split: (x, y)}.
+
+    A manifest from `dataset.py` carries its own train/val/test split, drawn
+    from separate RNG streams. The legacy path (`x_physics.pt`/`y_spatial.pt`)
+    has no split at all, which is why every RMSE this project quoted before now
+    was an in-sample number; it is kept so old models can be reproduced, and it
+    is split 80/20 here rather than reported on itself.
+    """
+    if args.dataset:
+        manifest = json.load(open(args.dataset))
+        root = os.path.dirname(os.path.abspath(args.dataset))
+        out = {}
+        for split, info in manifest["splits"].items():
+            x = torch.load(os.path.join(root, os.path.basename(info["x"])))
+            y = torch.load(os.path.join(root, os.path.basename(info["y"])))
+            out[split] = (x.to(device), y.to(device))
+        return out
+
+    data_dir = "data"
+    x = torch.load(os.path.join(data_dir, "x_physics.pt")).to(device)
+    y = torch.load(os.path.join(data_dir, "y_spatial.pt")).to(device)
+    cut = int(0.8 * len(x))
+    return {"train": (x[:cut], y[:cut]), "test": (x[cut:], y[cut:])}
+
+
+def evaluate(model, x, y, y_mean, y_std, residual_op, batch=64):
+    """Held-out error, in kelvin, plus the physics residual of the prediction."""
+    model.eval()
+    errs, peaks, res = [], [], []
+    with torch.no_grad():
+        for i in range(0, len(x), batch):
+            xb, yb = x[i:i + batch], y[i:i + batch]
+            pred = model(xb) * y_std + y_mean
+            errs.append((pred - yb).flatten())
+            peaks.append(pred[:, 0].amax(dim=(1, 2)) - yb[:, 0].amax(dim=(1, 2)))
+            res.append(residual_op.rms_k(pred, xb))
+    e = torch.cat(errs)
+    pk = torch.cat(peaks)
+    return {"field_rmse_k": float(torch.sqrt((e ** 2).mean())),
+            "field_max_abs_k": float(e.abs().max()),
+            "peak_mean_abs_k": float(pk.abs().mean()),
+            "peak_max_abs_k": float(pk.abs().max()),
+            "peak_mean_signed_k": float(pk.mean()),
+            "heat_residual_k": float(np.mean(res))}
+
+
 # --- Training Logic ---
 
 def train(args):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    print(f"🚀 Training FNO Surrogate on {device}...")
+    # Seeded by default so a published model can be reproduced, and so the
+    # lambda comparison can be run across seeds instead of resting on one draw.
+    torch.manual_seed(args.seed)
+    np.random.seed(args.seed)
+    print(f"🚀 Training FNO Surrogate on {device} (seed {args.seed})...")
     
     # Load Data
-    data_dir = 'data'
-    print(f"DEBUG: CWD is {os.getcwd()}")
-    print(f"DEBUG: Checking {os.path.abspath(data_dir)}")
-    if os.path.exists(data_dir):
-        print(f"DEBUG: Contents of {data_dir}: {os.listdir(data_dir)}")
-    else:
-        print(f"DEBUG: {data_dir} does not exist!")
+    data = load_dataset(args, device)
+    x_train, y_train = data["train"]
+    print(f"  dataset: {args.dataset or 'legacy x_physics.pt/y_spatial.pt'}")
+    for split, (x, _) in data.items():
+        print(f"    {split:5}: {x.shape[0]:5d} samples")
 
-    try:
-        x_train = torch.load(os.path.join(data_dir, 'x_physics.pt')).to(device)
-        y_train = torch.load(os.path.join(data_dir, 'y_spatial.pt')).to(device)
-    except FileNotFoundError:
-        print("❌ Data not found! Please run Phase 1 (serdes_architect) first.")
-        return
-
-    # Normalize Data (Simple Min-Max or Z-score is recommended, but for now we trust the raw values are reasonable)
-    # Ideally: y_train = (y_train - mean) / std
+    # Normalisation statistics come from the training split only. Taking them
+    # over the whole set would leak the held-out fields' scale into training,
+    # which is exactly the kind of leak that makes a held-out number stop
+    # meaning anything.
     y_mean = y_train.mean()
     y_std = y_train.std()
     y_train_norm = (y_train - y_mean) / y_std
@@ -183,6 +231,11 @@ def train(args):
         print(f"  Heat-equation residual of the TRAINING LABELS: {lab_res:.3e} K "
               f"({'labels are converged' if lab_res < 1e-3 else 'LABELS ARE NOT CONVERGED'})")
     
+    training_set_x = None
+    if args.dataset:
+        manifest = json.load(open(args.dataset))
+        training_set_x = manifest["splits"]["train"]["x"]
+
     # Training Loop
     t0 = time.time()
     for epoch in range(args.epochs):
@@ -221,44 +274,57 @@ def train(args):
                    f"{train_loss/len(train_loader):.6f} | LR: "
                    f"{scheduler.get_last_lr()[0]:.1e}")
             msg += f" | physics residual: {epoch_phys/len(train_loader):.4e} K"
+            if "val" in data:
+                v = evaluate(model, *data["val"], y_mean, y_std, residual_op)
+                msg += (f" | val RMSE: {v['field_rmse_k']:.3f} K"
+                        f" (peak {v['peak_mean_abs_k']:.3f} K)")
+                model.train()
             print(msg)
 
     print(f"✅ Training Complete in {time.time() - t0:.2f}s")
     
-    # Save Model
     os.makedirs('results', exist_ok=True)
-    torch.save(model.state_dict(), 'results/fno_model.pt')
-    
-    # --- final physics audit ----------------------------------------------
-    model.eval()
-    metrics = {}
-    with torch.no_grad():
-        pred = model(x_train) * y_std + y_mean
-        err = pred - y_train
-        metrics = {
-            "data_rmse_k": float(torch.sqrt((err ** 2).mean())),
-            "data_max_abs_k": float(err.abs().max()),
-            "label_peak_c": float(y_train.max()),
-            "pred_peak_c": float(pred.max()),
-            "peak_error_k": float(pred.max() - y_train.max()),
-            "lambda_physics": float(args.lambda_physics),
-            "epochs": int(args.epochs),
-            "samples": int(x_train.shape[0]),
-        }
-        metrics["pred_residual_k"] = residual_op.rms_k(pred, x_train)
-        metrics["label_residual_k"] = residual_op.rms_k(y_train, x_train)
-    print(f"  Data RMSE: {metrics['data_rmse_k']:.4f} K | peak error: "
-          f"{metrics['peak_error_k']:+.4f} K")
-    if "pred_residual_k" in metrics:
-        print(f"  Heat-equation residual -- prediction: "
-              f"{metrics['pred_residual_k']:.4e} K, labels: "
-              f"{metrics['label_residual_k']:.4e} K")
+
+    # --- final audit: every split, in kelvin -------------------------------
+    metrics = {
+        "lambda_physics": float(args.lambda_physics),
+        "epochs": int(args.epochs),
+        "seed": int(args.seed),
+        "dataset": args.dataset or "legacy data/x_physics.pt (80/20 split)",
+        "training_set_x": training_set_x,
+        "samples": {k: int(v[0].shape[0]) for k, v in data.items()},
+        "splits": {k: evaluate(model, v[0], v[1], y_mean, y_std, residual_op)
+                   for k, v in data.items()},
+        "label_residual_k": float(residual_op.rms_k(y_train, x_train)),
+    }
+    # The number to quote is the held-out one. `train` is reported next to it
+    # so the gap between them is visible rather than implied: every RMSE this
+    # project published before this change was the `train` column.
+    held = "test" if "test" in metrics["splits"] else "train"
+    metrics["headline"] = {"split": held, **metrics["splits"][held]}
+    print(f"\n  {'split':6} {'field RMSE':>11} {'peak |err|':>11} "
+          f"{'peak max':>10} {'residual':>11}")
+    for split, m in metrics["splits"].items():
+        print(f"  {split:6} {m['field_rmse_k']:10.4f}K {m['peak_mean_abs_k']:10.4f}K "
+              f"{m['peak_max_abs_k']:9.3f}K {m['heat_residual_k']:11.3e}")
+    print(f"  labels' own heat-equation residual: "
+          f"{metrics['label_residual_k']:.3e} K")
 
     # Save Normalization Stats for Inference
     stats = {'mean': y_mean.item(), 'std': y_std.item()}
-    torch.save(stats, 'results/norm_stats.pt')
     suffix = f"_lam{args.lambda_physics:g}".replace(".", "p")
+    if args.tag:
+        suffix = f"_{args.tag}{suffix}"
+    # Per-variant stats as well as the shared file: a model trained on a
+    # different dataset has a different mean and std, and pairing a model with
+    # another variant's statistics silently shifts every temperature it
+    # predicts.
+    torch.save(stats, f'results/norm_stats{suffix}.pt')
     torch.save(model.state_dict(), f'results/fno_model{suffix}.pt')
+    # The unsuffixed pair is "whatever was trained last", which is all the
+    # legacy gepa.py asks for. Everything current names its variant explicitly.
+    torch.save(stats, 'results/norm_stats.pt')
+    torch.save(model.state_dict(), 'results/fno_model.pt')
     with open(f'results/train_metrics{suffix}.json', 'w') as fh:
         json.dump(metrics, fh, indent=2)
     print(f"  Saved model, stats and metrics to results/ (variant {suffix})")
@@ -273,6 +339,14 @@ if __name__ == "__main__":
     parser.add_argument('--config', type=str,
                         default='results/golden_config.json',
                         help='Config supplying geometry/materials for the residual')
+    parser.add_argument('--dataset', type=str, default=None,
+                        help='manifest_*.json from dataset.py; omit for the '
+                             'legacy x_physics.pt/y_spatial.pt pair')
+    parser.add_argument('--seed', type=int, default=0,
+                        help='torch/numpy seed')
+    parser.add_argument('--tag', type=str, default=None,
+                        help='name the variant, e.g. --tag mixed -> '
+                             'results/fno_model_mixed_lam0p1.pt')
     args = parser.parse_args()
     
     # Fix boolean parsing

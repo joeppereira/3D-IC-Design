@@ -20,10 +20,13 @@ After 20 generations of evolutionary discovery, the system identified this optim
 Neither was a solver output — both were literals. The champion figure is now
 measured; the baseline is left unmeasured rather than restated, because no
 controlled run of it exists. What *is* measured is the placement-strategy
-comparison: shattered logic macros reach **77.61 °C** against **119.07 °C** for
-the best monolithic placement (an exhaustive scan, not one hand-picked layout),
-a **41.45 °C** recovery — see
-[`thermal_validation.json`](thermal_validation.json).
+comparison: shattered logic macros reach **72.07 °C** against **109.09 °C** for
+the best monolithic placement (an exhaustive scan over both the logic and the
+memory macro's position, not one hand-picked layout), a **37.02 °C** recovery —
+see [`thermal_validation.json`](thermal_validation.json). The earlier
+**41.45 °C** for this comparison came from a scan that pinned the memory macro
+at the die centre while the shattered side was free to move it, which
+handicapped the monolithic layout by about 10 °C.
 
 ---
 

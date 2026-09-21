@@ -1,6 +1,6 @@
 # 🧪 Physics Validation: Reference Solver, PINO, and Multi-Objective Search
 **Status**: ✅ **Implemented and measured** (2026-09-20)
-**Reproduce**: `python -m unittest discover -s tests/physics -t .` (149 tests total in the repo)
+**Reproduce**: `python -m unittest discover -s tests/physics -t .`
 
 > **History.** The first version of this file presented a validation table against
 > "Ansys Icepak (High-Fidelity Baseline)" — 104.2 °C vs 102.8 °C, 8 hours → 15 ms,
@@ -82,7 +82,8 @@ heat-equation residual (`physics_accelerated/src/heat_residual.py`) makes it a
 divided by the total face conductance, so it is expressed in **kelvin** and is
 directly interpretable: "this field violates the heat equation by X K per cell".
 
-Measured on 240 samples, 60 epochs:
+Measured on 240 samples, 60 epochs — **in sample**, on the old training set
+(see the caveat under the table):
 
 | λ | Field RMSE (K) | PDE residual (K) |
 | :--- | :--- | :--- |
@@ -99,6 +100,16 @@ regulariser, which is the published behaviour. Training labels measure
 Honest note: at λ = 0.1 on only 60 samples the physics term *hurt* (RMSE
 2.604 → 2.605 → worse), a gradient-imbalance pathology. The benefit above needs
 the larger sample count.
+
+**Two caveats on that table, both since measured.** Every number in it is a
+*training-set* RMSE — `train.py` had no held-out split at the time — and each
+row is a single run, so it cannot separate a real effect from initialisation
+noise. Re-measured held out on a 3,000-map training set with three seeds per
+setting ([`surrogate_retraining.md`](surrogate_retraining.md) §5), the field-RMSE
+benefit of the physics term falls to **3.2%, inside the seed-to-seed spread**,
+while the residual benefit holds at **−50%, ten standard deviations clear**.
+The −22% above belongs to the data-starved regime; the physics term is kept for
+what it still demonstrably buys, which is physical consistency rather than fit.
 
 ## 4. POD reduced-order model: implemented and measured
 
@@ -146,10 +157,14 @@ position of a moving hotspot well. This is a property of the problem, not a
 defect in the implementation — and it is why the table above runs to rank 240
 rather than stopping at "99% of the energy".
 
-**For context**, the FNO surrogate is +8.45 to +40.17 K at optimiser-selected
-designs (§3 and `thermal_validation.json`). At full rank the ROM's worst
-held-out peak error is 1.43 °C, and unlike the network it carries a
-projection-error bound rather than an empirical band.
+**For context**, the FNO surrogate was +8.45 to +40.17 K at optimiser-selected
+designs when it was trained on a distribution that did not contain them, and is
+**−0.96 to +1.58 K** there now that it is
+([`surrogate_retraining.md`](surrogate_retraining.md),
+`thermal_validation.json`). At full rank the ROM's worst held-out peak error is
+1.43 °C — comparable, but unlike the network it carries a projection-error bound
+rather than an empirical band, and it needs no training distribution to be right
+about.
 
 **No speedup figure is quoted.** The reduced system is 240×240 against 10,240
 unknowns, and the timing ratio recorded in

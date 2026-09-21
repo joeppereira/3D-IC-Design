@@ -10,6 +10,8 @@ trustworthy than itself.
     NSGA-II           <- ZDT1, whose Pareto front is known analytically
     trust guard       <- an independent solve of the design it re-solved, and
                          its own training set, which it must not flag
+    training set      <- the search space it claims to cover, and labels that
+                         must satisfy the discrete equation they came from
 """
 from __future__ import annotations
 
@@ -32,6 +34,8 @@ from thermal.transient_solver import TransientThermalSolver             # noqa: 
 import pareto as P                                                      # noqa: E402
 import thermal_rom as rom_mod                                           # noqa: E402
 import trust_guard as tg                                                # noqa: E402
+import dataset as ds                                                    # noqa: E402
+import surrogate_benchmark as bench                                     # noqa: E402
 from pareto_search import build_power_maps, GRID, SUB, N_SUB      # noqa: E402
 
 GOLDEN = os.path.join(ROOT, "physics_accelerated", "results", "golden_config.json")
@@ -702,8 +706,13 @@ class TestTrustGuard(unittest.TestCase):
                                 self.logic_w, self.mem_w, self.layers).numpy()
         self.assertAlmostEqual(self.cascade.peak(pmap[0], 2),
                                entry["reference_peak_tj_c"], places=6)
-        self.assertGreater(entry["logic_peak_tj_c"], entry["reference_peak_tj_c"],
-                           "the surrogate over-predicts at these designs")
+        # The published error must be the difference it claims. Asserting the
+        # *sign* here was a mistake: the legacy surrogate over-predicted at
+        # every front design, the retrained one does not, and that is an
+        # outcome to measure rather than an invariant to enforce.
+        self.assertAlmostEqual(
+            entry["logic_peak_tj_c"] - entry["reference_peak_tj_c"],
+            entry["surrogate_error_k"], places=6)
 
 
 class TestRomAcceptsArbitraryLoads(unittest.TestCase):
@@ -737,6 +746,118 @@ class TestRomAcceptsArbitraryLoads(unittest.TestCase):
         approx = rom.solve_reduced_rhs(loads[0])
         np.testing.assert_allclose(approx, lv.lu.solve(loads[0]),
                                    rtol=0, atol=1e-6)
+
+
+class TestTrainingDistribution(unittest.TestCase):
+    """`dataset.py` exists because the old training set did not contain
+    anything the optimiser could build. These tests are about coverage and
+    about the labels being solutions."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.solver = ThermalSolver(GOLDEN)
+        cls.cascade = tg.ReferenceCascade(tg.reference_from_solver(cls.solver))
+        cls.layers = cls.solver.layers
+        cls.rng = np.random.default_rng(11)
+        cls.layouts = ds.layout_maps(400, cls.rng, 60.0, cls.layers, GRID)
+        cls.search = build_power_maps(
+            np.random.default_rng(12).uniform(0, GRID - SUB, (24, 2 * N_SUB + 2)),
+            45.0, 15.0, cls.layers).numpy()
+
+    def test_layout_sampler_covers_the_search_space(self):
+        """The property the retraining depends on: designs the optimiser can
+        express are inside the new training distribution."""
+        guard = tg.DistributionGuard.fit(self.layouts)
+        flagged = (guard.distance(self.search) > guard.threshold).mean()
+        self.assertLess(flagged, 0.25,
+                        "the sampler does not cover what the search builds")
+
+    def test_layout_sampler_is_wider_than_the_search(self):
+        """...but not a lookup table of it: the search's fixed settings are
+        interior points, so its designs are interpolation."""
+        f = np.array([tg.power_map_features(m) for m in self.layouts])
+        g = np.array([tg.power_map_features(m) for m in self.search])
+        for name in ("total_power_w", "logic_power_fraction",
+                     "logic_active_fraction"):
+            i = tg.FEATURE_NAMES.index(name)
+            self.assertLess(f[:, i].min(), g[:, i].min(), name)
+            self.assertGreater(f[:, i].max(), g[:, i].max(), name)
+
+    def test_hotspot_sampler_reproduces_the_legacy_distribution(self):
+        """The old/new comparison is only like-for-like if this really is the
+        distribution the legacy model was trained on."""
+        legacy = tg.load_training_maps()
+        guard = tg.DistributionGuard.fit(legacy)
+        drawn = ds.hotspot_maps(64, np.random.default_rng(3), 60.0,
+                                self.layers, GRID)
+        self.assertLess((guard.distance(drawn) > guard.threshold).mean(), 0.10)
+
+    def test_power_budget_and_split_stay_in_range(self):
+        totals = self.layouts.sum(axis=(1, 2, 3))
+        self.assertTrue((totals >= 40.0 - 1e-3).all())
+        self.assertTrue((totals <= 80.0 + 1e-3).all())
+        frac = self.layouts[:, 0].sum(axis=(1, 2)) / totals
+        self.assertTrue((frac >= 0.50 - 1e-6).all())
+        self.assertTrue((frac <= 0.90 + 1e-6).all())
+        self.assertTrue((self.layouts >= 0).all())
+
+    def test_labels_solve_the_discrete_heat_equation(self):
+        """A label set that does not satisfy the equation cannot be trained
+        out -- this is the check `data_gen.py`'s 200-iteration cap failed."""
+        maps = self.layouts[:16]
+        labels = ds.solve_labels(maps, self.cascade)
+        res = HeatEquationResidual.from_solver(self.solver)
+        self.assertLess(float(res.rms_k(torch.from_numpy(labels),
+                                        torch.from_numpy(maps))), 1e-3)
+
+    def test_labels_match_the_iterative_solver(self):
+        """The direct solve replaces a relaxation; it has to agree with it."""
+        maps = self.layouts[:4]
+        direct = ds.solve_labels(maps, self.cascade)
+        iterative = self.solver.solve_steady_state(
+            torch.from_numpy(maps), iterations=80000, tol=1e-6).numpy()
+        self.assertLess(np.abs(direct - iterative).max(), 0.01)
+
+    def test_splits_do_not_share_samples(self):
+        a = ds.layout_maps(64, np.random.default_rng([20260920, 0]), 60.0,
+                           self.layers, GRID)
+        b = ds.layout_maps(64, np.random.default_rng([20260920, 1]), 60.0,
+                           self.layers, GRID)
+        seen = {m.tobytes() for m in a}
+        self.assertEqual(sum(m.tobytes() in seen for m in b), 0,
+                         "held out must mean held out")
+
+
+class TestRetrainingBenchmark(unittest.TestCase):
+    """The benchmark has to be able to report failure, or it is a press
+    release."""
+
+    def _report(self, old_net, new_net, old_hot, new_hot, flagged):
+        def model(net, hot, flag):
+            return {"test_sets": {"hotspots": {"field_rmse_k": hot},
+                                  "layouts": {"field_rmse_k": 1.0}},
+                    "at_optimiser_selected_designs": {
+                        "network_error_k": {"mean_abs": net, "max_abs": net},
+                        "mahalanobis": {"flagged_fraction": flag,
+                                        "max": 10.0}}}
+        return {"models": {"legacy": model(old_net, old_hot, 1.0),
+                           "retrained": model(new_net, new_hot, flagged)}}
+
+    def test_accepts_a_real_improvement(self):
+        self.assertTrue(bench._assert_improvement(
+            self._report(14.2, 1.2, 2.2, 0.4, 0.0)))
+
+    def test_rejects_no_improvement_at_the_optimum(self):
+        self.assertFalse(bench._assert_improvement(
+            self._report(14.2, 15.0, 2.2, 0.4, 0.0)))
+
+    def test_rejects_forgetting_the_old_distribution(self):
+        self.assertFalse(bench._assert_improvement(
+            self._report(14.2, 1.2, 2.2, 9.9, 0.0)))
+
+    def test_rejects_a_dataset_that_still_misses_the_search_space(self):
+        self.assertFalse(bench._assert_improvement(
+            self._report(14.2, 1.2, 2.2, 0.4, 0.9)))
 
 
 if __name__ == "__main__":

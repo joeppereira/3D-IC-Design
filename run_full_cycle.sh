@@ -9,23 +9,40 @@ echo "🚀 Initializing v3.1 Silicon Architect (Architectural Pass Flow): $SPEC_
 python3 serdes_architect/scripts/rtl_analyzer.py --config $SPEC_FILE
 
 # 2. PHASE 1: PHYSICS FACTORY
-echo "📂 [Phase 1] Physics Simulation..."
+# Training maps are drawn as a superset of what the search in Phase 3 explores
+# and labelled by the reference solver's direct solve. The old data_gen.py drew
+# discs and single cells -- a distribution the optimiser could not express a
+# single design in -- and labelled by relaxation; see reports/surrogate_retraining.md.
+echo "📂 [Phase 1] Training set + solver self-check..."
+cd physics_accelerated/src
+python3 dataset.py --distribution mixed --train ${SAMPLES:-3000} --val 400 --test 400 \
+    --config ../../$SPEC_FILE
+cd ../..
 cd serdes_architect
-python3 src/data_gen.py --config ../$SPEC_FILE --samples ${SAMPLES:-50} --layers 5
 python3 src/thermal/solver.py --verify --mode 3d_6neighbor 
 cd ..
 
 # 3. PHASE 2: SURROGATE TRAINING
-echo "🧠 [Phase 2] FNO Surrogate Training..."
+echo "🧠 [Phase 2] PINO Surrogate Training..."
 cd physics_accelerated
 rm -rf data && ln -sf ../serdes_architect/data data
-python3 src/train.py --epochs ${EPOCHS:-2} --weighted_loss true --in_channels 5
+python3 src/train.py --epochs ${EPOCHS:-40} --lambda_physics 0.1 --seed ${SEED:-2} \
+    --dataset ../serdes_architect/data/manifest_mixed.json --tag mixed \
+    --config ../$SPEC_FILE
+# Old vs new surrogate, held out. Only runs if a legacy model is still around.
+if [ -f results/fno_model_lam0p1.pt ]; then
+    python3 src/surrogate_benchmark.py --config ../$SPEC_FILE
+fi
 cd ..
 
-# 4. PHASE 3: GEPA SEARCH
-echo "📈 [Phase 3] Multi-Objective Pareto Search..."
+# 4. PHASE 3: MULTI-OBJECTIVE SEARCH (NSGA-II, then re-solved)
+# gepa.py -- 50 random placements ranked by peak temperature, no dominance test --
+# is superseded by pareto_search.py, which ends by re-solving every front member
+# on the reference solver through the trust guard.
+echo "📈 [Phase 3] NSGA-II search + trust guard..."
 cd physics_accelerated
-python3 src/gepa.py --avs_enabled true --target_ber 1e-12 --config ../$SPEC_FILE
+python3 src/pareto_search.py --generations ${GENERATIONS:-80} --config ../$SPEC_FILE
+python3 src/validate_surrogate.py
 cd ..
 
 # 5. PHASE 4: PHYSICAL & ELECTRICAL QUALIFICATION (Closed Loop)

@@ -10,6 +10,8 @@
 #   NSGA-II           <- ZDT1, whose Pareto front is known analytically
 #   trust guard       <- its own training set, which it must not flag, and an
 #                        in-distribution control the surrogate is good at
+#   retrained model   <- held-out test sets on both distributions, and the
+#                        reference solver at optimiser-selected designs
 #
 # No licences and no vendor tools required.
 set -e
@@ -21,16 +23,16 @@ echo "=================================================================="
 echo " PHYSICS VERIFICATION"
 echo "=================================================================="
 
-echo "--- [1/7] Solver self-check (geometry, energy, gradient) ----------"
+echo "--- [1/8] Solver self-check (geometry, energy, gradient) ----------"
 (cd serdes_architect && ../$PY src/thermal/solver.py --verify --mode 3d_6neighbor)
 
 echo
-echo "--- [2/7] Transient solver self-check -----------------------------"
+echo "--- [2/8] Transient solver self-check -----------------------------"
 $PY serdes_architect/src/thermal/transient_solver.py \
     --config physics_accelerated/results/golden_config.json --verify
 
 echo
-echo "--- [3/7] Verification test suite --------------------------------"
+echo "--- [3/8] Verification test suite --------------------------------"
 # tail -5 used to swallow the summary line, so a failing suite could read as a
 # passing gate. Assert on the result instead of printing near it.
 LOG=$(mktemp)
@@ -45,7 +47,7 @@ fi
 rm -f "$LOG"
 
 echo
-echo "--- [4/7] Reference solver: analytic benchmark + convergence ------"
+echo "--- [4/8] Reference solver: analytic benchmark + convergence ------"
 $PY - <<'PYEOF'
 import sys, json; sys.path.insert(0, "physics_accelerated/src")
 doc = json.load(open("reports/mesh_convergence_audit.json"))
@@ -59,11 +61,11 @@ print(f"  grid-converged peak Tj : {m['richardson_extrapolated_peak_c']:.3f} C "
 PYEOF
 
 echo
-echo "--- [5/7] POD reduced-order model on held-out snapshots -----------"
+echo "--- [5/8] POD reduced-order model on held-out snapshots -----------"
 (cd physics_accelerated/src && ../../$PY thermal_rom.py --verify)
 
 echo
-echo "--- [6/7] Surrogate error band at optimiser-selected designs ------"
+echo "--- [6/8] Surrogate error band at optimiser-selected designs ------"
 $PY - <<'PYEOF'
 import json, os
 p = "reports/thermal_validation.json"
@@ -84,22 +86,51 @@ else:
 PYEOF
 
 echo
-echo "--- [7/7] Surrogate trust guard: re-solve + distribution flag -----"
+echo "--- [7/8] Surrogate trust guard: re-solve + distribution flag -----"
 # Runs against the published front rather than re-running the search, so the
 # gate checks the artifact a reader would actually read.
 # Piping straight into grep would hand the pipeline sed's exit status and hide a
 # failing guard -- the same way tail -5 used to hide a failing test suite above.
+#
+# Trained weights are build artifacts (results/ is gitignored), so a fresh clone
+# has none. Skipping loudly beats failing a physics gate for a missing model.
+MODEL=physics_accelerated/results/fno_model_mixed_lam0p1.pt
+LEGACY=physics_accelerated/results/fno_model_lam0p1.pt
 GLOG=$(mktemp)
-if ! $PY physics_accelerated/src/trust_guard.py --verify --confirm-k 0 \
+if [ ! -f "$MODEL" ]; then
+    echo "  ⏭  skipped: no surrogate at $MODEL. Build it with:"
+    echo "     (cd physics_accelerated/src && python dataset.py)"
+    echo "     (cd physics_accelerated && python src/train.py --tag mixed \\"
+    echo "         --dataset ../serdes_architect/data/manifest_mixed.json \\"
+    echo "         --lambda_physics 0.1 --epochs 40)"
+elif ! $PY physics_accelerated/src/trust_guard.py --verify --confirm-k 0 \
         >"$GLOG" 2>&1; then
     echo "  ❌ trust guard failed:"
     sed 's/^/    /' "$GLOG" | tail -30
     rm -f "$GLOG"
     exit 1
+else
+    grep -vE "^  \[Solver\]|UserWarning|torch.tensor|gridx|gridy" "$GLOG" \
+        | sed 's/^/  /'
 fi
-grep -vE "^  \[Solver\]|UserWarning|torch.tensor|gridx|gridy" "$GLOG" \
-    | sed 's/^/  /'
 rm -f "$GLOG"
+
+echo
+echo "--- [8/8] Retraining benchmark: old vs new surrogate, held out ----"
+BLOG=$(mktemp)
+if [ ! -f "$MODEL" ] || [ ! -f "$LEGACY" ]; then
+    echo "  ⏭  skipped: needs both the legacy and the retrained surrogate"
+elif ! $PY physics_accelerated/src/surrogate_benchmark.py --verify \
+        >"$BLOG" 2>&1; then
+    echo "  ❌ retraining benchmark failed:"
+    sed 's/^/    /' "$BLOG" | tail -30
+    rm -f "$BLOG"
+    exit 1
+else
+    grep -vE "^  \[Solver\]|UserWarning|torch.tensor|gridx|gridy" "$BLOG" \
+        | sed 's/^/  /'
+fi
+rm -f "$BLOG"
 
 echo
 echo "=================================================================="

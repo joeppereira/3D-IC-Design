@@ -4,51 +4,51 @@
     "method": "finite volume, harmonic-mean face conductance, Robin BCs, direct sparse solve",
     "verified_against": "analytic 1D slab (1e-9 C) and global energy balance (8e-12 relative)"
   },
-  "surrogate": "results/fno_model_lam0p1.pt (FNO + heat-equation residual)",
+  "surrogate": "results/fno_model_mixed_lam0p1.pt (FNO + heat-equation residual, retrained on the search distribution)",
   "designs": [
     {
       "design": "front_coolest",
-      "surrogate_peak_c": 86.0619888305664,
-      "fdm_same_mesh_peak_c": 78.05713653564453,
-      "reference_same_mesh_peak_c": 78.05716783786717,
-      "reference_refined_peak_c": 77.61226248340999,
-      "surrogate_error_vs_reference_k": 8.449726347156414,
-      "fdm_error_vs_reference_k": 0.4448740522345389,
-      "solver_agreement_k": -3.130222263791893e-05
+      "surrogate_peak_c": 71.11617279052734,
+      "fdm_same_mesh_peak_c": 72.56827545166016,
+      "reference_same_mesh_peak_c": 72.568307128632,
+      "reference_refined_peak_c": 72.07347836050788,
+      "surrogate_error_vs_reference_k": -0.9573055699805337,
+      "fdm_error_vs_reference_k": 0.49479709115227877,
+      "solver_agreement_k": -3.167697184380813e-05
     },
     {
       "design": "front_median",
-      "surrogate_peak_c": 119.42506408691406,
-      "fdm_same_mesh_peak_c": 110.16697692871094,
-      "reference_same_mesh_peak_c": 110.16701106721843,
-      "reference_refined_peak_c": 107.9738181580652,
-      "surrogate_error_vs_reference_k": 11.451245928848863,
-      "fdm_error_vs_reference_k": 2.193158770645738,
-      "solver_agreement_k": -3.413850748756886e-05
+      "surrogate_peak_c": 108.63583374023438,
+      "fdm_same_mesh_peak_c": 108.67071533203125,
+      "reference_same_mesh_peak_c": 108.6707464703772,
+      "reference_refined_peak_c": 107.05928951804059,
+      "surrogate_error_vs_reference_k": 1.5765442221937889,
+      "fdm_error_vs_reference_k": 1.6114258139906639,
+      "solver_agreement_k": -3.113834594614673e-05
     },
     {
       "design": "front_hottest",
-      "surrogate_peak_c": 235.60989379882812,
-      "fdm_same_mesh_peak_c": 198.34445190429688,
-      "reference_same_mesh_peak_c": 198.34447934798098,
-      "reference_refined_peak_c": 195.43854824367853,
-      "surrogate_error_vs_reference_k": 40.1713455551496,
-      "fdm_error_vs_reference_k": 2.9059036606183497,
-      "solver_agreement_k": -2.7443684103900523e-05
+      "surrogate_peak_c": 201.7042236328125,
+      "fdm_same_mesh_peak_c": 204.17454528808594,
+      "reference_same_mesh_peak_c": 204.17458700337534,
+      "reference_refined_peak_c": 201.60856740069173,
+      "surrogate_error_vs_reference_k": 0.09565623212077412,
+      "fdm_error_vs_reference_k": 2.5659778873942116,
+      "solver_agreement_k": -4.171528939878044e-05
     }
   ],
   "surrogate_error_vs_reference_k": {
-    "mean_abs": 20.024105943718293,
-    "max_abs": 40.1713455551496
+    "mean_abs": 0.8765020080983655,
+    "max_abs": 1.5765442221937889
   },
   "solver_agreement_k": {
-    "max_abs": 3.413850748756886e-05
+    "max_abs": 4.171528939878044e-05
   },
   "shattered_vs_monolithic": {
-    "reference_monolithic_peak_c": 119.06672102137881,
-    "reference_shattered_peak_c": 77.61226248340999,
-    "reference_headroom_c": 41.45445853796882,
-    "surrogate_headroom_c": 45.18891143798828
+    "reference_monolithic_peak_c": 109.09178694847513,
+    "reference_shattered_peak_c": 72.07347836050788,
+    "reference_headroom_c": 37.018308587967255,
+    "surrogate_headroom_c": 37.22322082519531
   },
   "caveat": "Errors are measured at the designs the optimiser selected, which is where a surrogate is least reliable -- not on a random test split."
 }

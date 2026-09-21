@@ -4,10 +4,9 @@ surrogate is being asked to extrapolate.
 Why this exists
 ---------------
 `reports/multiobjective_search.md` §5 measured the surrogate at three of the
-designs the
-search selects and found it **+8 to +40 K** wrong against the reference solver,
-against a training-distribution RMSE of 2.03 K, always over-predicting. The
-conclusion written there -- *"use the front for ranking, not absolute
+designs the search selects and found it **+8 to +40 K** wrong against the
+reference solver, against an in-sample RMSE of 2.03 K, always over-predicting.
+The conclusion written there -- *"use the front for ranking, not absolute
 temperatures; re-solve selected candidates before quoting a number"* -- was a
 caveat a reader had to remember and act on by hand. This module does it
 automatically, and adds the question the caveat did not answer: *why* is the
@@ -16,23 +15,27 @@ error at the optimum an order of magnitude larger than the training error?
 Two mechanisms, and they need different fixes:
 
   * **Extrapolation.** The FNO was trained on `data_gen.py` power maps: random
-    r=3 discs on the logic die and *single hot cells* on the memory die. The
-    search evaluates four 2x2 sub-macro blocks plus a solid 4x4 memory block.
-    Those are different distributions, and the guard measures how different --
-    every design the optimiser can express is outside the training set.
+    r=3 discs on the logic die and *single hot cells* on the memory die, while
+    the search evaluates 2x2 sub-macro blocks plus a solid 4x4 memory block.
+    Different distributions, and the guard measured how different: *every*
+    design the optimiser could express was outside the training set. That
+    finding is what `dataset.py` and `reports/surrogate_retraining.md` then
+    fixed -- at optimiser-selected designs the network is now 1.36 K rather
+    than 14.21 K, and nothing is flagged. The check stays because it is what
+    would catch the next such shift, in a new topology or a new stackup.
   * **Discretisation.** The surrogate inherits the 16x16 mesh of its training
     labels, which over-predicts the peak against a 32x32 solve of the same
-    problem. That part is not the network's fault and is not fixed by
-    retraining.
+    problem. That part is not the network's fault, is not fixed by retraining,
+    and is now the *larger* of the two terms.
 
 The guard reports the split, because a reader who sees one number cannot tell
 which fix applies.
 
 The cascade
 -----------
-    tier 0  FNO surrogate                ~0.1 ms  the search's inner loop
-    tier 1  reference solve, 32x32x10       ~2 ms   every design worth ranking
-    tier 2  reference solve, 64x64x20      ~65 ms   the few designs to be quoted
+    tier 0  FNO surrogate                 ~0.1 ms  the search's inner loop
+    tier 1  reference solve, 32x32x10        ~2 ms  every design worth ranking
+    tier 2  reference solve, 64x64x20     ~65-130ms the few designs to be quoted
 
 The operator A is parameter-independent -- geometry and boundary conditions
 only -- so each tier is assembled and factorised **once** and every design after
@@ -44,12 +47,13 @@ On the POD ROM as a middle tier
 The open-issues list suggested re-ranking on the POD ROM from
 `thermal_rom.py` and reserving full solves for the final few. Measured
 (`--calibrate-screen`), that does not pay *at this mesh*: because A is
-prefactorised, an exact solve is a 2 ms back-substitution, while a ROM accurate
+prefactorised, an exact solve is a ~2 ms back-substitution, while a ROM accurate
 enough to rank to <1 C needs a basis of ~300 snapshots -- 300 exact solves of
-offline cost -- to then run at 1.5 ms. The break-even is above the number of
-designs a front contains. The measurement is kept and reported rather than
-asserted, because the conclusion flips at a mesh where factorisation is
-infeasible: at tier 2 a solve is 65 ms and a reduced solve is still ~1.5 ms.
+offline cost -- and then runs no faster than the solve it replaces. The
+break-even is above the number of designs a front contains. The measurement is
+kept and reported rather than asserted, because the conclusion flips at a mesh
+where factorisation is infeasible: at tier 2 a solve is ~100 ms and a reduced
+solve is still a couple of milliseconds.
 
 Run
 ---
@@ -77,6 +81,9 @@ if HERE not in sys.path:
 from thermal_reference import Boundary, Layer, ThermalReference     # noqa: E402
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
+RESULTS = REPO_ROOT / "physics_accelerated/results"
+# The legacy training set: what `data_gen.py` produced, and the fallback for
+# models whose metrics file predates `training_set_x`.
 TRAINING_SET = REPO_ROOT / "serdes_architect/data/x_physics.pt"
 
 
@@ -169,6 +176,25 @@ class DistributionGuard:
 def load_training_maps(path: Path = TRAINING_SET) -> np.ndarray:
     import torch                       # local: the guard's maths needs no torch
     return torch.load(path).numpy()
+
+
+def training_set_for(model_path) -> Path:
+    """The maps a model was actually fitted on.
+
+    The flag only means something if it is calibrated on the distribution *this*
+    model saw, so the guard reads it from the metrics file `train.py` writes
+    beside the weights rather than assuming one global training set. Models from
+    before that field existed fall back to the legacy set, which is what they
+    were trained on.
+    """
+    p = Path(model_path)
+    metrics = p.parent / (p.name.replace("fno_model", "train_metrics")
+                          .replace(".pt", ".json"))
+    if metrics.exists():
+        x = json.loads(metrics.read_text()).get("training_set_x")
+        if x:
+            return REPO_ROOT / x
+    return TRAINING_SET
 
 
 # --- the solver tiers ----------------------------------------------------
@@ -556,11 +582,10 @@ def build_context(config_path: Path):
 
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--config",
-                    default=str(REPO_ROOT / "physics_accelerated/results/golden_config.json"))
+    ap.add_argument("--config", default=str(RESULTS / "golden_config.json"))
     ap.add_argument("--front", default=str(REPO_ROOT / "reports/pareto_front_nsga2.json"))
-    ap.add_argument("--model", default=str(REPO_ROOT / "physics_accelerated/results/fno_model_lam0p1.pt"))
-    ap.add_argument("--stats", default=str(REPO_ROOT / "physics_accelerated/results/norm_stats.pt"))
+    ap.add_argument("--model", default=str(RESULTS / "fno_model_mixed_lam0p1.pt"))
+    ap.add_argument("--stats", default=str(RESULTS / "norm_stats_mixed_lam0p1.pt"))
     ap.add_argument("--top-k", type=int, default=0, help="0 = every design")
     ap.add_argument("--confirm-k", type=int, default=3)
     ap.add_argument("--calibrate-screen", action="store_true")
@@ -577,7 +602,9 @@ def main(argv=None) -> int:
     layers = int(cfg["voxel_stack_params"]["layers"])
 
     solver, cascade = build_context(Path(args.config))
-    train_maps = load_training_maps()
+    train_set = training_set_for(args.model)
+    print(f"  distribution reference: {train_set.relative_to(REPO_ROOT)}")
+    train_maps = load_training_maps(train_set)
     dguard = DistributionGuard.fit(train_maps)
     tguard = SurrogateTrustGuard(cascade, dguard)
 
@@ -707,18 +734,34 @@ def _assert_guard_behaves(r: dict) -> bool:
         print("\n  ❌ in-distribution control is itself flagged: the detector is "
               "not calibrated.")
         ok = False
-    if c and c["surrogate_error_vs_reference"]["mean_abs_k"] >= \
-            r["surrogate_error_vs_reference"]["mean_abs_k"]:
-        print("\n  ❌ the surrogate is no worse at the flagged designs than at "
-              "in-distribution ones, so the flag carries no information.")
-        ok = False
+    # What the control proves depends on which regime the run is in, and both
+    # regimes now occur: before the surrogate was retrained every design was
+    # flagged, and after it none are. Comparing *network* error keeps this
+    # apples-to-apples -- total error carries the discretisation of whichever
+    # power maps the two sets happen to contain, which differs between them.
+    here = (r.get("error_budget_k", {}).get("network_extrapolation", {})
+            .get("mean_abs_k"))
+    there = (c or {}).get("network_error_k", {}).get("mean_abs_k")
+    if c and here is not None and there is not None:
+        if g["flagged_fraction"] > 0.5 and here <= there:
+            print("\n  ❌ the surrogate is no worse at the flagged designs than "
+                  "at in-distribution ones, so the flag carries no information.")
+            ok = False
+        elif g["flagged_fraction"] <= 0.5 and here > 3.0 * there + 0.5:
+            print(f"\n  ❌ these designs pass the distribution check, yet the "
+                  f"network is {here / there:.1f}x worse on them than on its "
+                  f"own training distribution: the flag is missing something.")
+            ok = False
     if r["ranking"]["selection_regret_c"] < -1e-9:
         print("\n  ❌ negative regret is impossible; the re-solve is inconsistent.")
         ok = False
     if ok:
-        print("\n  ✅ guard calibrated: in-distribution designs pass, the "
-              "optimiser's designs are flagged, and every reported temperature "
-              "is a reference solve.")
+        where = ("the optimiser's designs are flagged"
+                 if g["flagged_fraction"] > 0.5 else
+                 "the optimiser's designs sit inside it, and the network is no "
+                 "worse on them")
+        print(f"\n  ✅ guard calibrated: in-distribution designs pass, {where}, "
+              f"and every reported temperature is a reference solve.")
     return ok
 
 

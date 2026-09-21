@@ -63,12 +63,15 @@ At an identical evaluation budget of 3,888 surrogate evaluations:
 
 | Search | Hypervolume | Front size |
 | :--- | :--- | :--- |
-| **NSGA-II** | **0.951** | 48 |
-| Random sampling (what `gepa.py` did) | 0.881 | 20 |
+| **NSGA-II** | **0.9304** | 48 |
+| Random sampling (what `gepa.py` did) | 0.9081 | 24 |
 
-Hypervolume rises **0.720 → 0.951** across generations. The +7.9% margin is
-modest because the problem is small; the front-size difference (48 vs 20) is the
-more telling number — random sampling finds far fewer non-dominated trade-offs.
+Hypervolume rises **0.747 → 0.930** across generations. The +2.4% margin is
+modest, and it is *smaller* than the +7.9% this table reported before the
+surrogate was retrained (§5): on an objective function that is no longer
+systematically biased, random sampling does relatively better. The front-size
+difference (48 vs 24) remains the more telling number — random sampling finds
+half as many non-dominated trade-offs at the same budget.
 
 ## 4. Does shattering actually recover headroom?
 
@@ -78,39 +81,49 @@ rather than trusted from the surrogate:
 
 | | Surrogate | Reference solver |
 | :--- | :--- | :--- |
-| Monolithic logic (1 × 4×4 block) | 131.25 °C | 119.07 °C |
-| Shattered logic (4 × 2×2 blocks) | 86.06 °C | 77.61 °C |
-| **Headroom recovered** | **+45.19 °C** | **+41.45 °C** |
+| Monolithic logic (1 × 4×4 block) | 108.34 °C | 109.09 °C |
+| Shattered logic (4 × 2×2 blocks) | 71.12 °C | 72.07 °C |
+| **Headroom recovered** | **+37.22 °C** | **+37.02 °C** |
 
-The claim survives high-fidelity checking: **+41.45 °C**, direction and
-magnitude both confirmed within ~9% of the surrogate's estimate. The mechanism is
-straightforward — dispersed heat sources do not superpose the way a compact block
-does, at identical power density per cell.
+The claim survives high-fidelity checking: **+37.02 °C**, with prediction and
+reference now agreeing to **0.20 °C**. The mechanism is straightforward —
+dispersed heat sources do not superpose the way a compact block does, at
+identical power density per cell.
 
-An earlier version of this comparison gave +52 °C by pitting an NSGA-II-optimised
-shattered layout against a coarse grid scan of monolithic layouts with the memory
-block pinned. That is not a fair comparison and the number was discarded.
+**This number has moved twice, both times because the comparison was made
+fairer.** An early version gave +52 °C by pitting an NSGA-II-optimised shattered
+layout against a coarse grid scan of monolithic layouts. A later one gave
++41.45 °C, still scanning monolithic *logic* placements while pinning the memory
+macro at the die centre — the shattered side was optimising memory placement and
+the monolithic side was not. The reference scan now varies all four coordinates
+(~600 prefactorised solves, about a second), which lets the monolithic layout
+move its memory macro into a corner and drops its best from 119.07 °C to
+**109.09 °C**. The headroom is real; it was being overstated by roughly 4 °C.
 
-## 5. Surrogate error at the optimum
+## 5. Surrogate error at the optimum, and what fixed it
 
 Training RMSE measures a surrogate on data drawn like its training set. An
 optimiser deliberately pushes into the extremes, which is exactly where a
-surrogate is least reliable. Measured against the reference solver at the
-designs the search actually selected (`reports/thermal_validation.json`):
+surrogate is least reliable. The trust guard (§6) measures it where it is used:
 
 | Front member | Surrogate | Reference | Error |
 | :--- | :--- | :--- | :--- |
-| coolest | 86.06 °C | 77.61 °C | **+8.45 K** |
-| median | 119.43 °C | 107.97 °C | **+11.45 K** |
-| hottest | 235.61 °C | 195.44 °C | **+40.17 K** |
+| coolest | 71.12 °C | 72.07 °C | **−0.96 K** |
+| median | 108.64 °C | 107.06 °C | **+1.58 K** |
+| hottest | 201.70 °C | 201.61 °C | **+0.10 K** |
 
-Against a training-distribution RMSE of 2.03 K. Every error is positive: the
-surrogate systematically **over**-predicts temperature where the optimiser
-pushes.
+The previous version of this table read **+8.45 / +11.45 / +40.17 K**, every
+error positive. The guard diagnosed why — 100% of the designs the optimiser
+could express were outside the surrogate's training distribution — and
+[`surrogate_retraining.md`](surrogate_retraining.md) is the fix: a training set
+drawn as a superset of the search space, labelled by a direct solve. Error at
+optimiser-selected designs fell **14.21 K → 1.36 K**.
 
-That used to be the end of this section, with the advice to re-solve selected
-candidates by hand before quoting a number. §6 is that advice, automated, and
-the diagnosis of why the error is there.
+**The search got better designs out of it, not just better predictions.** Led by
+the retrained surrogate, NSGA-II now finds a front whose coolest member is
+**72.07 °C on the reference solver**, against **77.61 °C** for the design the
+biased surrogate chose. A surrogate that over-predicts non-uniformly does not
+merely misreport a design; it picks the wrong one.
 
 ## 6. The trust guard
 
@@ -129,15 +142,15 @@ re-solve an entire front rather than a sampled three.
 | Tier | What | Cost | Used for |
 | :--- | :--- | :--- | :--- |
 | 0 | FNO surrogate | ~0.1 ms | the search's 3,888 inner-loop evaluations |
-| 1 | reference solve, 32×32×10 | **2.0 ms**/design after a 0.14 s factorisation | all 48 front members |
-| 2 | reference solve, 64×64×20 | **65 ms**/design after a 13.3 s factorisation | the 3 designs worth quoting |
+| 1 | reference solve, 32×32×10 | ~2.5 ms/design after a 0.2 s factorisation | all 48 front members |
+| 2 | reference solve, 64×64×20 | ~130 ms/design after a 19 s factorisation | the 3 designs worth quoting |
 
 Tier 2 exists to show tier 1 is enough: refining 32×32×10 → 64×64×20 moves the
-coolest design by **+0.20 °C**, against the 2.76 °C the *training* mesh
+coolest design by **+0.18 °C**, against the 1.88 °C the *training* mesh
 (16×16×5) is out. The quotable number for the best design on the front is
-**77.42 °C**.
+**71.89 °C**.
 
-### 6.2 Every design the optimiser can express is out of distribution
+### 6.2 The distribution check
 
 The guard fits a Mahalanobis model on eight shape features of the training power
 maps — total power, logic/memory split, and per-die peak-to-mean, active
@@ -145,57 +158,55 @@ fraction and radius of gyration. Position is deliberately excluded: the training
 set covers the die, so an unusual *location* is not extrapolation while an
 unusual *shape* is. The threshold is conformal-style — the 99th percentile of
 the training distances — so at most 1% of the training set is flagged by
-construction, and a test asserts it.
+construction, and a test asserts it. It is calibrated against the training set
+of the model being audited, read from the metrics file written beside the
+weights, not against whatever dataset happens to be on disk.
 
-| | Mahalanobis distance |
-| :--- | :--- |
-| training set (240 maps) | mean 2.7, p99 **4.7**, max 8.1 |
-| in-distribution control (32 held-out training maps) | 1.2 – 4.8 |
-| **every design on the Pareto front** | **36.4 – 71.8** |
+| | Mahalanobis distance | |
+| :--- | :--- | :--- |
+| training set (3,000 maps) | threshold (p99) **6.7** | |
+| in-distribution control (32 held-out training maps) | 1.3 – 4.4 | |
+| every design on the Pareto front | **2.0 – 6.1** | **0% flagged** |
 
-**100% of the front is flagged**, at 8–15× the threshold. The reason is
-mechanical: `data_gen.py` trained the network on random r=3 discs on the logic
-die and **single hot cells** on the memory die; the search places four 2×2
-sub-macro blocks and a solid 4×4 memory macro. The features that are furthest
-out name exactly that:
+Before the surrogate was retrained those same front designs sat at **36.4–71.8**
+against a threshold of 4.7 — *every one* of them flagged, at 8–15× the
+threshold, because `data_gen.py` trained on r=3 discs and single hot memory
+cells while the search places 2×2 blocks and a solid 4×4 memory macro. The
+guard's job now is to catch the *next* such shift; the retraining closed this
+one.
 
-| Feature | Distance from training mean |
-| :--- | :--- |
-| `memory_active_fraction` | **+24.6 σ** (a 4×4 block where training had one cell) |
-| `logic_peak_to_mean` | **+16.5 σ** (compact blocks where training had broad discs) |
-| `logic_active_fraction` | **−5.9 σ** (6% of the die lit, against 42%) |
-
-So the +8…+40 K error band is not bad luck at the extremes of a well-sampled
-space. The search space and the training space barely overlap.
-
-### 6.3 Where the error actually comes from
+### 6.3 Where the error comes from
 
 The guard splits the error three ways, and the three sum to the total exactly
 (closure measured at **0.0 K**):
 
 | Term | Mean | Max | Fixed by |
 | :--- | :--- | :--- | :--- |
-| network extrapolation (surrogate vs the solver that made its labels, same mesh) | **+14.21 K** | +38.18 K | retraining on the search distribution |
+| network extrapolation (surrogate vs the solver that made its labels, same mesh) | −1.30 K | 3.41 K | retraining — **done**, was +14.21 K |
 | solver agreement (that solver vs the reference, same mesh) | 0.00003 K | 0.00004 K | nothing — it is what makes the split valid |
-| training-mesh discretisation (16×16×5 vs 32×32×10) | **+2.76 K** | +10.02 K | re-solving, which is what the guard does |
-| **total** | **+16.98 K** | +46.84 K | |
+| **training-mesh discretisation (16×16×5 vs 32×32×10)** | **+1.88 K** | **+7.52 K** | re-solving, which is what the guard does |
+| total | +0.59 K | 5.21 K | |
 
-The comparable in-distribution number is the first row measured on training
-maps: **2.10 K**. The network is **6.8× worse where the optimiser looks** than
-where it was fitted. Most of the error band is extrapolation, not mesh — which
-is the finding that says *retrain on block layouts*, not *refine the mesh*.
+**The mesh is now the dominant term.** That is the useful consequence of fixing
+the network: the surrogate is 1.5× worse at optimiser-selected designs than on
+its own training distribution (1.33 K against 0.90 K), down from 6.8×, and what
+is left is a property of the 16×16×5 grid rather than of the network. Moving the
+surrogate onto the converged mesh is the open item this now points at
+(`critical_review.md` §5 item 11); until then, tier 1 is what stands between a
+prediction and a published temperature.
 
-### 6.4 The ranking survives, and now it is measured on the whole front
+### 6.4 The ranking, measured on the whole front
 
 | | |
 | :--- | :--- |
-| Kendall τ, surrogate vs reference, across all 48 front members | **0.986** |
+| Kendall τ, surrogate vs reference, across all 48 front members | **0.996** |
 | selection regret (the surrogate's own pick vs the coolest design the reference finds) | **+0.00 °C** |
 
-The earlier "sound for ranking, not for absolute temperatures" was inferred from
-three designs. It holds across the front: the optimiser picks the design the
-reference solver also considers coolest, while being 8.45 K optimistic about
-what that design's temperature is.
+This held even when the surrogate was 8–47 K optimistic (τ was 0.986 then):
+ranking survived a bias that absolute values did not. It is worth being precise
+about what that bought, though — §5 — because the *front the search explored*
+was still worse, so "good enough for ranking" was never the same as "good
+enough".
 
 ### 6.5 Why the middle tier is an exact solve and not the ROM
 
@@ -206,31 +217,31 @@ actually searches, not the hotspot family the published ROM is parameterised on)
 
 | POD rank | Max held-out field error | Max held-out peak error | ms/design |
 | :--- | :--- | :--- | :--- |
-| 32 | 7.4e-2 | 22.29 °C | 0.19 |
-| 128 | 1.9e-2 | 5.76 °C | 0.39 |
-| 200 | 4.6e-3 | 1.50 °C | 0.76 |
-| 300 | 7.4e-4 | **0.11 °C** | 1.45 |
-| *exact solve* | — | 0 | **1.89** |
+| 32 | 7.4e-2 | 22.29 °C | 0.29 |
+| 128 | 1.9e-2 | 5.76 °C | 0.57 |
+| 200 | 4.6e-3 | 1.50 °C | 1.38 |
+| 300 | 7.4e-4 | **0.11 °C** | 3.08 |
+| *exact solve* | — | 0 | **2.74** |
 
 To rank to better than 1 °C the basis needs ~300 snapshots — 300 exact solves of
-offline cost — and then runs at 1.45 ms against the exact solve's 1.89 ms. The
+offline cost — and then runs no faster than the exact solve it replaces. The
 break-even is above the size of any front this search produces, so the guard
 uses the exact solve and the ROM screen stays off. **The reason is the
 prefactorisation, not the ROM**: where factorisation is unaffordable the
-conclusion flips, and the same 300-mode basis would beat a 65 ms tier-2 solve by
-40×. The measurement is in `reports/surrogate_trust_report.json` so the
+conclusion flips, and the same 300-mode basis would beat a 130 ms tier-2 solve
+by 40×. The measurement is in `reports/surrogate_trust_report.json` so the
 threshold can be re-checked rather than re-argued.
 
-### 6.6 What the search publishes now
+### 6.6 What the search publishes
 
 `reports/pareto_front_nsga2.json` and `.csv` carry, per front member:
 
 ```json
-{ "logic_peak_tj_c": 86.06,          // surrogate, what the search optimised
-  "interconnect_span_cells": 26.28,
-  "reference_peak_tj_c": 77.61,      // reference solver -- quote this one
-  "surrogate_error_k": 8.45,
-  "in_training_distribution": false }
+{ "logic_peak_tj_c": 71.12,          // surrogate, what the search optimised
+  "interconnect_span_cells": 34.52,
+  "reference_peak_tj_c": 72.07,      // reference solver -- quote this one
+  "surrogate_error_k": -0.96,
+  "in_training_distribution": true }
 ```
 
 A test re-derives `reference_peak_tj_c` from the published genome and fails if it
@@ -240,6 +251,7 @@ costs you.
 
 ## 7. Related
 
+* [`reports/surrogate_retraining.md`](surrogate_retraining.md) — the training-distribution fix this document's §5 reports the effect of.
 * `reports/rom_pinn_validation.md` — the reference solver's own verification, the PINO results, and the POD ROM.
 * `reports/surrogate_trust_report.json` — the guard's full output: per-design errors, distances, error budget, ROM calibration.
 * `reports/thermal_validation.json` — the surrogate-vs-reference table for the coolest, median and hottest designs.

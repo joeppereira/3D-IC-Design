@@ -62,8 +62,9 @@ random batches.
   *operator* (PINO). At λ = 0.1 it cuts field RMSE 22% (2.604 → 2.031 K) and the PDE
   residual 59% (0.343 → 0.140 K) against the data-only baseline.
 * **NSGA-II** replaces the random search, verified on ZDT1 to 0.0037 mean distance from
-  the analytic front, beating random sampling at equal budget (hypervolume 0.951 vs
-  0.881, front size 48 vs 20).
+  the analytic front, beating random sampling at equal budget (hypervolume 0.930 vs
+  0.908, front size 48 vs 24 — the margin narrowed once the surrogate stopped being
+  systematically biased, which is itself informative).
 
 The POD/ROM claim has since been closed too (§5 item 4: a POD-Galerkin ROM with
 measured truncation error, replacing a document that quoted a 1.9M× speedup against a
@@ -213,8 +214,8 @@ comparing a full link budget against a channel-only S-parameter.
 Ordered by effort-to-credibility. This section is the authoritative to-do list; it
 is kept current so no context is carried in anyone's head.
 
-**Last worked: 2026-09-20.** Items 1–5 are closed; item 10 is the next thing to
-pick up.
+**Last worked: 2026-09-21.** Items 1–5 and 10 are closed; item 11 is the next
+thing to pick up.
 
 ### Closed
 
@@ -267,8 +268,11 @@ pick up.
    dashboard and the legacy exporters. `canonical.py` now **raises** if the
    operating point is not a solver output instead of defaulting — that value
    sets Liberty's `nom_temperature` and the SPICE `.temp` line. The unmeasured
-   *"6.5 °C headroom from shattered macros"* is replaced by the measured
-   **41.45 °C** against an exhaustive scan of monolithic placements. The
+   *"6.5 °C headroom from shattered macros"* is replaced by a measured comparison
+   against an exhaustive scan of monolithic placements — **37.02 °C** as it now
+   stands, after the scan was widened to move the memory macro too (it had been
+   pinned at the die centre while the shattered side optimised it, worth ~4 °C of
+   the 41.45 °C first reported here). The
    synthetic Celsius fixture was shifted by −14.6255 °C with the shift recorded
    in its header. `transient_roi_solver.py` was deleted: unreferenced, and it
    returned a fabricated `peak_tj` alongside a "100,000×" speedup.
@@ -325,18 +329,57 @@ pick up.
    unaffordable the same basis wins by 40×. `--calibrate-screen` keeps the
    measurement reproducible instead of the conclusion asserted.
 
+10. ~~**Retrain the surrogate on the distribution the optimiser searches.**~~
+    ✅ **Closed.** `physics_accelerated/src/dataset.py` draws macro layouts as a
+    deliberate *superset* of the search's parameterisation (1–8 sub-macros of
+    2–4 cells, memory macro 3–5, logic fraction 0.50–0.90, 40–80 W, against the
+    search's fixed 4×2×2 / 4 / 0.75 / 60 W), mixed half-and-half with the old
+    hotspot distribution so nothing is traded away, and labels every map with
+    the reference solver's **direct solve** instead of a relaxation — 3,800
+    labelled maps in under a second of solver time, labels satisfying the
+    discrete heat equation to **3.6e-6 K**. Measured held out
+    (`reports/surrogate_retraining.md`):
+
+    | Held out | Legacy | Retrained |
+    | :--- | ---: | ---: |
+    | field RMSE, `layouts` | 6.744 K | **0.721 K** |
+    | field RMSE, `hotspots` (the old distribution) | 2.231 K | **0.347 K** |
+    | network error at optimiser-selected designs | 18.31 K | **1.33 K** |
+    | worst single design | 34.67 K | **3.41 K** |
+    | designs outside the training distribution | 100% | **0%** |
+
+    (both models asked about the same designs — the published front. At the
+    front each model actually led its own optimiser to, the same comparison
+    reads 14.21 K → 1.33 K.)
+
+    *Three findings worth carrying forward.* First: **every surrogate RMSE this
+    project published before this change was an in-sample number** — `train.py`
+    trained on all its data and reported error on the same data. It now takes a
+    train/val/test split, takes normalisation statistics from the training split
+    only, and reports every split so the gap is visible. Second: the retrained
+    model is also **6.4× better on the distribution it replaced**, so this was
+    never a trade. Third: the λ sweep that reported "−22% field RMSE" was
+    in-sample and single-seed; re-measured held out with three seeds per
+    setting, the physics term's accuracy benefit is **3.2%, inside the seed
+    spread**, while its residual benefit is **−50% and ten standard deviations
+    clear**. It is kept for the latter, and the −22% is labelled as belonging to
+    the data-starved regime.
+
+    *What it did not fix:* the +2.76 K training-mesh discretisation term, which
+    is not a network property — the trust guard's re-solve still owns it, and
+    published temperatures are still solver output.
+
 ### Next up
 
-10. **Retrain the surrogate on the distribution the optimiser searches.** Item
-    5 turned the error band from a caveat into a measurement, and the
-    measurement points at one thing: the network is asked to predict block
-    layouts it never saw. `data_gen.py` generates discs and single cells;
-    `pareto_search.py` evaluates blocks. Regenerating the training set from the
-    search's own parameterisation and retraining is well-defined work, and the
-    success criterion already exists — the guard's flagged fraction and its
-    in-distribution-vs-optimum network error ratio (today 2.10 K → 14.21 K).
-    The guard stays either way: it is what would catch the *next* distribution
-    shift.
+11. **Move the surrogate onto the converged mesh.** With extrapolation down to
+    ~1.4 K, the largest remaining term between a surrogate prediction and a
+    defensible temperature is the **16×16×5 mesh itself**: +2.76 K mean and
+    +10.02 K worst against 32×32×10 at optimiser-selected designs. Labels on the
+    finer mesh now cost almost nothing (`dataset.py` labels 3,800 maps in under
+    a second; the finer mesh is ~2 ms per solve), so the work is regenerating at
+    32×32×10, widening the FNO's input, and re-measuring. The success criterion
+    is the trust guard's own error budget: the discretisation row should
+    collapse to the 0.18 K that separates 32×32×10 from 64×64×20.
 
 ### Decisions only the owner can make
 
@@ -368,13 +411,14 @@ pick up.
 pip install -r requirements.txt                     # validators included
 ./regression_suite/run_physics_verification.sh      # solver, transient, ROM, PINO, NSGA-II, trust guard
 ./regression_suite/run_interchange_qualification.sh # formats + cross-consistency
-python -m unittest discover -s tests -t .           # 202 tests
+python -m unittest discover -s tests -t .           # 213 tests
 ```
 
 Read `reports/rom_pinn_validation.md` (physics, measured — §4 is the POD ROM),
 `reports/multiobjective_search.md` (search, the surrogate error band, and §6 the
-trust guard), and `reports/eda_vendor_integration_spec.md` §10 (integration
-status).
+trust guard), `reports/surrogate_retraining.md` (the training distribution and
+the first held-out numbers), and `reports/eda_vendor_integration_spec.md` §10
+(integration status).
 
 ## 6. What this project can defensibly claim today
 
@@ -392,11 +436,14 @@ same family as the original units error:
   answer is **57.11 °C**, so the network trained on fields 21 °C too cold.
 
 And one that matters for how the results are used: the surrogate's error at
-**optimiser-selected** designs is +8.45 / +11.45 / +40.17 K against a
-training-distribution RMSE of 2.03 K, always over-predicting. The Pareto front is
-sound for *ranking* (Kendall τ 0.986 against the reference across the whole
-front); absolute temperatures are now re-solved on the reference automatically
-by the trust guard rather than left to the reader (item 5).
+**optimiser-selected** designs was +8.45 / +11.45 / +40.17 K against an
+in-sample RMSE of 2.03 K, always over-predicting — because every design the
+optimiser could express was outside its training distribution (item 5). After
+retraining on that distribution (item 10) the same three positions on the front
+read **−0.96 / +1.58 / +0.10 K**, and the search, no longer misled, finds a
+coolest design at **72.07 °C** on the reference against **77.61 °C** before.
+Absolute temperatures are still re-solved on the reference by the trust guard
+rather than taken from the network.
 
 **Can claim** — each is falsifiable by cloning and running:
 
@@ -413,6 +460,10 @@ by the trust guard rather than left to the reader (item 5).
   the number that governs whether its output can be quoted — split into network
   extrapolation, solver disagreement and mesh discretisation, the three closing on the
   total to 0.0 K.
+* A surrogate trained on the distribution its optimiser searches, with **held-out**
+  numbers: 0.58 K field RMSE, 1.36 K at optimiser-selected designs, and 0.35 K on the
+  distribution it replaced — measured by a benchmark that fails if retraining did not
+  help, if the old distribution was lost, or if the search space is still uncovered.
 * A trust guard that re-solves every published design on the reference solver and flags
   designs outside the surrogate's training distribution, with the flag calibrated
   against an in-distribution control rather than asserted.

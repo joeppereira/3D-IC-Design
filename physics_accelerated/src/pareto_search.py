@@ -120,11 +120,16 @@ def run_trust_guard(genomes: np.ndarray, surrogate_peaks: np.ndarray, args,
     temperature it predicted itself.
     """
     from trust_guard import (DistributionGuard, SurrogateTrustGuard,   # noqa: E402
-                             build_context, load_training_maps, print_report)
+                             build_context, load_training_maps, print_report,
+                             training_set_for)
 
     solver, cascade = build_context(Path(args.config))
-    guard = SurrogateTrustGuard(cascade,
-                                DistributionGuard.fit(load_training_maps()))
+    # Calibrate the flag on the maps this model was fitted on, not on whatever
+    # training set happens to be on disk -- and hold onto them, because the
+    # in-distribution control has to be drawn from the same place or it is a
+    # control for a different model.
+    train_maps = load_training_maps(training_set_for(args.model))
+    guard = SurrogateTrustGuard(cascade, DistributionGuard.fit(train_maps))
     maps = build_power_maps(genomes, logic_w, mem_w, layers)
     fdm = solver.solve_steady_state(maps)[:, 0].amax(dim=(1, 2)).numpy()
 
@@ -134,7 +139,7 @@ def run_trust_guard(genomes: np.ndarray, surrogate_peaks: np.ndarray, args,
                          confirm_k=args.confirm_k, fdm_peaks=fdm)
     if surrogate_fn is not None:
         report["in_distribution_control"] = guard.in_distribution_control(
-            surrogate_fn,
+            surrogate_fn, train_maps=train_maps,
             fdm_fn=lambda m: solver.solve_steady_state(
                 torch.from_numpy(np.asarray(m)).float())[:, 0]
             .amax(dim=(1, 2)).numpy())
@@ -184,8 +189,12 @@ def _trust_summary(trust: dict) -> dict:
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--model", default="results/fno_model_lam0p1.pt")
-    ap.add_argument("--stats", default="results/norm_stats.pt")
+    # The retrained surrogate (dataset.py -> mixed layout/hotspot maps). The
+    # legacy pair is results/fno_model_lam0p1.pt + norm_stats_legacy_lam0p1.pt;
+    # stats are per-variant because a model paired with another variant's mean
+    # and std silently shifts every temperature it predicts.
+    ap.add_argument("--model", default="results/fno_model_mixed_lam0p1.pt")
+    ap.add_argument("--stats", default="results/norm_stats_mixed_lam0p1.pt")
     ap.add_argument("--config", default="results/golden_config.json")
     ap.add_argument("--pop", type=int, default=48)
     ap.add_argument("--generations", type=int, default=60)

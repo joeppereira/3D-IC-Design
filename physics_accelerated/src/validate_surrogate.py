@@ -55,8 +55,9 @@ def main():
 
     solver = ThermalSolver(cfg_path)
     cascade = ReferenceCascade(reference_from_solver(solver))
-    model, mean, std = load_surrogate("results/fno_model_lam0p1.pt",
-                                      "results/norm_stats.pt", layers)
+    model, mean, std = load_surrogate("results/fno_model_mixed_lam0p1.pt",
+                                      "results/norm_stats_mixed_lam0p1.pt",
+                                      layers)
 
     front_doc = json.loads(Path("../reports/pareto_front_nsga2.json").read_text())
     genomes = front_doc["front_genomes"]
@@ -98,18 +99,27 @@ def main():
     sh_map = build_power_maps(best_sh, logic_w, mem_w, layers)
     sh_ref = solve_reference(cascade, sh_map, refine=2)
 
-    # best monolithic: scan every placement on the reference solver directly
+    # Best monolithic, scanned on the reference solver directly -- over the
+    # memory block's placement as well as the logic block's. Pinning the memory
+    # block at the die centre, as this scan used to, handicaps the monolithic
+    # side of a comparison whose shattered side optimises both: the same class
+    # of unfair comparison that produced the discarded "+52 C" figure. With the
+    # operator prefactorised the full 4-variable scan is ~600 solves, about a
+    # second.
     mono_best, mono_at = float("inf"), None
     for lx in range(0, GRID - BLOCK + 1, 2):
         for ly in range(0, GRID - BLOCK + 1, 2):
-            m = torch.zeros((1, layers, GRID, GRID))
-            m[0, 0, ly:ly + BLOCK, lx:lx + BLOCK] = logic_w / (BLOCK * BLOCK)
-            m[0, 1, 6:6 + BLOCK, 6:6 + BLOCK] = mem_w / (BLOCK * BLOCK)
-            t = solve_reference(cascade, m, refine=1)
-            if t < mono_best:
-                mono_best, mono_at = t, (lx, ly)
+            for mx in range(0, GRID - BLOCK + 1, 2):
+                for my in range(0, GRID - BLOCK + 1, 2):
+                    m = torch.zeros((1, layers, GRID, GRID))
+                    m[0, 0, ly:ly + BLOCK, lx:lx + BLOCK] = logic_w / (BLOCK * BLOCK)
+                    m[0, 1, my:my + BLOCK, mx:mx + BLOCK] = mem_w / (BLOCK * BLOCK)
+                    t = solve_reference(cascade, m, refine=1)
+                    if t < mono_best:
+                        mono_best, mono_at = t, (lx, ly, mx, my)
     print(f"\n  shattering claim, checked on the reference solver:")
-    print(f"    monolithic best (reference)  : {mono_best:7.2f} C at {mono_at}")
+    print(f"    monolithic best (reference)  : {mono_best:7.2f} C at "
+          f"logic {mono_at[:2]}, memory {mono_at[2:]}")
     print(f"    shattered  best (reference)  : {sh_ref:7.2f} C")
     print(f"    headroom recovered           : {mono_best - sh_ref:+7.2f} C")
     print(f"    surrogate predicted          : {sv['headroom_recovered_c']:+7.2f} C")
@@ -122,7 +132,8 @@ def main():
             "verified_against": "analytic 1D slab (1e-9 C) and global energy balance "
                                 "(8e-12 relative)",
         },
-        "surrogate": "results/fno_model_lam0p1.pt (FNO + heat-equation residual)",
+        "surrogate": "results/fno_model_mixed_lam0p1.pt (FNO + heat-equation "
+                     "residual, retrained on the search distribution)",
         "designs": rows,
         "surrogate_error_vs_reference_k": {
             "mean_abs": float(np.mean([abs(r["surrogate_error_vs_reference_k"]) for r in rows])),

@@ -1,0 +1,107 @@
+{
+  "question": "does training on the distribution the optimiser searches reduce the error where the optimiser looks, without losing the distribution the surrogate already handled?",
+  "held_out": true,
+  "front_designs": {
+    "source": "reports/pareto_front_nsga2.json",
+    "n": 48,
+    "note": "selected by the legacy model; both models are measured on these same designs"
+  },
+  "models": {
+    "legacy": {
+      "model": "physics_accelerated/results/fno_model_lam0p1.pt",
+      "trained_on": "240 hotspot maps (data_gen.py), labels from the FDM solver",
+      "training_set": "serdes_architect/data/x_physics.pt",
+      "norm_stats": {
+        "mean": 50.79013442993164,
+        "std": 12.68680191040039
+      },
+      "test_sets": {
+        "layouts": {
+          "n": 400,
+          "distribution": "layouts",
+          "field_rmse_k": 6.743502140045166,
+          "peak_mean_abs_k": 10.083614349365234,
+          "peak_max_abs_k": 59.6844482421875,
+          "peak_mean_signed_k": 4.257260799407959,
+          "heat_residual_k": 0.2978065013885498
+        },
+        "hotspots": {
+          "n": 400,
+          "distribution": "hotspots",
+          "field_rmse_k": 2.231330633163452,
+          "peak_mean_abs_k": 2.1453659534454346,
+          "peak_max_abs_k": 17.375701904296875,
+          "peak_mean_signed_k": -1.3214924335479736,
+          "heat_residual_k": 0.14823932945728302
+        }
+      },
+      "at_optimiser_selected_designs": {
+        "n": 48,
+        "network_error_k": {
+          "mean_abs": 14.211755003644612,
+          "max_abs": 38.179673524673404,
+          "mean_signed": 14.211755003644612
+        },
+        "total_error_vs_refined_k": {
+          "mean_abs": 16.97510717809287,
+          "max_abs": 46.83952155464951,
+          "mean_signed": 16.97510717809287
+        },
+        "mahalanobis": {
+          "min": 36.41723931740302,
+          "max": 71.82853557768493,
+          "threshold": 4.686605121088157,
+          "flagged_fraction": 1.0
+        }
+      }
+    },
+    "retrained": {
+      "model": "physics_accelerated/results/fno_model_mixed_lam0p1.pt",
+      "trained_on": "3000 mixed layout/hotspot maps (dataset.py), labels from the reference solver",
+      "training_set": "serdes_architect/data/x_mixed_train.pt",
+      "norm_stats": {
+        "mean": 49.50400161743164,
+        "std": 15.552352905273438
+      },
+      "test_sets": {
+        "layouts": {
+          "n": 400,
+          "distribution": "layouts",
+          "field_rmse_k": 0.7211878299713135,
+          "peak_mean_abs_k": 1.2293201684951782,
+          "peak_max_abs_k": 32.45166015625,
+          "peak_mean_signed_k": -0.24509450793266296,
+          "heat_residual_k": 0.05295787751674652
+        },
+        "hotspots": {
+          "n": 400,
+          "distribution": "hotspots",
+          "field_rmse_k": 0.3468686640262604,
+          "peak_mean_abs_k": 0.4515116512775421,
+          "peak_max_abs_k": 4.960693359375,
+          "peak_mean_signed_k": -0.07729263603687286,
+          "heat_residual_k": 0.0376313254237175
+        }
+      },
+      "at_optimiser_selected_designs": {
+        "n": 48,
+        "network_error_k": {
+          "mean_abs": 1.3557495612764503,
+          "max_abs": 3.1085016921096553,
+          "mean_signed": -1.3557495612764503
+        },
+        "total_error_vs_refined_k": {
+          "mean_abs": 1.5890262912321687,
+          "max_abs": 8.931769218368117,
+          "mean_signed": 1.407602613171809
+        },
+        "mahalanobis": {
+          "min": 2.0141633047084495,
+          "max": 6.176245711957054,
+          "threshold": 6.667232741691674,
+          "flagged_fraction": 0.0
+        }
+      }
+    }
+  }
+}

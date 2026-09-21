@@ -30,10 +30,10 @@
   },
   "macro_strategy_comparison": {
     "case": "NSGA-II front-coolest placement vs the best monolithic placement, both solved on the reference solver",
-    "monolithic_best_peak_c": 119.0667,
-    "shattered_best_peak_c": 77.6123,
-    "headroom_recovered_c": 41.4545,
-    "method": "the monolithic figure is an exhaustive scan of every block placement on the reference solver, not a single hand-picked layout",
+    "monolithic_best_peak_c": 109.0918,
+    "shattered_best_peak_c": 72.0735,
+    "headroom_recovered_c": 37.0183,
+    "method": "the monolithic figure is an exhaustive scan of every block placement -- logic and memory macro both -- on the reference solver, not a single hand-picked layout",
     "replaces": "an unmeasured '6.5 C headroom from shattered logic macros' claim, which was the same magnitude as the Hybrid_Bond k_map defect (6.02 C) and therefore not separable from modelling error"
   },
   "discovery_notes": "The kv_pressure reduction comes from distributed macro placement. The thermal numbers above are solver outputs with stated provenance; the kv_pressure figures are not, and are carried forward unchanged from the earlier audit."

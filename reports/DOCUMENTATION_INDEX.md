@@ -29,12 +29,14 @@ This index tracks the mandatory documents required for architectural verificatio
 
 ## 📁 5. Physics Verification (measured)
 *   [reports/rom_pinn_validation.md](rom_pinn_validation.md): Reference solver verified to 1e-9 °C against analytic conduction and 8e-12 on energy balance; grid-converged peak Tj 83.87 °C (GCI 0.081%); PINO λ-sweep.
-*   [reports/multiobjective_search.md](multiobjective_search.md): NSGA-II verified on ZDT1; shattered-vs-monolithic headroom +41.45 °C confirmed on the reference solver; surrogate error at optimiser-selected designs and the trust guard that re-solves them.
+*   [reports/multiobjective_search.md](multiobjective_search.md): NSGA-II verified on ZDT1; shattered-vs-monolithic headroom +37.02 °C confirmed on the reference solver; surrogate error at optimiser-selected designs and the trust guard that re-solves them.
 *   [reports/mesh_convergence_audit.json](mesh_convergence_audit.json): The measured convergence study (replaces a fabricated one).
 *   [reports/thermal_validation.json](thermal_validation.json): Surrogate vs reference at the designs the search selected.
 *   [reports/surrogate_trust_report.json](surrogate_trust_report.json): The trust guard's output — every front member re-solved on the reference solver, the out-of-distribution flag and its in-distribution control, the network/mesh error split, and the ROM-vs-exact screen calibration.
+*   [reports/surrogate_retraining.md](surrogate_retraining.md): The surrogate retrained on the distribution the optimiser actually searches — the new dataset, the first held-out numbers this project has published, old vs new on both distributions, and the λ sweep re-measured across seeds.
+*   [reports/surrogate_retrain.json](surrogate_retrain.json): The retraining benchmark's full output.
 *   [reports/pareto_front_nsga2.json](pareto_front_nsga2.json): The Pareto front, genomes, and hypervolume baseline.
-*   [tests/physics/](../tests/physics/): 27 verification tests (`python -m unittest discover -s tests/physics -t .`).
+*   [tests/physics/](../tests/physics/): the physics verification suite (`python -m unittest discover -s tests/physics -t .`).
 
 ## 📁 6. Critical Review & Honest Status
 *   [reports/critical_review.md](critical_review.md): Adversarial review from a new reader's perspective — claims checked against code, the 61.8 dB modeling error and its blast radius, what was fixed, what remains open, and what the project can defensibly claim today.
