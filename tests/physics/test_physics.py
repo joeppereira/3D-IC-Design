@@ -36,6 +36,7 @@ import thermal_rom as rom_mod                                           # noqa: 
 import trust_guard as tg                                                # noqa: E402
 import dataset as ds                                                    # noqa: E402
 import surrogate_benchmark as bench                                     # noqa: E402
+import rank_churn as rc                                                 # noqa: E402
 from pareto_search import build_power_maps, GRID, SUB, N_SUB      # noqa: E402
 
 GOLDEN = os.path.join(ROOT, "physics_accelerated", "results", "golden_config.json")
@@ -858,6 +859,65 @@ class TestRetrainingBenchmark(unittest.TestCase):
     def test_rejects_a_dataset_that_still_misses_the_search_space(self):
         self.assertFalse(bench._assert_improvement(
             self._report(14.2, 1.2, 2.2, 0.4, 0.9)))
+
+
+class TestRankChurn(unittest.TestCase):
+    """Whether a model correction changes the decision or only the number.
+
+    The monotone cases are the point: `correlate.py` fits an additive bias, and
+    an additive bias cannot reorder anything. A test is the right place for that
+    claim because it is arithmetic, not a measurement."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.solver = ThermalSolver(GOLDEN)
+        cls.ref = tg.reference_from_solver(cls.solver)
+        cls.cascade = tg.ReferenceCascade(cls.ref)
+        cls.maps = build_power_maps(
+            np.random.default_rng(21).uniform(0, GRID - SUB, (10, 2 * N_SUB + 2)),
+            45.0, 15.0, cls.solver.layers).numpy()
+        cls.base = cls.cascade.peaks(cls.maps, 2)
+
+    def test_offset_cannot_reorder(self):
+        for eps in (-20.0, 5.0, 50.0):
+            shifted = rc._peaks_offset(self.base, eps, 25.0)
+            self.assertAlmostEqual(tg._kendall_tau(self.base, shifted), 1.0)
+            self.assertEqual(int(np.argmin(shifted)), int(np.argmin(self.base)))
+
+    def test_gain_about_ambient_cannot_reorder(self):
+        for eps in (-0.3, 0.5):
+            scaled = rc._peaks_gain(self.base, eps, 25.0)
+            self.assertAlmostEqual(tg._kendall_tau(self.base, scaled), 1.0)
+
+    def test_lateral_conductivity_reaches_the_solver(self):
+        """k_lateral_scale must move the field, and in the physical direction:
+        more in-plane spreading means a lower peak."""
+        hotter = rc._cascade_with(self.ref, k_lateral_scale=0.5).peaks(self.maps, 2)
+        cooler = rc._cascade_with(self.ref, k_lateral_scale=2.0).peaks(self.maps, 2)
+        self.assertTrue((cooler < self.base).all())
+        self.assertTrue((hotter > self.base).all())
+
+    def test_unperturbed_cascade_reproduces_the_baseline(self):
+        same = rc._cascade_with(self.ref).peaks(self.maps, 2)
+        np.testing.assert_allclose(same, self.base, rtol=0, atol=1e-9)
+
+    def test_better_cooling_lowers_every_design(self):
+        cooler = rc._cascade_with(self.ref, h_top_scale=1.5).peaks(self.maps, 2)
+        self.assertTrue((cooler < self.base).all())
+
+    def test_lateral_scale_must_be_positive(self):
+        with self.assertRaises(ValueError):
+            tg.ThermalReference(self.ref.layers, self.ref.width_m,
+                                self.ref.depth_m, self.ref.bc,
+                                k_lateral_scale=0.0)
+
+    def test_analysis_reports_monotone_families_as_decision_neutral(self):
+        doc = rc.analyse(self.cascade, self.maps, refine=1)
+        monotone = [c for c in doc["perturbations"] if c["family"] == "monotone"]
+        self.assertTrue(monotone)
+        for c in monotone:
+            self.assertFalse(c["changes_ranking"], c["name"])
+        self.assertTrue(rc._assert_behaves(doc))
 
 
 if __name__ == "__main__":

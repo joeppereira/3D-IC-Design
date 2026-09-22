@@ -68,13 +68,27 @@ class Solution:
 
 class ThermalReference:
     def __init__(self, layers: list[Layer], width_m: float, depth_m: float,
-                 boundary: Boundary | None = None):
+                 boundary: Boundary | None = None,
+                 k_lateral_scale: float = 1.0):
+        """`k_lateral_scale` multiplies the in-plane conductances only.
+
+        The model carries one conductivity per layer and uses it in every
+        direction, which omits the lateral spreading a real stack gets from the
+        BEOL metal and the TSV array -- the largest model-form gap between this
+        solver and a meshed commercial one. This is the single knob that stands
+        in for it: anisotropy in the only direction where the omission lives,
+        and the parameter a vendor correlation would actually move. It is
+        deliberately not a fitted residual; see reports/rank_churn.json.
+        """
         if not layers:
             raise ValueError("at least one layer is required")
         self.layers = layers
         self.width_m = float(width_m)
         self.depth_m = float(depth_m)
         self.bc = boundary or Boundary()
+        if k_lateral_scale <= 0.0:
+            raise ValueError("k_lateral_scale must be positive")
+        self.k_lateral_scale = float(k_lateral_scale)
 
     # -- mesh ----------------------------------------------------------------
     def _mesh(self, nx: int, ny: int, refine_z: int = 1):
@@ -157,7 +171,7 @@ class ThermalReference:
                         if 0 <= jx < nx and 0 <= jy < ny:
                             span = dx if dix else dy
                             area = dy * dz[iz] if dix else dx * dz[iz]
-                            g = kz[iz] * area / span
+                            g = kz[iz] * self.k_lateral_scale * area / span
                             diag += g
                             rows.append(p); cols.append(idx(iz, jy, jx)); vals.append(-g)
                         elif self.bc.h_side_w_m2k > 0.0:

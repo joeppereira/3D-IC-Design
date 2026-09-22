@@ -249,6 +249,57 @@ is not a reference solve, so the front cannot quietly drift back to surrogate
 predictions. `--no-trust-guard` exists and says in its own help text what it
 costs you.
 
+### 6.7 Would a vendor correction change the decision?
+
+`physics_accelerated/src/rank_churn.py` asks what a licensed run could buy
+before one is bought, by perturbing the reference model along the axes a
+correlation would move it and watching the *ranking*, not the number.
+
+| Perturbation | Family | Reorders the front? | Winner's Tj moves |
+| :--- | :--- | :--- | ---: |
+| uniform offset, ±50 °C | monotone | **never — by construction** | +50.00 °C |
+| uniform gain, ±50% | monotone | **never — by construction** | +23.54 °C |
+| cold-plate `h_top`, ±50% | physics | no (τ 0.998) | −9.34 °C |
+| lateral `k`, ±50% | physics | no (τ 0.996) | −5.48 °C |
+
+The first two rows are arithmetic rather than measurement, and they say
+something about the calibration path this repo already has: `correlate.py` fits
+`thermal_bias_c`, an *additive offset*. **An additive offset is order-preserving,
+so the existing calibration mechanism provably cannot change which design
+wins** — it can change whether the winner passes a limit, which is a different
+(and still real) consequence.
+
+The rows that could reorder the front are the ones that change the physics of
+spreading, and at this front they do not: the top design leads by 0.70 °C and
+holds its lead under ±50% on either knob.
+
+The decision one level up — *shatter the logic macro at all?* — is where
+spreading has somewhere to bite, so it is tested separately against a coarse
+scan of monolithic layouts:
+
+| Case | Shattered | Monolithic | Headroom |
+| :--- | ---: | ---: | ---: |
+| baseline | 72.07 °C | 109.01 °C | **+36.94 °C** |
+| `h_top` −50% | 97.53 °C | 141.98 °C | +44.46 °C |
+| `h_top` +50% | 62.73 °C | 94.20 °C | +31.47 °C |
+| lateral `k` −50% | 86.18 °C | 142.22 °C | +56.04 °C |
+| lateral `k` +50% | 66.60 °C | 94.28 °C | +27.69 °C |
+| lateral `k` ×4 | 58.31 °C | 71.28 °C | +12.98 °C |
+| lateral `k` ×10 | 53.98 °C | 60.68 °C | +6.70 °C |
+
+The ×4 and ×10 rows are far outside any plausible correction; they are there to
+find where the conclusion *would* break, which is more informative than
+confirming that it does not. Shattering still wins by 6.70 °C at a lateral
+conductivity ten times ours — i.e. a stack that spreads heat an order of
+magnitude better than we model. **The architectural conclusion does not depend
+on a vendor run; the absolute temperature does.** That is the useful division of
+labour, and it is what a licence hour should be spent confirming rather than
+discovering.
+
+`k_lateral_scale` is a real knob on `ThermalReference`, not a post-hoc
+multiplier: it scales the in-plane conductances only, which is where this model
+omits the BEOL metal and TSV array a meshed commercial tool resolves.
+
 ## 7. Related
 
 * [`reports/surrogate_retraining.md`](surrogate_retraining.md) — the training-distribution fix this document's §5 reports the effect of.
@@ -256,3 +307,4 @@ costs you.
 * `reports/surrogate_trust_report.json` — the guard's full output: per-design errors, distances, error budget, ROM calibration.
 * `reports/thermal_validation.json` — the surrogate-vs-reference table for the coolest, median and hottest designs.
 * `reports/pareto_front_nsga2.json` / `.csv` — the front, its genomes, and the hypervolume baseline.
+* `reports/rank_churn.json` — §6.7 in full: perturbation sweeps, churn thresholds, and the topology robustness table.

@@ -1,0 +1,193 @@
+{
+  "question": "what would a vendor correlation have to change before it changed which design we pick?",
+  "front": {
+    "n_designs": 48,
+    "winner_index": 0,
+    "winner_peak_c": 72.07347836050788,
+    "top1_to_top2_gap_c": 0.7022542429536287,
+    "spread_c": 129.53508904018383,
+    "mesh": "32x32x10",
+    "source": "reports/pareto_front_nsga2.json"
+  },
+  "perturbations": [
+    {
+      "name": "uniform_offset_c",
+      "family": "monotone",
+      "unit": "C",
+      "tested": [
+        2.0,
+        5.0,
+        10.0,
+        20.0,
+        50.0
+      ],
+      "churn_threshold": null,
+      "changes_ranking": false,
+      "kendall_tau_at_max": 1.0,
+      "winner_at_max": 0,
+      "winner_peak_shift_at_max_c": 50.0,
+      "note": "this is exactly the calibration correlate.py fits (thermal_bias_c); adding a constant cannot reorder a list"
+    },
+    {
+      "name": "uniform_gain",
+      "family": "monotone",
+      "unit": "fraction",
+      "tested": [
+        0.02,
+        0.05,
+        0.1,
+        0.2,
+        0.35,
+        0.5
+      ],
+      "churn_threshold": null,
+      "changes_ranking": false,
+      "kendall_tau_at_max": 1.0,
+      "winner_at_max": 0,
+      "winner_peak_shift_at_max_c": 23.536739180253946,
+      "note": "scaling the rise about ambient is order-preserving too"
+    },
+    {
+      "name": "h_top_scale",
+      "family": "physics",
+      "unit": "fraction",
+      "tested": [
+        0.02,
+        0.05,
+        0.1,
+        0.2,
+        0.35,
+        0.5
+      ],
+      "churn_threshold": null,
+      "changes_ranking": false,
+      "kendall_tau_at_max": 0.99822695035461,
+      "winner_at_max": 0,
+      "winner_peak_shift_at_max_c": -9.343742210651385,
+      "note": "the lumped cold-plate coefficient; a CFD-resolved plate is the most likely thing a vendor run disagrees with"
+    },
+    {
+      "name": "k_lateral_scale",
+      "family": "physics",
+      "unit": "fraction",
+      "tested": [
+        0.02,
+        0.05,
+        0.1,
+        0.2,
+        0.35,
+        0.5
+      ],
+      "churn_threshold": null,
+      "changes_ranking": false,
+      "kendall_tau_at_max": 0.9964539007092199,
+      "winner_at_max": 0,
+      "winner_peak_shift_at_max_c": -5.477577763746311,
+      "note": "in-plane spreading, which this model omits (no BEOL metal, no TSV array) -- and the front is a spread-vs-compactness trade-off, so it is the axis the decision is exposed to"
+    }
+  ],
+  "measure_first": null,
+  "implication": "no perturbation tested reorders the front (top-1 leads by 0.70 C). A correlated vendor run would move the absolute temperature and leave the architectural choice standing.",
+  "topology_robustness": {
+    "question": "does shattering the logic macro still win under a correction of this size?",
+    "scan": "coarse (step 4) over both macro positions; upper bound on the monolithic layout, hence on the headroom",
+    "cases": [
+      {
+        "case": "baseline",
+        "shattered_peak_c": 72.07347836050788,
+        "monolithic_peak_c": 109.01027958897166,
+        "monolithic_at": [
+          8,
+          8,
+          0,
+          0
+        ],
+        "headroom_c": 36.93680122846378
+      },
+      {
+        "case": "h_top -50%",
+        "h_top_scale": 0.5,
+        "shattered_peak_c": 97.52527996311184,
+        "monolithic_peak_c": 141.9807174909653,
+        "monolithic_at": [
+          8,
+          4,
+          0,
+          12
+        ],
+        "headroom_c": 44.45543752785346
+      },
+      {
+        "case": "h_top +50%",
+        "h_top_scale": 1.5,
+        "shattered_peak_c": 62.72973614985649,
+        "monolithic_peak_c": 94.20137677337232,
+        "monolithic_at": [
+          8,
+          8,
+          0,
+          0
+        ],
+        "headroom_c": 31.471640623515825
+      },
+      {
+        "case": "k_lateral -50%",
+        "k_lateral_scale": 0.5,
+        "shattered_peak_c": 86.17699000471313,
+        "monolithic_peak_c": 142.22071215574263,
+        "monolithic_at": [
+          4,
+          8,
+          12,
+          0
+        ],
+        "headroom_c": 56.0437221510295
+      },
+      {
+        "case": "k_lateral +50%",
+        "k_lateral_scale": 1.5,
+        "shattered_peak_c": 66.59590059676157,
+        "monolithic_peak_c": 94.28462892962717,
+        "monolithic_at": [
+          8,
+          4,
+          0,
+          12
+        ],
+        "headroom_c": 27.688728332865608
+      },
+      {
+        "case": "k_lateral x4",
+        "k_lateral_scale": 4.0,
+        "shattered_peak_c": 58.30649469264053,
+        "monolithic_peak_c": 71.28229878460986,
+        "monolithic_at": [
+          4,
+          8,
+          12,
+          0
+        ],
+        "headroom_c": 12.975804091969337
+      },
+      {
+        "case": "k_lateral x10",
+        "k_lateral_scale": 10.0,
+        "shattered_peak_c": 53.975280086322655,
+        "monolithic_peak_c": 60.67591820453827,
+        "monolithic_at": [
+          8,
+          8,
+          0,
+          0
+        ],
+        "headroom_c": 6.700638118215615
+      }
+    ],
+    "headroom_range_c": [
+      6.700638118215615,
+      56.0437221510295
+    ],
+    "conclusion_flips": false,
+    "note": "k_lateral x4 and x10 are far beyond any plausible correction -- they are there to find where the conclusion *would* break, which is more informative than confirming it does not."
+  }
+}
