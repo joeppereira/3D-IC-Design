@@ -43,6 +43,48 @@ class Layer:
     n_cells_z: int = 2            # vertical cells (refined by the convergence study)
 
 
+@dataclass(frozen=True)
+class Region:
+    """A rectangular in-plane patch of a different material inside one layer.
+
+    Every layer was a uniform full-area slab, which is fine for a die stacked on
+    a die and cannot express a package placed *beside* the SoC: mold here,
+    silicon there, at the same height. Coordinates are fractions of the
+    footprint so a region is mesh-independent; `power_w` is dissipated in the
+    patch and is *in addition* to its layer's own `power_w`, which continues to
+    spread over the whole layer.
+    """
+    layer: int
+    name: str
+    k_w_mk: float
+    x0: float
+    y0: float
+    x1: float
+    y1: float
+    power_w: float = 0.0
+
+    def __post_init__(self):
+        if not (0.0 <= self.x0 < self.x1 <= 1.0 and 0.0 <= self.y0 < self.y1 <= 1.0):
+            raise ValueError(f"region {self.name}: fractions must satisfy "
+                             f"0 <= x0 < x1 <= 1 (got {self.x0}-{self.x1}, "
+                             f"{self.y0}-{self.y1})")
+        if self.k_w_mk <= 0.0:
+            raise ValueError(f"region {self.name}: k must be positive")
+
+    def mask(self, nx: int, ny: int) -> np.ndarray:
+        """Cells whose centre falls inside the patch. A patch thinner than one
+        cell claims the cell its centre lands in rather than vanishing."""
+        xs = (np.arange(nx) + 0.5) / nx
+        ys = (np.arange(ny) + 0.5) / ny
+        mx = (xs >= self.x0) & (xs < self.x1)
+        my = (ys >= self.y0) & (ys < self.y1)
+        if not mx.any():
+            mx[min(int((self.x0 + self.x1) / 2 * nx), nx - 1)] = True
+        if not my.any():
+            my[min(int((self.y0 + self.y1) / 2 * ny), ny - 1)] = True
+        return np.outer(my, mx)
+
+
 @dataclass
 class Boundary:
     """Convective boundary condition: q = h (T - T_inf)."""
@@ -64,12 +106,14 @@ class Solution:
     n_unknowns: int
     energy_balance: dict
     layer_peaks_c: dict
+    region_peaks_c: dict = None
 
 
 class ThermalReference:
     def __init__(self, layers: list[Layer], width_m: float, depth_m: float,
                  boundary: Boundary | None = None,
-                 k_lateral_scale: float = 1.0):
+                 k_lateral_scale: float = 1.0,
+                 regions: list[Region] | None = None):
         """`k_lateral_scale` multiplies the in-plane conductances only.
 
         The model carries one conductivity per layer and uses it in every
@@ -89,6 +133,10 @@ class ThermalReference:
         if k_lateral_scale <= 0.0:
             raise ValueError("k_lateral_scale must be positive")
         self.k_lateral_scale = float(k_lateral_scale)
+        self.regions = list(regions or [])
+        for r in self.regions:
+            if not 0 <= r.layer < len(layers):
+                raise ValueError(f"region {r.name}: layer {r.layer} does not exist")
 
     # -- mesh ----------------------------------------------------------------
     def _mesh(self, nx: int, ny: int, refine_z: int = 1):
@@ -103,6 +151,17 @@ class ThermalReference:
                 layer_of.append(idx)
         return (np.asarray(dz), np.asarray(kz), np.asarray(layer_of),
                 self.width_m / nx, self.depth_m / ny)
+
+    def _k_field(self, nx: int, ny: int, layer_of: np.ndarray) -> np.ndarray:
+        """Per-cell conductivity [nz, ny, nx]: layer values, then regions."""
+        k = np.empty((len(layer_of), ny, nx))
+        for cz, li in enumerate(layer_of):
+            k[cz] = self.layers[li].k_w_mk
+        for r in self.regions:
+            m = r.mask(nx, ny)
+            for cz in np.where(layer_of == r.layer)[0]:
+                k[cz][m] = r.k_w_mk
+        return k
 
     def _power_density(self, nx: int, ny: int, layer_of: np.ndarray,
                        hotspots: dict[int, tuple[float, float, float]] | None):
@@ -128,6 +187,14 @@ class ThermalReference:
             per_cell_layer = layer.power_w / len(cells)
             for cz in cells:
                 q[cz] = weight * per_cell_layer
+        for r in self.regions:
+            if r.power_w == 0.0:
+                continue
+            m = r.mask(nx, ny)
+            cells = np.where(layer_of == r.layer)[0]
+            per_cell = r.power_w / (m.sum() * len(cells))
+            for cz in cells:
+                q[cz][m] += per_cell
         return q
 
     # -- assembly ------------------------------------------------------------
@@ -145,6 +212,9 @@ class ThermalReference:
         dz, kz, layer_of, dx, dy = self._mesh(nx, ny, refine_z)
         nz = len(dz)
         n = nx * ny * nz
+        # Conductivity is per cell, not per layer, so a region of mold can sit
+        # beside a region of silicon at the same height.
+        kf = self._k_field(nx, ny, layer_of)
         q = (self._power_density(nx, ny, layer_of, hotspots)
              if power_map is None else np.asarray(power_map, dtype=float))
         if q.shape != (nz, ny, nx):
@@ -165,13 +235,19 @@ class ThermalReference:
                     diag = 0.0
                     rhs[p] += q[iz, iy, ix]
 
-                    # in-plane neighbours: same layer, so k is uniform across the face
+                    # In-plane neighbours: series resistance of the two half
+                    # cells, which is the harmonic mean when they differ and
+                    # reduces exactly to k*area/span when they do not. The
+                    # uniform form was wrong the moment a layer stopped being
+                    # one material.
                     for dix, diy in ((-1, 0), (1, 0), (0, -1), (0, 1)):
                         jx, jy = ix + dix, iy + diy
                         if 0 <= jx < nx and 0 <= jy < ny:
                             span = dx if dix else dy
                             area = dy * dz[iz] if dix else dx * dz[iz]
-                            g = kz[iz] * self.k_lateral_scale * area / span
+                            ki = kf[iz, iy, ix] * self.k_lateral_scale
+                            kj = kf[iz, jy, jx] * self.k_lateral_scale
+                            g = area / ((span / 2.0) / ki + (span / 2.0) / kj)
                             diag += g
                             rows.append(p); cols.append(idx(iz, jy, jx)); vals.append(-g)
                         elif self.bc.h_side_w_m2k > 0.0:
@@ -185,7 +261,8 @@ class ThermalReference:
                         jz = iz + diz
                         if 0 <= jz < nz:
                             # series resistance of the two half-cells
-                            r = (dz[iz] / 2.0) / kz[iz] + (dz[jz] / 2.0) / kz[jz]
+                            r = ((dz[iz] / 2.0) / kf[iz, iy, ix]
+                                 + (dz[jz] / 2.0) / kf[jz, iy, ix])
                             g = area_z / r
                             diag += g
                             rows.append(p); cols.append(idx(jz, iy, ix)); vals.append(-g)
@@ -195,7 +272,7 @@ class ThermalReference:
                             if h <= 0.0:
                                 continue
                             # convective film in series with the half-cell
-                            r = (dz[iz] / 2.0) / kz[iz] + 1.0 / h
+                            r = (dz[iz] / 2.0) / kf[iz, iy, ix] + 1.0 / h
                             g = area_z / r
                             diag += g
                             rhs[p] += g * t_inf
@@ -203,8 +280,8 @@ class ThermalReference:
                     rows.append(p); cols.append(p); vals.append(diag)
 
         a = sp.csr_matrix((vals, (rows, cols)), shape=(n, n))
-        return a, rhs, {"dz": dz, "kz": kz, "layer_of": layer_of, "dx": dx,
-                        "dy": dy, "nx": nx, "ny": ny, "nz": nz, "q": q}
+        return a, rhs, {"dz": dz, "kz": kz, "k_field": kf, "layer_of": layer_of,
+                        "dx": dx, "dy": dy, "nx": nx, "ny": ny, "nz": nz, "q": q}
 
     def solution_from_field(self, field, mesh) -> Solution:
         """Wrap a solved field in a Solution, with its energy balance."""
@@ -219,9 +296,13 @@ class ThermalReference:
             hotspot_index=(int(hotspot[0]), int(hotspot[1]), int(hotspot[2])),
             nx=nx, ny=ny, nz=nz, n_unknowns=nx * ny * nz,
             energy_balance=self._energy_balance(field, mesh["dz"], mesh["kz"],
-                                                mesh["dx"], mesh["dy"], mesh["q"]),
+                                                mesh["dx"], mesh["dy"], mesh["q"],
+                                                mesh.get("k_field")),
             layer_peaks_c={self.layers[li].name: float(field[layer_of == li].max())
                            for li in range(len(self.layers))},
+            region_peaks_c={r.name: float(field[np.ix_(
+                np.where(layer_of == r.layer)[0])][:, r.mask(nx, ny)].max())
+                for r in self.regions},
         )
 
     def solve(self, nx: int = 32, ny: int = 32, refine_z: int = 1,
@@ -231,7 +312,7 @@ class ThermalReference:
         field = spla.spsolve(a, rhs).reshape(mesh["nz"], mesh["ny"], mesh["nx"])
         return self.solution_from_field(field, mesh)
 
-    def _energy_balance(self, field, dz, kz, dx, dy, q) -> dict:
+    def _energy_balance(self, field, dz, kz, dx, dy, q, k_field=None) -> dict:
         """Heat leaving through the convective faces must equal power in."""
         area_z = dx * dy
         t_inf = self.bc.t_ambient_c
@@ -240,7 +321,8 @@ class ThermalReference:
                             ("bottom", self.bc.h_bottom_w_m2k, len(dz) - 1)):
             if h <= 0.0:
                 continue
-            r = (dz[iz] / 2.0) / kz[iz] + 1.0 / h
+            kplane = kz[iz] if k_field is None else k_field[iz]
+            r = (dz[iz] / 2.0) / kplane + 1.0 / h
             out += float(((field[iz] - t_inf) * area_z / r).sum())
         if self.bc.h_side_w_m2k > 0.0:
             for iz in range(len(dz)):

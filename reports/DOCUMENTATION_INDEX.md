@@ -36,6 +36,8 @@ This index tracks the mandatory documents required for architectural verificatio
 *   [reports/surrogate_retraining.md](surrogate_retraining.md): The surrogate retrained on the distribution the optimiser actually searches — the new dataset, the first held-out numbers this project has published, old vs new on both distributions, and the λ sweep re-measured across seeds.
 *   [reports/surrogate_retrain.json](surrogate_retrain.json): The retraining benchmark's full output.
 *   [reports/pareto_front_nsga2.json](pareto_front_nsga2.json): The Pareto front, genomes, and hypervolume baseline.
+*   [reports/rank_churn.json](rank_churn.json): What a vendor correlation could change — perturbation sweeps, churn thresholds, and the finding that an additive calibration cannot reorder a ranking.
+*   [reports/memory_attach.md](memory_attach.md): Memory Tj as the decision variable — stacked vs package-on-package vs side-by-side, in four cooling/lid configurations, with the feasible SoC power each affords.
 *   [tests/physics/](../tests/physics/): the physics verification suite (`python -m unittest discover -s tests/physics -t .`).
 
 ## 📁 6. Critical Review & Honest Status

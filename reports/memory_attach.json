@@ -1,0 +1,712 @@
+{
+  "question": "which attach option gives the SoC the most power budget before the memory crosses its refresh knee?",
+  "footprint_mm": [
+    18,
+    18
+  ],
+  "cooling": {
+    "h_top_w_m2k": 8000.0,
+    "h_bottom_w_m2k": 50.0,
+    "t_ambient_c": 25.0,
+    "note": "this project's liquid cold plate, unchanged"
+  },
+  "thresholds_c": {
+    "refresh_knee": 85.0,
+    "device_limit": 105.0,
+    "note": "general DRAM behaviour, not a JEDEC quotation"
+  },
+  "memory_w": 3.0,
+  "mesh": "32x32, refine_z=2",
+  "scenarios": {
+    "logic_side_bare": {
+      "cold_plate_on": "the logic side",
+      "lid_um": 0.0,
+      "options": [
+        {
+          "attach": "stacked",
+          "description": "memory bonded under the logic die, 5 um Cu-Cu",
+          "memory_w": 3.0,
+          "memory_only_tj_c": 26.155265114022814,
+          "logic_tj_per_w": 0.38394901326308195,
+          "memory_tj_per_w": 0.38394184028969686,
+          "coupling_ratio": 0.9999813179012387,
+          "logic_budget_at_memory_knee_w": 153.26455116133465,
+          "logic_budget_at_memory_limit_w": 205.35554165600323,
+          "logic_budget_at_logic_limit_w": 205.3578253857874,
+          "feasible_logic_w": 153.26455116133465,
+          "binding_constraint": "memory_knee",
+          "field_linearity_residual_c": 2.2737367544323206e-13,
+          "at_operating_point": {
+            "logic_w": 40.0,
+            "logic_tj_c": 41.51102610779793,
+            "memory_tj_c": 41.51293872561069,
+            "die_to_die_delta_c": -0.001912617812756423
+          },
+          "refresh_loop": {
+            "logic_w": 40.0,
+            "converged_memory_w": 3.0,
+            "memory_tj_c": 41.51293872561069,
+            "above_knee": false,
+            "above_limit": false,
+            "iterations": 1,
+            "closed": true,
+            "model": "refresh share 35% of memory power, x2 above 85 C"
+          }
+        },
+        {
+          "attach": "pop",
+          "description": "memory above logic across a 150 um mold gap",
+          "memory_w": 3.0,
+          "memory_only_tj_c": 27.85381167177978,
+          "logic_tj_per_w": 0.3839711974996628,
+          "memory_tj_per_w": 0.3803996923228826,
+          "coupling_ratio": 0.9906985075963066,
+          "logic_budget_at_memory_knee_w": 150.22653387899067,
+          "logic_budget_at_memory_limit_w": 202.8025773318872,
+          "logic_budget_at_logic_limit_w": 205.37366557864732,
+          "feasible_logic_w": 150.22653387899067,
+          "binding_constraint": "memory_knee",
+          "field_linearity_residual_c": 2.6290081223123707e-13,
+          "at_operating_point": {
+            "logic_w": 40.0,
+            "logic_tj_c": 41.50127559285802,
+            "memory_tj_c": 43.069799364695086,
+            "die_to_die_delta_c": -1.5685237718370644
+          },
+          "refresh_loop": {
+            "logic_w": 40.0,
+            "converged_memory_w": 3.0,
+            "memory_tj_c": 43.069799364695086,
+            "above_knee": false,
+            "above_limit": false,
+            "iterations": 1,
+            "closed": true,
+            "model": "refresh share 35% of memory power, x2 above 85 C"
+          }
+        },
+        {
+          "attach": "adjacent",
+          "description": "memory beside logic, gap 10% of the footprint",
+          "memory_w": 3.0,
+          "memory_only_tj_c": 28.77706275287406,
+          "logic_tj_per_w": 1.2590209176256242,
+          "memory_tj_per_w": 0.06891289779385641,
+          "coupling_ratio": 0.05473530807082904,
+          "logic_budget_at_memory_knee_w": 818.7385625973166,
+          "logic_budget_at_memory_limit_w": 1108.9599963240955,
+          "logic_budget_at_logic_limit_w": 63.442957612222514,
+          "feasible_logic_w": 63.442957612222514,
+          "binding_constraint": "logic_limit",
+          "field_linearity_residual_c": 1.9895196601282805e-13,
+          "at_operating_point": {
+            "logic_w": 40.0,
+            "logic_tj_c": 75.48482599520099,
+            "memory_tj_c": 31.33486902759647,
+            "die_to_die_delta_c": 44.149956967604524
+          },
+          "refresh_loop": {
+            "logic_w": 40.0,
+            "converged_memory_w": 3.0,
+            "memory_tj_c": 31.533578664628315,
+            "above_knee": false,
+            "above_limit": false,
+            "iterations": 1,
+            "closed": true,
+            "model": "refresh share 35% of memory power, x2 above 85 C"
+          }
+        }
+      ],
+      "robustness": [
+        {
+          "case": "baseline",
+          "stacked": 153.26,
+          "stacked_binds": "memory_knee",
+          "pop": 150.23,
+          "pop_binds": "memory_knee",
+          "adjacent": 63.44,
+          "adjacent_binds": "logic_limit",
+          "ranking": [
+            "stacked",
+            "pop",
+            "adjacent"
+          ]
+        },
+        {
+          "case": "h_top -50%",
+          "stacked": 75.67,
+          "stacked_binds": "memory_knee",
+          "pop": 74.15,
+          "pop_binds": "memory_knee",
+          "adjacent": 34.87,
+          "adjacent_binds": "logic_limit",
+          "ranking": [
+            "stacked",
+            "pop",
+            "adjacent"
+          ]
+        },
+        {
+          "case": "h_top +50%",
+          "stacked": 230.75,
+          "stacked_binds": "memory_knee",
+          "pop": 226.19,
+          "pop_binds": "memory_knee",
+          "adjacent": 91.78,
+          "adjacent_binds": "logic_limit",
+          "ranking": [
+            "stacked",
+            "pop",
+            "adjacent"
+          ]
+        },
+        {
+          "case": "k_lateral -50%",
+          "stacked": 153.26,
+          "stacked_binds": "memory_knee",
+          "pop": 150.23,
+          "pop_binds": "memory_knee",
+          "adjacent": 61.64,
+          "adjacent_binds": "logic_limit",
+          "ranking": [
+            "stacked",
+            "pop",
+            "adjacent"
+          ]
+        },
+        {
+          "case": "k_lateral +50%",
+          "stacked": 153.26,
+          "stacked_binds": "memory_knee",
+          "pop": 150.23,
+          "pop_binds": "memory_knee",
+          "adjacent": 64.38,
+          "adjacent_binds": "logic_limit",
+          "ranking": [
+            "stacked",
+            "pop",
+            "adjacent"
+          ]
+        }
+      ]
+    },
+    "logic_side_lid": {
+      "cold_plate_on": "the logic side",
+      "lid_um": 500.0,
+      "options": [
+        {
+          "attach": "stacked",
+          "description": "memory bonded under the logic die, 5 um Cu-Cu",
+          "memory_w": 3.0,
+          "memory_only_tj_c": 26.1666945058976,
+          "logic_tj_per_w": 0.3877589529281387,
+          "memory_tj_per_w": 0.3877517087771003,
+          "coupling_ratio": 0.9999813179012793,
+          "logic_budget_at_memory_knee_w": 151.7291686933702,
+          "logic_budget_at_memory_limit_w": 203.3083372703765,
+          "logic_budget_at_logic_limit_w": 203.31059856129943,
+          "feasible_logic_w": 151.7291686933702,
+          "binding_constraint": "memory_knee",
+          "field_linearity_residual_c": 2.7000623958883807e-13,
+          "at_operating_point": {
+            "logic_w": 40.0,
+            "logic_tj_c": 41.67485329980293,
+            "memory_tj_c": 41.67676285698161,
+            "die_to_die_delta_c": -0.001909557178677801
+          },
+          "refresh_loop": {
+            "logic_w": 40.0,
+            "converged_memory_w": 3.0,
+            "memory_tj_c": 41.67676285698161,
+            "above_knee": false,
+            "above_limit": false,
+            "iterations": 1,
+            "closed": true,
+            "model": "refresh share 35% of memory power, x2 above 85 C"
+          }
+        },
+        {
+          "attach": "pop",
+          "description": "memory above logic across a 150 um mold gap",
+          "memory_w": 3.0,
+          "memory_only_tj_c": 27.86503115371905,
+          "logic_tj_per_w": 0.3877815793936981,
+          "memory_tj_per_w": 0.3841746319787199,
+          "coupling_ratio": 0.9906985075964214,
+          "logic_budget_at_memory_knee_w": 148.72118830461145,
+          "logic_budget_at_memory_limit_w": 200.78061411840184,
+          "logic_budget_at_logic_limit_w": 203.32643858624,
+          "feasible_logic_w": 148.72118830461145,
+          "binding_constraint": "memory_knee",
+          "field_linearity_residual_c": 2.7000623958883807e-13,
+          "at_operating_point": {
+            "logic_w": 40.0,
+            "logic_tj_c": 41.66501568828002,
+            "memory_tj_c": 43.23201643286784,
+            "die_to_die_delta_c": -1.5670007445878156
+          },
+          "refresh_loop": {
+            "logic_w": 40.0,
+            "converged_memory_w": 3.0,
+            "memory_tj_c": 43.232016432867844,
+            "above_knee": false,
+            "above_limit": false,
+            "iterations": 1,
+            "closed": true,
+            "model": "refresh share 35% of memory power, x2 above 85 C"
+          }
+        },
+        {
+          "attach": "adjacent",
+          "description": "memory beside logic, gap 10% of the footprint",
+          "memory_w": 3.0,
+          "memory_only_tj_c": 27.52514429384534,
+          "logic_tj_per_w": 0.8417147646173955,
+          "memory_tj_per_w": 0.30518796921239233,
+          "coupling_ratio": 0.3625788474212124,
+          "logic_budget_at_memory_knee_w": 191.17229293939064,
+          "logic_budget_at_memory_limit_w": 256.6931917851213,
+          "logic_budget_at_logic_limit_w": 94.55091473744906,
+          "feasible_logic_w": 94.55091473744906,
+          "binding_constraint": "logic_limit",
+          "field_linearity_residual_c": 2.3447910280083306e-13,
+          "at_operating_point": {
+            "logic_w": 40.0,
+            "logic_tj_c": 59.08368964210446,
+            "memory_tj_c": 38.85765705599575,
+            "die_to_die_delta_c": 20.22603258610871
+          },
+          "refresh_loop": {
+            "logic_w": 40.0,
+            "converged_memory_w": 3.0,
+            "memory_tj_c": 39.73266306234103,
+            "above_knee": false,
+            "above_limit": false,
+            "iterations": 1,
+            "closed": true,
+            "model": "refresh share 35% of memory power, x2 above 85 C"
+          }
+        }
+      ],
+      "robustness": [
+        {
+          "case": "baseline",
+          "stacked": 151.73,
+          "stacked_binds": "memory_knee",
+          "pop": 148.72,
+          "pop_binds": "memory_knee",
+          "adjacent": 94.55,
+          "adjacent_binds": "logic_limit",
+          "ranking": [
+            "stacked",
+            "pop",
+            "adjacent"
+          ]
+        },
+        {
+          "case": "h_top -50%",
+          "stacked": 75.29,
+          "stacked_binds": "memory_knee",
+          "pop": 73.77,
+          "pop_binds": "memory_knee",
+          "adjacent": 58.63,
+          "adjacent_binds": "logic_limit",
+          "ranking": [
+            "stacked",
+            "pop",
+            "adjacent"
+          ]
+        },
+        {
+          "case": "h_top +50%",
+          "stacked": 227.31,
+          "stacked_binds": "memory_knee",
+          "pop": 222.83,
+          "pop_binds": "memory_knee",
+          "adjacent": 125.07,
+          "adjacent_binds": "logic_limit",
+          "ranking": [
+            "stacked",
+            "pop",
+            "adjacent"
+          ]
+        },
+        {
+          "case": "k_lateral -50%",
+          "stacked": 151.73,
+          "stacked_binds": "memory_knee",
+          "pop": 148.72,
+          "pop_binds": "memory_knee",
+          "adjacent": 78.66,
+          "adjacent_binds": "logic_limit",
+          "ranking": [
+            "stacked",
+            "pop",
+            "adjacent"
+          ]
+        },
+        {
+          "case": "k_lateral +50%",
+          "stacked": 151.73,
+          "stacked_binds": "memory_knee",
+          "pop": 148.72,
+          "pop_binds": "memory_knee",
+          "adjacent": 106.17,
+          "adjacent_binds": "logic_limit",
+          "ranking": [
+            "stacked",
+            "pop",
+            "adjacent"
+          ]
+        }
+      ]
+    },
+    "memory_side_bare": {
+      "cold_plate_on": "the memory side",
+      "lid_um": 0.0,
+      "options": [
+        {
+          "attach": "stacked",
+          "description": "memory bonded under the logic die, 5 um Cu-Cu",
+          "memory_w": 3.0,
+          "memory_only_tj_c": 26.22999517408558,
+          "logic_tj_per_w": 0.41113676953530415,
+          "memory_tj_per_w": 0.4104040805503331,
+          "coupling_ratio": 0.9982178947755046,
+          "logic_budget_at_memory_knee_w": 143.20034232385441,
+          "logic_budget_at_memory_limit_w": 191.9328012535534,
+          "logic_budget_at_logic_limit_w": 191.59081272069213,
+          "feasible_logic_w": 143.20034232385441,
+          "binding_constraint": "memory_knee",
+          "field_linearity_residual_c": 2.0605739337042905e-13,
+          "at_operating_point": {
+            "logic_w": 40.0,
+            "logic_tj_c": 42.67544296678334,
+            "memory_tj_c": 42.646158396098905,
+            "die_to_die_delta_c": 0.029284570684438904
+          },
+          "refresh_loop": {
+            "logic_w": 40.0,
+            "converged_memory_w": 3.0,
+            "memory_tj_c": 42.646158396098905,
+            "above_knee": false,
+            "above_limit": false,
+            "iterations": 1,
+            "closed": true,
+            "model": "refresh share 35% of memory power, x2 above 85 C"
+          }
+        },
+        {
+          "attach": "pop",
+          "description": "memory above logic across a 150 um mold gap",
+          "memory_w": 3.0,
+          "memory_only_tj_c": 26.23007112344436,
+          "logic_tj_per_w": 0.9768351826516719,
+          "memory_tj_per_w": 0.40661779880945537,
+          "coupling_ratio": 0.4162603948249175,
+          "logic_budget_at_memory_knee_w": 144.5335866964746,
+          "logic_budget_at_memory_limit_w": 193.71982512125192,
+          "logic_budget_at_logic_limit_w": 80.64960867361303,
+          "feasible_logic_w": 80.64960867361303,
+          "binding_constraint": "logic_limit",
+          "field_linearity_residual_c": 3.197442310920451e-13,
+          "at_operating_point": {
+            "logic_w": 40.0,
+            "logic_tj_c": 65.29203208659223,
+            "memory_tj_c": 42.49478307582213,
+            "die_to_die_delta_c": 22.797249010770102
+          },
+          "refresh_loop": {
+            "logic_w": 40.0,
+            "converged_memory_w": 3.0,
+            "memory_tj_c": 42.494783075822575,
+            "above_knee": false,
+            "above_limit": false,
+            "iterations": 1,
+            "closed": true,
+            "model": "refresh share 35% of memory power, x2 above 85 C"
+          }
+        },
+        {
+          "attach": "adjacent",
+          "description": "memory beside logic, gap 10% of the footprint",
+          "memory_w": 3.0,
+          "memory_only_tj_c": 42.533345639118096,
+          "logic_tj_per_w": 5.844448546378269,
+          "memory_tj_per_w": 0.17682271213043704,
+          "coupling_ratio": 0.030254815441913996,
+          "logic_budget_at_memory_knee_w": 248.40559159098834,
+          "logic_budget_at_memory_limit_w": 361.49423481334594,
+          "logic_budget_at_logic_limit_w": 13.659751940307128,
+          "feasible_logic_w": 13.659751940307128,
+          "binding_constraint": "logic_limit",
+          "field_linearity_residual_c": 4.263256414560601e-13,
+          "at_operating_point": {
+            "logic_w": 40.0,
+            "logic_tj_c": 258.944224483715,
+            "memory_tj_c": 48.14639240707882,
+            "die_to_die_delta_c": 210.79783207663618
+          },
+          "refresh_loop": {
+            "logic_w": 40.0,
+            "converged_memory_w": 3.0,
+            "memory_tj_c": 49.60625412433558,
+            "above_knee": false,
+            "above_limit": false,
+            "iterations": 1,
+            "closed": true,
+            "model": "refresh share 35% of memory power, x2 above 85 C"
+          }
+        }
+      ],
+      "robustness": [
+        {
+          "case": "baseline",
+          "stacked": 143.2,
+          "stacked_binds": "memory_knee",
+          "pop": 80.65,
+          "pop_binds": "logic_limit",
+          "adjacent": 13.66,
+          "adjacent_binds": "logic_limit",
+          "ranking": [
+            "stacked",
+            "pop",
+            "adjacent"
+          ]
+        },
+        {
+          "case": "h_top -50%",
+          "stacked": 142.71,
+          "stacked_binds": "memory_knee",
+          "pop": 80.0,
+          "pop_binds": "logic_limit",
+          "adjacent": 13.48,
+          "adjacent_binds": "logic_limit",
+          "ranking": [
+            "stacked",
+            "pop",
+            "adjacent"
+          ]
+        },
+        {
+          "case": "h_top +50%",
+          "stacked": 143.69,
+          "stacked_binds": "memory_knee",
+          "pop": 81.3,
+          "pop_binds": "logic_limit",
+          "adjacent": 13.84,
+          "adjacent_binds": "logic_limit",
+          "ranking": [
+            "stacked",
+            "pop",
+            "adjacent"
+          ]
+        },
+        {
+          "case": "k_lateral -50%",
+          "stacked": 143.2,
+          "stacked_binds": "memory_knee",
+          "pop": 80.65,
+          "pop_binds": "logic_limit",
+          "adjacent": 13.2,
+          "adjacent_binds": "logic_limit",
+          "ranking": [
+            "stacked",
+            "pop",
+            "adjacent"
+          ]
+        },
+        {
+          "case": "k_lateral +50%",
+          "stacked": 143.2,
+          "stacked_binds": "memory_knee",
+          "pop": 80.65,
+          "pop_binds": "logic_limit",
+          "adjacent": 14.01,
+          "adjacent_binds": "logic_limit",
+          "ranking": [
+            "stacked",
+            "pop",
+            "adjacent"
+          ]
+        }
+      ]
+    },
+    "memory_side_lid": {
+      "cold_plate_on": "the memory side",
+      "lid_um": 500.0,
+      "options": [
+        {
+          "attach": "stacked",
+          "description": "memory bonded under the logic die, 5 um Cu-Cu",
+          "memory_w": 3.0,
+          "memory_only_tj_c": 26.22999568507135,
+          "logic_tj_per_w": 0.4111369408400433,
+          "memory_tj_per_w": 0.4104042513780531,
+          "coupling_ratio": 0.9982178943577943,
+          "logic_budget_at_memory_knee_w": 143.20028147269687,
+          "logic_budget_at_memory_limit_w": 191.932720117872,
+          "logic_budget_at_logic_limit_w": 191.5907316459391,
+          "feasible_logic_w": 143.20028147269687,
+          "binding_constraint": "memory_knee",
+          "field_linearity_residual_c": 2.984279490192421e-13,
+          "at_operating_point": {
+            "logic_w": 40.0,
+            "logic_tj_c": 42.67545033138466,
+            "memory_tj_c": 42.646165740193474,
+            "die_to_die_delta_c": 0.029284591191185427
+          },
+          "refresh_loop": {
+            "logic_w": 40.0,
+            "converged_memory_w": 3.0,
+            "memory_tj_c": 42.646165740193474,
+            "above_knee": false,
+            "above_limit": false,
+            "iterations": 1,
+            "closed": true,
+            "model": "refresh share 35% of memory power, x2 above 85 C"
+          }
+        },
+        {
+          "attach": "pop",
+          "description": "memory above logic across a 150 um mold gap",
+          "memory_w": 3.0,
+          "memory_only_tj_c": 26.23007162510939,
+          "logic_tj_per_w": 0.9768361491239705,
+          "memory_tj_per_w": 0.406618200943508,
+          "coupling_ratio": 0.4162603946507962,
+          "logic_budget_at_memory_knee_w": 144.53344252304043,
+          "logic_budget_at_memory_limit_w": 193.71963230400064,
+          "logic_budget_at_logic_limit_w": 80.6495276454014,
+          "feasible_logic_w": 80.6495276454014,
+          "binding_constraint": "logic_limit",
+          "field_linearity_residual_c": 2.4158453015843406e-13,
+          "at_operating_point": {
+            "logic_w": 40.0,
+            "logic_tj_c": 65.29207195115771,
+            "memory_tj_c": 42.49479966284971,
+            "die_to_die_delta_c": 22.797272288308
+          },
+          "refresh_loop": {
+            "logic_w": 40.0,
+            "converged_memory_w": 3.0,
+            "memory_tj_c": 42.49479966284971,
+            "above_knee": false,
+            "above_limit": false,
+            "iterations": 1,
+            "closed": true,
+            "model": "refresh share 35% of memory power, x2 above 85 C"
+          }
+        },
+        {
+          "attach": "adjacent",
+          "description": "memory beside logic, gap 10% of the footprint",
+          "memory_w": 3.0,
+          "memory_only_tj_c": 32.61779799016834,
+          "logic_tj_per_w": 2.5392659967332243,
+          "memory_tj_per_w": 1.6434355476493654,
+          "coupling_ratio": 0.6472088980688324,
+          "logic_budget_at_memory_knee_w": 32.79931192685776,
+          "logic_budget_at_memory_limit_w": 44.96894037903914,
+          "logic_budget_at_logic_limit_w": 29.988054354096747,
+          "feasible_logic_w": 29.988054354096747,
+          "binding_constraint": "logic_limit",
+          "field_linearity_residual_c": 3.694822225952521e-13,
+          "at_operating_point": {
+            "logic_w": 40.0,
+            "logic_tj_c": 130.4229931397834,
+            "memory_tj_c": 96.83386674693676,
+            "die_to_die_delta_c": 33.58912639284662
+          },
+          "refresh_loop": {
+            "logic_w": 40.0,
+            "converged_memory_w": 4.050000000000001,
+            "memory_tj_c": 101.02144919270188,
+            "above_knee": true,
+            "above_limit": false,
+            "iterations": 2,
+            "closed": true,
+            "model": "refresh share 35% of memory power, x2 above 85 C"
+          }
+        }
+      ],
+      "robustness": [
+        {
+          "case": "baseline",
+          "stacked": 143.2,
+          "stacked_binds": "memory_knee",
+          "pop": 80.65,
+          "pop_binds": "logic_limit",
+          "adjacent": 29.99,
+          "adjacent_binds": "logic_limit",
+          "ranking": [
+            "stacked",
+            "pop",
+            "adjacent"
+          ]
+        },
+        {
+          "case": "h_top -50%",
+          "stacked": 142.71,
+          "stacked_binds": "memory_knee",
+          "pop": 80.0,
+          "pop_binds": "logic_limit",
+          "adjacent": 29.63,
+          "adjacent_binds": "logic_limit",
+          "ranking": [
+            "stacked",
+            "pop",
+            "adjacent"
+          ]
+        },
+        {
+          "case": "h_top +50%",
+          "stacked": 143.69,
+          "stacked_binds": "memory_knee",
+          "pop": 81.3,
+          "pop_binds": "logic_limit",
+          "adjacent": 30.34,
+          "adjacent_binds": "logic_limit",
+          "ranking": [
+            "stacked",
+            "pop",
+            "adjacent"
+          ]
+        },
+        {
+          "case": "k_lateral -50%",
+          "stacked": 143.2,
+          "stacked_binds": "memory_knee",
+          "pop": 80.65,
+          "pop_binds": "logic_limit",
+          "adjacent": 25.18,
+          "adjacent_binds": "logic_limit",
+          "ranking": [
+            "stacked",
+            "pop",
+            "adjacent"
+          ]
+        },
+        {
+          "case": "k_lateral +50%",
+          "stacked": 143.2,
+          "stacked_binds": "memory_knee",
+          "pop": 80.65,
+          "pop_binds": "logic_limit",
+          "adjacent": 32.13,
+          "adjacent_binds": "memory_knee",
+          "ranking": [
+            "stacked",
+            "pop",
+            "adjacent"
+          ]
+        }
+      ]
+    }
+  },
+  "caveats": [
+    "mold and PoP gap thicknesses are representative, not a datasheet",
+    "no in-plane resolution below the cell size, so a hotspot inside either die is smeared -- the comparison is between heat paths, not a sign-off temperature",
+    "refresh feedback is a two-level model; it answers closure, not retention",
+    "power is spread uniformly over each die, so this compares heat paths and not floorplans -- the floorplan question is pareto_search.py"
+  ]
+}

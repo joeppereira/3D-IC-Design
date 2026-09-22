@@ -27,7 +27,7 @@ sys.path.insert(0, os.path.join(ROOT, "physics_accelerated", "src"))
 sys.path.insert(0, os.path.join(ROOT, "serdes_architect", "src"))
 
 from thermal_reference import (ThermalReference, Layer, Boundary,      # noqa: E402
-                              analytic_slab_peak_c)
+                              Region, analytic_slab_peak_c)
 from heat_residual import HeatEquationResidual                          # noqa: E402
 from thermal.solver import ThermalSolver                                # noqa: E402
 from thermal.transient_solver import TransientThermalSolver             # noqa: E402
@@ -37,6 +37,7 @@ import trust_guard as tg                                                # noqa: 
 import dataset as ds                                                    # noqa: E402
 import surrogate_benchmark as bench                                     # noqa: E402
 import rank_churn as rc                                                 # noqa: E402
+import memory_attach as ma                                              # noqa: E402
 from pareto_search import build_power_maps, GRID, SUB, N_SUB      # noqa: E402
 
 GOLDEN = os.path.join(ROOT, "physics_accelerated", "results", "golden_config.json")
@@ -918,6 +919,131 @@ class TestRankChurn(unittest.TestCase):
         for c in monotone:
             self.assertFalse(c["changes_ranking"], c["name"])
         self.assertTrue(rc._assert_behaves(doc))
+
+
+class TestRegions(unittest.TestCase):
+    """In-plane material heterogeneity: mold here, silicon there, same height.
+
+    Every layer used to be a uniform slab, which cannot express a package
+    placed *beside* the SoC at all."""
+
+    def _stack(self, regions=None):
+        return ThermalReference(
+            [Layer("die", 50e-6, 140.0, 20.0, n_cells_z=1),
+             Layer("pkg", 500e-6, 50.0, 0.0, n_cells_z=1)],
+            10e-3, 10e-3,
+            Boundary(h_top_w_m2k=5000.0, h_bottom_w_m2k=50.0, h_side_w_m2k=0.0,
+                     t_ambient_c=25.0), regions=regions)
+
+    def test_region_of_the_same_material_changes_nothing(self):
+        plain = self._stack().solve(nx=12, ny=12)
+        same = self._stack([Region(1, "same", 50.0, 0.25, 0.25, 0.75, 0.75)]
+                           ).solve(nx=12, ny=12)
+        np.testing.assert_allclose(same.t_field_c, plain.t_field_c,
+                                   rtol=0, atol=1e-9)
+
+    def test_a_conductive_patch_cools_and_an_insulating_one_heats(self):
+        """With a *localised* source, since a uniformly heated slab has nothing
+        to spread: lateral conductivity only matters where there is a gradient,
+        which is the whole reason spreading is a design lever."""
+        hot = Region(0, "hot", 140.0, 0.4, 0.4, 0.6, 0.6, 20.0)
+        base = ThermalReference(
+            [Layer("die", 50e-6, 140.0, 0.0, n_cells_z=1),
+             Layer("pkg", 500e-6, 50.0, 0.0, n_cells_z=1)],
+            10e-3, 10e-3,
+            Boundary(h_top_w_m2k=5000.0, h_bottom_w_m2k=50.0, h_side_w_m2k=0.0,
+                     t_ambient_c=25.0), regions=[hot])
+        plain = base.solve(nx=16, ny=16).t_peak_c
+        spread = ThermalReference(
+            base.layers, base.width_m, base.depth_m, base.bc,
+            regions=[hot, Region(1, "cu", 400.0, 0.1, 0.1, 0.9, 0.9)]
+        ).solve(nx=16, ny=16).t_peak_c
+        void = ThermalReference(
+            base.layers, base.width_m, base.depth_m, base.bc,
+            regions=[hot, Region(1, "void", 0.2, 0.1, 0.1, 0.9, 0.9)]
+        ).solve(nx=16, ny=16).t_peak_c
+        self.assertLess(spread, plain)
+        self.assertGreater(void, plain)
+
+    def test_heterogeneous_stack_still_conserves_energy(self):
+        sol = self._stack([Region(0, "hot", 140.0, 0.0, 0.0, 0.5, 1.0, 10.0),
+                           Region(1, "cu", 400.0, 0.2, 0.2, 0.8, 0.8)]
+                          ).solve(nx=12, ny=12)
+        self.assertLess(sol.energy_balance["relative_error"], 1e-9)
+
+    def test_region_power_reaches_the_cells_it_names(self):
+        left = self._stack([Region(0, "left", 140.0, 0.0, 0.0, 0.4, 1.0, 30.0)]
+                           ).solve(nx=12, ny=12)
+        hot_x = left.hotspot_index[2]
+        self.assertLess(hot_x, 6, "power landed outside the region it was given to")
+        self.assertIn("left", left.region_peaks_c)
+
+    def test_rejects_a_region_outside_the_footprint(self):
+        with self.assertRaises(ValueError):
+            Region(0, "bad", 140.0, 0.5, 0.0, 0.4, 1.0)
+        with self.assertRaises(ValueError):
+            Region(0, "bad", 140.0, 0.0, 0.0, 1.5, 1.0)
+
+    def test_rejects_a_region_on_a_layer_that_does_not_exist(self):
+        with self.assertRaises(ValueError):
+            self._stack([Region(9, "nowhere", 140.0, 0.0, 0.0, 0.5, 0.5)])
+
+    def test_in_plane_conductance_still_exact_on_the_analytic_slab(self):
+        """The in-plane term became a harmonic mean to allow heterogeneity; on a
+        uniform layer it must reduce to the old form exactly."""
+        L, k, h, P, W = 500e-6, 150.0, 5000.0, 100.0, 10e-3
+        ref = ThermalReference([Layer("slab", L, k, P, n_cells_z=8)], W, W,
+                               Boundary(h_top_w_m2k=h, h_bottom_w_m2k=0.0,
+                                        h_side_w_m2k=0.0, t_ambient_c=25.0))
+        sol = ref.solve(nx=8, ny=8, refine_z=8)
+        self.assertAlmostEqual(sol.t_peak_c,
+                               analytic_slab_peak_c(P, W ** 2, L, k, h, 25.0),
+                               places=5)
+
+
+class TestMemoryAttach(unittest.TestCase):
+    """Memory Tj as the decision variable, and the arithmetic the study rests on."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.opts = [ma.stacked(18e-3, 18e-3), ma.pop(18e-3, 18e-3),
+                    ma.adjacent(18e-3, 18e-3)]
+        cls.rows = [ma.characterise(a, 3.0, nx=12, refine=1) for a in cls.opts]
+
+    def test_field_is_affine_in_power(self):
+        """The two-point characterisation is only valid because it is."""
+        for r in self.rows:
+            self.assertLess(r["field_linearity_residual_c"], 1e-6, r["attach"])
+
+    def test_peak_is_not_assumed_affine(self):
+        """A max of affine functions is convex, not affine: the crossing must be
+        computed per cell, and the check is that it never overshoots a solve."""
+        a = self.opts[2]
+        law = ma._affine_law(a, 3.0, 12, 1)
+        p = ma._crossing(law, "memory", ma.KNEE_C)
+        self.assertAlmostEqual(ma._peak(law, "memory", p), ma.KNEE_C, places=6)
+
+    def test_logic_power_cannot_heat_the_neighbour_more_than_itself(self):
+        for r in self.rows:
+            self.assertLessEqual(r["coupling_ratio"], 1.0 + 1e-9, r["attach"])
+
+    def test_side_by_side_decouples_the_dies(self):
+        by = {r["attach"]: r for r in self.rows}
+        self.assertLess(by["adjacent"]["coupling_ratio"],
+                        by["stacked"]["coupling_ratio"] / 2.0)
+
+    def test_the_binding_constraint_is_the_smaller_budget(self):
+        for r in self.rows:
+            self.assertAlmostEqual(
+                r["feasible_logic_w"],
+                min(r["logic_budget_at_memory_knee_w"],
+                    r["logic_budget_at_logic_limit_w"]))
+
+    def test_a_lid_gives_a_mold_embedded_die_a_lateral_path(self):
+        bare = ma.characterise(ma.adjacent(18e-3, 18e-3), 3.0, nx=12, refine=1)
+        lidded = ma.characterise(ma.adjacent(18e-3, 18e-3, lid_um=500.0), 3.0,
+                                 nx=12, refine=1)
+        self.assertLess(lidded["logic_tj_per_w"], bare["logic_tj_per_w"])
 
 
 if __name__ == "__main__":
