@@ -41,6 +41,7 @@ This index tracks the mandatory documents required for architectural verificatio
 *   [tests/physics/](../tests/physics/): the physics verification suite (`python -m unittest discover -s tests/physics -t .`).
 
 ## 📁 6. Critical Review & Honest Status
+*   [reports/fidelity_integration.md](fidelity_integration.md): Design record — the fidelity ladder from compact model to meshed vendor tooling, what each coupling mechanism can buy, calibrate-vs-substitute, the two-timescale scheme for sub-ns margin against thermal transients, and how to tell whether fidelity bought anything.
 *   [reports/critical_review.md](critical_review.md): Adversarial review from a new reader's perspective — claims checked against code, the 61.8 dB modeling error and its blast radius, what was fixed, what remains open, and what the project can defensibly claim today.
 
 ## 📁 7. Industrial Tool Integration (Handoff to Certified Flows)

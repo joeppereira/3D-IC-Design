@@ -32,6 +32,7 @@ The tool utilizes a 2026-era hybrid intelligence stack:
 *   [**Memory Attach Study**](reports/memory_attach.md): memory Tj as the decision variable — stacked / PoP / side-by-side, with the feasible SoC power each affords before the DRAM crosses its refresh knee, robust under ±50% on cooling and spreading.
 *   [**Mesh Convergence Audit**](reports/mesh_convergence_audit.json): measured 12/24/48 grid-refinement study with Richardson extrapolation and a published GCI. (It is not the variable 1 µm/50 nm ROI mesh an earlier README described — that mesh was never run.)
 *   [**Technical Audit & Benchmarking**](reports/technical_audit_v5.md): Detailed comparison against Ansys Heatwave and industry-standard sign-off flows.
+*   [**Fidelity Integration**](reports/fidelity_integration.md): how this explorer couples to Icepak/StarRC/HFSS-class tooling — the fidelity ladder, what a licensed run can and cannot change, and the two-timescale scheme for sub-ns margin against thermal transients.
 *   [**Critical Review**](reports/critical_review.md): Adversarial audit of this repository — which claims the code supports, which it does not, and why.
 *   [**EDA Vendor Integration Spec**](reports/eda_vendor_integration_spec.md): Hook architecture and interchange layer for handoff into Cadence, Synopsys, and Siemens flows.
 

@@ -381,6 +381,41 @@ thing to pick up.
     is the trust guard's own error budget: the discretisation row should
     collapse to the 0.18 K that separates 32×32×10 from 64×64×20.
 
+12. **ROI submodeling in the reference solver.** The largest remaining error is
+    the mesh, and a globally fine mesh is the wrong way to fix it: solve
+    globally coarse, then re-solve a hotspot region at ~20 um with boundary
+    conditions interpolated from the coarse field, so cost scales with the ROI
+    rather than the die. Two checks make it honest — refine until the ROI peak
+    stops moving, and close the flux balance across the coarse/fine interface.
+    `transient_roi_solver.py` was deleted from this repo for reporting a
+    fabricated peak beside a "100,000x" speedup; the concept was never the
+    problem, the missing interface check was. See
+    `reports/fidelity_integration.md` §4.
+
+13. **A timing/eye return channel, and rank churn on the result.**
+    `integrations/correlate.py` has four channels (thermal, IR drop,
+    parasitics, insertion loss) and none for post-layout slack or a statistical
+    eye. Adding `setup_slack_ps` and `eye_width_ui` follows the same shape --
+    roughly a day each plus an importer. The half that matters more: nothing
+    currently turns a correlation into a *changed decision*. Re-running the
+    ranking with the corrected model and reporting the churn is the only output
+    that justifies a licence hour.
+
+14. **Parameter calibration instead of output bias.** `correlate.thermal` fits
+    `thermal_bias_c`, an additive offset, which §5 item 5 and
+    `reports/rank_churn.json` show cannot reorder anything. Fitting `h_eff` and
+    `k_lateral` -- both already real knobs on `ThermalReference` -- would make a
+    vendor run capable of changing a decision rather than only a number.
+
+15. **Thermal-gradient skew.** The solver returns the full field and only
+    `max()` has ever been published. A clock H-tree across an 18 mm die sees
+    per-branch temperature differences; at ~0.1-0.3 %/degC of delay tempco, an
+    8 degC gradient over a 500 ps insertion delay is order 6 ps of skew, against
+    a 1.65 ps total jitter budget. Needs the field, the H-tree geometry from
+    `clocking_jitter_spec.md`, and one coefficient. If the estimate survives
+    real numbers, it is the dominant term in the timing budget and is currently
+    unmodelled.
+
 ### Decisions only the owner can make
 
 6. **A 1 TB CXL memory module whose die hierarchy contains no memory die.**
@@ -414,7 +449,9 @@ pip install -r requirements.txt                     # validators included
 python -m unittest discover -s tests -t .           # 213 tests
 ```
 
-Read `reports/rom_pinn_validation.md` (physics, measured — §4 is the POD ROM),
+Read `reports/fidelity_integration.md` first if the question is how this fits
+next to a sign-off flow — it is the design record behind items 12–15. Then
+`reports/rom_pinn_validation.md` (physics, measured — §4 is the POD ROM),
 `reports/multiobjective_search.md` (search, the surrogate error band, and §6 the
 trust guard), `reports/surrogate_retraining.md` (the training distribution and
 the first held-out numbers), and `reports/eda_vendor_integration_spec.md` §10
