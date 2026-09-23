@@ -214,8 +214,9 @@ comparing a full link budget against a channel-only S-parameter.
 Ordered by effort-to-credibility. This section is the authoritative to-do list; it
 is kept current so no context is carried in anyone's head.
 
-**Last worked: 2026-09-23.** Items 1–5, 10 and 15 are closed; items 11–14 and
-16 are open, and item 12 (ROI submodeling) is the one the others most depend on.
+**Last worked: 2026-09-23.** Items 1–5, 10, 12 and 15 are closed; items 11, 13,
+14, 16 and 17 are open. Item 17 is the one that now matters most: item 12 showed
+the input resolution dominates every error term we have been measuring.
 
 ### Closed
 
@@ -381,16 +382,33 @@ is kept current so no context is carried in anyone's head.
     is the trust guard's own error budget: the discretisation row should
     collapse to the 0.18 K that separates 32×32×10 from 64×64×20.
 
-12. **ROI submodeling in the reference solver.** The largest remaining error is
-    the mesh, and a globally fine mesh is the wrong way to fix it: solve
-    globally coarse, then re-solve a hotspot region at ~20 um with boundary
-    conditions interpolated from the coarse field, so cost scales with the ROI
-    rather than the die. Two checks make it honest — refine until the ROI peak
-    stops moving, and close the flux balance across the coarse/fine interface.
-    `transient_roi_solver.py` was deleted from this repo for reporting a
-    fabricated peak beside a "100,000x" speedup; the concept was never the
-    problem, the missing interface check was. See
-    `reports/fidelity_integration.md` §4.
+12. ~~**ROI submodeling in the reference solver.**~~ ✅ **Closed.**
+    `physics_accelerated/src/submodel.py`, measured in `reports/submodel.md`.
+    The solver gained a Dirichlet lateral boundary so a region can inherit its
+    surroundings, and the two checks the deleted `transient_roi_solver.py`
+    lacked both found bugs: **exactness** (the submodel at the parent's own
+    resolution must *be* the parent — 3.03e-2 °C until corner cells got a value
+    per open face rather than per cell, then 3.9e-11 °C) and **region
+    independence** (the peak moves 0.007 °C across boxes from 3.9 to 9.0 mm
+    while the boundary flux swings through zero). A third fix came with them:
+    the energy balance counted only the top and bottom faces, so a solve with a
+    prescribed lateral boundary read a 58% "error" while being perfectly
+    correct.
+
+    *The finding, and it is the largest number this project has produced:*
+    **the grid-convergence study was converging the wrong thing.** GCI 0.081% is
+    a true statement about the discretisation of a power map already smeared
+    into 1.125 mm blocks. Holding total power, mesh and design fixed and only
+    rearranging a macro's watts *within its own footprint* — structure no 562 µm
+    cell can represent — moves the peak by **+36.00 °C** at 944 W/cm², a density
+    within the range normally discussed for a logic hotspot.
+
+    *Why that matters beyond one number:* no vendor correlation of the same
+    input would find it. Icepak fed the same blocks returns the same smeared
+    answer, so this is invisible to the entire T1/T2 ladder. It is a modelling
+    resolution gap, not a model-form gap, and it is an order of magnitude larger
+    than every error term the trust guard currently reports. It also makes the
+    28.1 ps gradient-skew result a lower bound.
 
 13. **A timing/eye return channel, and rank churn on the result.**
     `integrations/correlate.py` has four channels (thermal, IR drop,
@@ -439,6 +457,19 @@ is kept current so no context is carried in anyone's head.
     constraint (a CTS budget is a limit, not something to minimise without
     bound). Worth pairing with item 12: a sharper field can only raise skew, so
     the trade may move.
+
+17. **Find out what the power maps actually look like.** Item 12 measured a
+    **+36 °C** sensitivity to how a macro's watts are arranged inside its own
+    footprint, and this repository has no data on that arrangement — the search
+    generates uniform blocks because that is what the parameterisation allows.
+    Everything else on this list is now a smaller term. Three routes, in
+    increasing order of what they would settle: derive a concentration factor
+    from the RTL analysis already in `serdes_architect/scripts/rtl_analyzer.py`;
+    take per-instance power from a synthesised netlist if one is ever produced;
+    or admit the uncertainty explicitly by carrying concentration as a
+    perturbation axis in `rank_churn.py` and publishing temperatures as bands
+    rather than points. The third is cheap and should probably happen regardless
+    of the first two.
 
 ### Decisions only the owner can make
 

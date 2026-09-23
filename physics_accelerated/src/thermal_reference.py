@@ -200,7 +200,8 @@ class ThermalReference:
     # -- assembly ------------------------------------------------------------
     def assemble(self, nx: int = 32, ny: int = 32, refine_z: int = 1,
                  hotspots: dict[int, tuple[float, float, float]] | None = None,
-                 power_map: np.ndarray | None = None):
+                 power_map: np.ndarray | None = None,
+                 side_temp: np.ndarray | None = None):
         """Build the linear system A T = b for this mesh and load.
 
         Split out of solve() so a reduced-order model can project the same
@@ -208,6 +209,13 @@ class ThermalReference:
         depends only on geometry and boundary conditions; b carries the load,
         which is what makes a parameterised ROM over hotspot position possible
         with a single factorisation of A.
+
+        `side_temp` prescribes temperature on the lateral faces (Dirichlet)
+        instead of the Robin `h_side` condition, taking the value from a
+        [nz, ny, nx] array of which only the perimeter cells are read. That is
+        what a submodel needs: a region cut out of a larger solve inherits its
+        surroundings through its boundary, and a prescribed temperature is the
+        exact statement of "the rest of the die is still there".
         """
         dz, kz, layer_of, dx, dy = self._mesh(nx, ny, refine_z)
         nz = len(dz)
@@ -219,6 +227,15 @@ class ThermalReference:
              if power_map is None else np.asarray(power_map, dtype=float))
         if q.shape != (nz, ny, nx):
             raise ValueError(f"power_map {q.shape} != mesh {(nz, ny, nx)}")
+        if side_temp is not None:
+            side_temp = np.asarray(side_temp, dtype=float)
+            if side_temp.shape == (nz, ny, nx):
+                # One value per cell: the same temperature on whichever faces
+                # that cell has open.
+                side_temp = np.broadcast_to(side_temp, (4, nz, ny, nx))
+            elif side_temp.shape != (4, nz, ny, nx):
+                raise ValueError(f"side_temp {side_temp.shape} != mesh "
+                                 f"{(nz, ny, nx)} or {(4, nz, ny, nx)}")
 
         def idx(iz, iy, ix):
             return (iz * ny + iy) * nx + ix
@@ -240,7 +257,8 @@ class ThermalReference:
                     # reduces exactly to k*area/span when they do not. The
                     # uniform form was wrong the moment a layer stopped being
                     # one material.
-                    for dix, diy in ((-1, 0), (1, 0), (0, -1), (0, 1)):
+                    for face, (dix, diy) in enumerate(
+                            ((-1, 0), (1, 0), (0, -1), (0, 1))):
                         jx, jy = ix + dix, iy + diy
                         if 0 <= jx < nx and 0 <= jy < ny:
                             span = dx if dix else dy
@@ -250,6 +268,18 @@ class ThermalReference:
                             g = area / ((span / 2.0) / ki + (span / 2.0) / kj)
                             diag += g
                             rows.append(p); cols.append(idx(iz, jy, jx)); vals.append(-g)
+                        elif side_temp is not None:
+                            # Dirichlet through the half-cell: exact, and it
+                            # reproduces the parent solve inside the region when
+                            # the prescribed values are the parent's own.
+                            span = dx if dix else dy
+                            area = dy * dz[iz] if dix else dx * dz[iz]
+                            g = (kf[iz, iy, ix] * self.k_lateral_scale * area
+                                 / (span / 2.0))
+                            diag += g
+                            # Per face: a corner cell has two open faces and
+                            # they do not see the same neighbour.
+                            rhs[p] += g * side_temp[face, iz, iy, ix]
                         elif self.bc.h_side_w_m2k > 0.0:
                             area = dy * dz[iz] if dix else dx * dz[iz]
                             g = self.bc.h_side_w_m2k * area
@@ -281,7 +311,8 @@ class ThermalReference:
 
         a = sp.csr_matrix((vals, (rows, cols)), shape=(n, n))
         return a, rhs, {"dz": dz, "kz": kz, "k_field": kf, "layer_of": layer_of,
-                        "dx": dx, "dy": dy, "nx": nx, "ny": ny, "nz": nz, "q": q}
+                        "dx": dx, "dy": dy, "nx": nx, "ny": ny, "nz": nz, "q": q,
+                        "side_temp": side_temp}
 
     def solution_from_field(self, field, mesh) -> Solution:
         """Wrap a solved field in a Solution, with its energy balance."""
@@ -297,7 +328,8 @@ class ThermalReference:
             nx=nx, ny=ny, nz=nz, n_unknowns=nx * ny * nz,
             energy_balance=self._energy_balance(field, mesh["dz"], mesh["kz"],
                                                 mesh["dx"], mesh["dy"], mesh["q"],
-                                                mesh.get("k_field")),
+                                                mesh.get("k_field"),
+                                                mesh.get("side_temp")),
             layer_peaks_c={self.layers[li].name: float(field[layer_of == li].max())
                            for li in range(len(self.layers))},
             region_peaks_c={r.name: float(field[np.ix_(
@@ -307,13 +339,24 @@ class ThermalReference:
 
     def solve(self, nx: int = 32, ny: int = 32, refine_z: int = 1,
               hotspots: dict[int, tuple[float, float, float]] | None = None,
-              power_map: np.ndarray | None = None) -> Solution:
-        a, rhs, mesh = self.assemble(nx, ny, refine_z, hotspots, power_map)
+              power_map: np.ndarray | None = None,
+              side_temp: np.ndarray | None = None) -> Solution:
+        a, rhs, mesh = self.assemble(nx, ny, refine_z, hotspots, power_map,
+                                     side_temp)
         field = spla.spsolve(a, rhs).reshape(mesh["nz"], mesh["ny"], mesh["nx"])
         return self.solution_from_field(field, mesh)
 
-    def _energy_balance(self, field, dz, kz, dx, dy, q, k_field=None) -> dict:
-        """Heat leaving through the convective faces must equal power in."""
+    def _energy_balance(self, field, dz, kz, dx, dy, q, k_field=None,
+                        side_temp=None) -> dict:
+        """Heat leaving through every open face must equal power in.
+
+        The lateral term used to be missing, which was harmless while the sides
+        were adiabatic and silently wrong the moment a submodel prescribed a
+        temperature on them -- the balance read 58% "error" for a solve that was
+        perfectly correct. It is also the quantity a submodel needs: the heat
+        crossing the region's boundary, to be compared against what the parent
+        solve says crosses the same surface.
+        """
         area_z = dx * dy
         t_inf = self.bc.t_ambient_c
         out = 0.0
@@ -324,13 +367,38 @@ class ThermalReference:
             kplane = kz[iz] if k_field is None else k_field[iz]
             r = (dz[iz] / 2.0) / kplane + 1.0 / h
             out += float(((field[iz] - t_inf) * area_z / r).sum())
-        if self.bc.h_side_w_m2k > 0.0:
-            for iz in range(len(dz)):
-                perim = 2 * (field[iz, 0, :].sum() + field[iz, -1, :].sum()) * 0 \
-                        + 0.0            # sides handled in assembly; not summed here
-                out += perim
+
+        lateral = 0.0
+        nz, ny, nx = field.shape
+        for iz in range(nz):
+            kp = (np.full((ny, nx), kz[iz]) if k_field is None
+                  else k_field[iz]) * self.k_lateral_scale
+            for face, (edge, span, area) in enumerate(
+                    ((("x", 0), dx, dy * dz[iz]),
+                     (("x", -1), dx, dy * dz[iz]),
+                     (("y", 0), dy, dx * dz[iz]),
+                     (("y", -1), dy, dx * dz[iz]))):
+                axis, idx = edge
+                t_line = field[iz][:, idx] if axis == "x" else field[iz][idx, :]
+                k_line = kp[:, idx] if axis == "x" else kp[idx, :]
+                if side_temp is not None:
+                    st = np.asarray(side_temp)
+                    if st.ndim == 3:
+                        st = np.broadcast_to(st, (4,) + st.shape)
+                    ref_line = (st[face, iz][:, idx] if axis == "x"
+                                else st[face, iz][idx, :])
+                    g = k_line * area / (span / 2.0)
+                elif self.bc.h_side_w_m2k > 0.0:
+                    ref_line = np.full_like(t_line, t_inf)
+                    g = np.full_like(t_line, self.bc.h_side_w_m2k * area)
+                else:
+                    continue
+                lateral += float((g * (t_line - ref_line)).sum())
+        out += lateral
+
         power_in = float(q.sum())
         return {"power_in_w": power_in, "power_out_w": out,
+                "lateral_out_w": lateral,
                 "residual_w": power_in - out,
                 "relative_error": abs(power_in - out) / power_in if power_in else 0.0}
 

@@ -1,0 +1,143 @@
+{
+  "question": "how much of the published temperature depends on power being uniform inside a 1.125 mm cell?",
+  "design_index": 0,
+  "parent": {
+    "mesh": "32x32x10",
+    "peak_c": 72.07347836050806,
+    "cell_um": 562.5000000000001
+  },
+  "region": {
+    "centre_frac": [
+      0.828125,
+      0.171875
+    ],
+    "box_frac": [
+      0.66875,
+      0.03125,
+      0.96875,
+      0.33125
+    ],
+    "refine": 8
+  },
+  "exactness_at_parent_resolution": {
+    "max_abs_c": 3.8895109355507884e-11,
+    "interior_max_abs_c": 3.8895109355507884e-11,
+    "cells": 1000
+  },
+  "region_independence": [
+    {
+      "half_size_frac": 0.1,
+      "box_mm": [
+        3.9375,
+        3.9375
+      ],
+      "cells": 1960,
+      "peak_c": 72.19959664286311,
+      "lateral_out_w": 7.078161582739012,
+      "energy_rel_err": 8.960733389863486e-13
+    },
+    {
+      "half_size_frac": 0.15,
+      "box_mm": [
+        5.625000000000001,
+        5.625000000000001
+      ],
+      "cells": 4000,
+      "peak_c": 72.20124717844588,
+      "lateral_out_w": 4.01101932156879,
+      "energy_rel_err": 1.858463999976973e-12
+    },
+    {
+      "half_size_frac": 0.2,
+      "box_mm": [
+        7.312500000000001,
+        7.312500000000001
+      ],
+      "cells": 6760,
+      "peak_c": 72.19740043615317,
+      "lateral_out_w": 0.4335344991468101,
+      "energy_rel_err": 3.267864990953563e-12
+    },
+    {
+      "half_size_frac": 0.25,
+      "box_mm": [
+        9.000000000000002,
+        9.000000000000002
+      ],
+      "cells": 10240,
+      "peak_c": 72.19410894309273,
+      "lateral_out_w": -1.8324661384369438,
+      "energy_rel_err": 3.928259199407573e-12
+    }
+  ],
+  "input_resolution_sweep": [
+    {
+      "power_fraction_in_core": 0.0,
+      "core_area_fraction": 1.0,
+      "cell_um": 70.31250000000001,
+      "peak_w_per_cm2": 111.11111111111107,
+      "plausible": true,
+      "peak_c": 72.21158698882851,
+      "energy_rel_err": 8.210716057672268e-15
+    },
+    {
+      "power_fraction_in_core": 0.25,
+      "core_area_fraction": 0.25,
+      "cell_um": 70.31250000000001,
+      "peak_w_per_cm2": 194.4444444444444,
+      "plausible": true,
+      "peak_c": 78.86513526879479,
+      "energy_rel_err": 2.305316431577214e-14
+    },
+    {
+      "power_fraction_in_core": 0.5,
+      "core_area_fraction": 0.25,
+      "cell_um": 70.31250000000001,
+      "peak_w_per_cm2": 277.7777777777777,
+      "plausible": true,
+      "peak_c": 85.518683548761,
+      "energy_rel_err": 1.4684549872375405e-14
+    },
+    {
+      "power_fraction_in_core": 0.5,
+      "core_area_fraction": 0.0625,
+      "cell_um": 70.31250000000001,
+      "peak_w_per_cm2": 944.4444444444442,
+      "plausible": true,
+      "peak_c": 108.21048587183792,
+      "energy_rel_err": 2.684272557315934e-14
+    },
+    {
+      "power_fraction_in_core": 0.75,
+      "core_area_fraction": 0.0625,
+      "cell_um": 70.31250000000001,
+      "peak_w_per_cm2": 1361.1111111111109,
+      "plausible": false,
+      "peak_c": 126.20993531334263,
+      "energy_rel_err": 2.4632148173016807e-14
+    },
+    {
+      "power_fraction_in_core": 0.9,
+      "core_area_fraction": 0.0156,
+      "cell_um": 70.31250000000001,
+      "peak_w_per_cm2": 6411.1111111111095,
+      "plausible": false,
+      "peak_c": 199.33657165864238,
+      "energy_rel_err": 1.926360305838494e-14
+    }
+  ],
+  "headline": {
+    "uniform_peak_c": 72.21158698882851,
+    "worst_plausible_peak_c": 108.21048587183792,
+    "worst_plausible_w_per_cm2": 944.4444444444442,
+    "delta_c": 35.9988988830094,
+    "most_concentrated_peak_c": 199.33657165864238,
+    "most_concentrated_delta_c": 127.12498466981387,
+    "plausibility_threshold_w_per_cm2": 1000.0,
+    "note": "same watts, same mesh, redistributed inside the macro's own footprint -- an error the global solve cannot see and grid convergence cannot detect. The headline delta is taken over rows below the plausibility threshold; the rows above it show where the trend goes, and are not predictions"
+  },
+  "caveats": [
+    "the concentration profile is a parameterised assumption, not a floorplan: this measures sensitivity to unresolved structure, it does not claim to know what the structure is",
+    "the submodel inherits the parent's error at its boundary, which is what region_independence tests"
+  ]
+}

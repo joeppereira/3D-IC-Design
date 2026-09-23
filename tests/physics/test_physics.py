@@ -39,6 +39,7 @@ import surrogate_benchmark as bench                                     # noqa: 
 import rank_churn as rc                                                 # noqa: E402
 import memory_attach as ma                                              # noqa: E402
 import gradient_skew as gs                                              # noqa: E402
+import submodel as sm                                                   # noqa: E402
 from pareto_search import build_power_maps, GRID, SUB, N_SUB      # noqa: E402
 
 GOLDEN = os.path.join(ROOT, "physics_accelerated", "results", "golden_config.json")
@@ -1108,6 +1109,92 @@ class TestGradientSkew(unittest.TestCase):
         steep = np.tile(np.linspace(20.0, 140.0, 32), (32, 1))
         self.assertLess(gs.skew(mild, self.tree)["skew_ps"],
                         gs.skew(steep, self.tree)["skew_ps"])
+
+
+class TestSubmodel(unittest.TestCase):
+    """Resolving a region without resolving the die, and the two checks that
+    separate that from the deleted transient_roi_solver.py."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.ref = ThermalReference(
+            [Layer("die", 50e-6, 140.0, 0.0, n_cells_z=1),
+             Layer("pkg", 500e-6, 50.0, 0.0, n_cells_z=1)],
+            10e-3, 10e-3,
+            Boundary(h_top_w_m2k=5000.0, h_bottom_w_m2k=50.0, h_side_w_m2k=0.0,
+                     t_ambient_c=25.0))
+        q = np.zeros((2, 16, 16))
+        q[0, 6:10, 6:10] = 20.0 / 16          # a block in the middle
+        cls.q = q
+        cls.parent = cls.ref.solve(nx=16, ny=16, power_map=q)
+
+    def test_rejects_a_region_touching_the_die_edge(self):
+        with self.assertRaises(ValueError):
+            sm.ROI(0.0, 0.2, 0.5, 0.8)
+
+    def test_box_shifts_rather_than_clips_near_an_edge(self):
+        """Clipping would silently shrink the region, which is the case region
+        independence exists to reject."""
+        centre_box = sm._box((0.5, 0.5), 0.2, 16, 16)
+        edge_box = sm._box((0.02, 0.5), 0.2, 16, 16)
+        self.assertAlmostEqual(centre_box.x1 - centre_box.x0,
+                               edge_box.x1 - edge_box.x0, places=9)
+        self.assertGreater(edge_box.x0, 0.0)
+
+    def test_reproduces_the_parent_at_the_parent_resolution(self):
+        """The submodel's whole claim: with exact boundary values it must be
+        the parent, to solver tolerance."""
+        roi = sm._box((0.5, 0.5), 0.25, 16, 16)
+        res = sm.exactness(self.ref, self.parent, self.q, roi)
+        self.assertLess(res["interior_max_abs_c"], 1e-6)
+
+    def test_corner_cells_need_a_value_per_face(self):
+        """Sharing one prescribed temperature between a corner's two open faces
+        left a 3e-2 C error -- small, local, and caught only by the check."""
+        roi = sm._box((0.5, 0.5), 0.25, 16, 16)
+        st = sm.side_temperature(self.parent.t_field_c, roi.snapped(16, 16), 8, 8)
+        self.assertEqual(st.shape[0], 4)
+        # the -x face array is populated on its own edge and nowhere else
+        self.assertTrue((st[0][:, :, 0] != 0).any())
+        self.assertTrue((st[0][:, :, 1:] == 0).all())
+
+    def test_the_peak_stops_moving_as_the_region_grows(self):
+        rows = sm.region_independence(self.ref, self.parent, self.q, (0.5, 0.5),
+                                      (0.20, 0.30, 0.40), refine=2, nx=16, ny=16)
+        self.assertLess(abs(rows[-1]["peak_c"] - rows[-2]["peak_c"]), 0.05)
+
+    def test_energy_closes_with_a_prescribed_boundary(self):
+        """The lateral term used to be missing from the balance, which read as a
+        58% error on a perfectly correct solve."""
+        rows = sm.region_independence(self.ref, self.parent, self.q, (0.5, 0.5),
+                                      (0.25,), refine=2, nx=16, ny=16)
+        self.assertLess(rows[0]["energy_rel_err"], 1e-9)
+
+    def test_cropping_and_concentrating_conserve_watts(self):
+        roi = sm._box((0.5, 0.5), 0.25, 16, 16).snapped(16, 16)
+        cropped = sm.crop_power(self.q, roi, refine=4)
+        i0, j0, i1, j1 = roi.cells(16, 16)
+        self.assertAlmostEqual(cropped.sum(), self.q[:, j0:j1, i0:i1].sum(),
+                               places=9)
+        hot = sm.concentrate(cropped, 0.5, 0.25)
+        self.assertAlmostEqual(hot.sum(), cropped.sum(), places=9)
+        self.assertGreater(hot.max(), cropped.max())
+
+    def test_zero_concentration_is_the_identity(self):
+        roi = sm._box((0.5, 0.5), 0.25, 16, 16).snapped(16, 16)
+        cropped = sm.crop_power(self.q, roi, refine=2)
+        np.testing.assert_allclose(sm.concentrate(cropped, 0.0, 1.0), cropped)
+
+    def test_concentrating_the_same_watts_raises_the_peak(self):
+        """The finding: an input the global mesh cannot represent changes the
+        answer, and no amount of mesh refinement would reveal it."""
+        roi = sm._box((0.5, 0.5), 0.25, 16, 16)
+        flat, roi_s, q = sm.solve_region(self.ref, self.parent.t_field_c,
+                                         self.q, roi, refine=4)
+        hot, _, _ = sm.solve_region(self.ref, self.parent.t_field_c, self.q,
+                                    roi, refine=4,
+                                    q_fine=sm.concentrate(q, 0.5, 0.0625))
+        self.assertGreater(hot.t_field_c[0].max(), flat.t_field_c[0].max() + 5.0)
 
 
 if __name__ == "__main__":
