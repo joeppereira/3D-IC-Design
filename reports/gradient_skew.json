@@ -1046,41 +1046,86 @@
   },
   "budget_at_worst": {
     "skew_ps": 78.2908375877688,
-    "on_die": {
-      "core_clock_ps": 500.0,
-      "skew_fraction_of_period": 0.15658167517553762,
-      "cts_target_ps": 25.0,
-      "exceeds_cts_target": true,
-      "note": "a tree built to 5% of the period has 25.0 ps to spend; this is what the gradient takes out of it before routing imbalance is counted"
-    },
+    "cts_allowance_fraction": 0.05,
+    "break_even_ghz": 0.6386443361772308,
+    "break_even_note": "above this frequency the thermal gradient alone exceeds a 5%-of-period skew allowance, before routing imbalance or OCV",
     "link_context": {
       "ui_ps": 8.9,
       "total_jitter_budget_ps": 1.65,
       "ucie_match_requirement_ps": 2.0,
-      "warning": "a different budget -- serial-link jitter and interface-span matching, not die-spanning clock distribution. Quoting die skew against it overstates the coupling."
+      "warning": "a different budget -- serial-link jitter and interface-span matching, not die-spanning clock distribution"
     },
     "assumed_tempco_per_c": 0.0015,
     "assumed_insertion_ps": 500.0,
-    "note": "skew scales linearly with both assumptions, which is why ps-per-kelvin is the number to carry away"
+    "note": "skew scales linearly with both assumptions, which is why ps-per-kelvin and the break-even frequency are the numbers to carry away"
   },
   "budget_at_worst_feasible": {
     "skew_ps": 28.063373052986776,
-    "on_die": {
-      "core_clock_ps": 500.0,
-      "skew_fraction_of_period": 0.056126746105973555,
-      "cts_target_ps": 25.0,
-      "exceeds_cts_target": true,
-      "note": "a tree built to 5% of the period has 25.0 ps to spend; this is what the gradient takes out of it before routing imbalance is counted"
-    },
+    "cts_allowance_fraction": 0.05,
+    "break_even_ghz": 1.781681763827692,
+    "break_even_note": "above this frequency the thermal gradient alone exceeds a 5%-of-period skew allowance, before routing imbalance or OCV",
     "link_context": {
       "ui_ps": 8.9,
       "total_jitter_budget_ps": 1.65,
       "ucie_match_requirement_ps": 2.0,
-      "warning": "a different budget -- serial-link jitter and interface-span matching, not die-spanning clock distribution. Quoting die skew against it overstates the coupling."
+      "warning": "a different budget -- serial-link jitter and interface-span matching, not die-spanning clock distribution"
     },
     "assumed_tempco_per_c": 0.0015,
     "assumed_insertion_ps": 500.0,
-    "note": "skew scales linearly with both assumptions, which is why ps-per-kelvin is the number to carry away"
+    "note": "skew scales linearly with both assumptions, which is why ps-per-kelvin and the break-even frequency are the numbers to carry away"
+  },
+  "budget_at_flattest": {
+    "skew_ps": 10.89979575009096,
+    "cts_allowance_fraction": 0.05,
+    "break_even_ghz": 4.587241921444514,
+    "break_even_note": "above this frequency the thermal gradient alone exceeds a 5%-of-period skew allowance, before routing imbalance or OCV",
+    "link_context": {
+      "ui_ps": 8.9,
+      "total_jitter_budget_ps": 1.65,
+      "ucie_match_requirement_ps": 2.0,
+      "warning": "a different budget -- serial-link jitter and interface-span matching, not die-spanning clock distribution"
+    },
+    "assumed_tempco_per_c": 0.0015,
+    "assumed_insertion_ps": 500.0,
+    "note": "skew scales linearly with both assumptions, which is why ps-per-kelvin and the break-even frequency are the numbers to carry away"
+  },
+  "span_sweep": {
+    "design_index": 15,
+    "note": "a die-spanning tree is a core/fabric clock; interface clocks are PHY-local. Insertion delay scales with span.",
+    "rows": [
+      {
+        "span_fraction": 1.0,
+        "span_mm": 18.0,
+        "insertion_ps": 500.0,
+        "skew_ps": 25.28934819734019,
+        "sink_delta_t_c": 42.460113255931795,
+        "break_even_ghz": 1.977116990514558
+      },
+      {
+        "span_fraction": 0.5,
+        "span_mm": 9.0,
+        "insertion_ps": 250.0,
+        "skew_ps": 11.738961408110981,
+        "sink_delta_t_c": 48.71104050071919,
+        "break_even_ghz": 4.25932058737775
+      },
+      {
+        "span_fraction": 0.25,
+        "span_mm": 4.5,
+        "insertion_ps": 125.0,
+        "skew_ps": 3.775455753572942,
+        "sink_delta_t_c": 35.56591913738933,
+        "break_even_ghz": 13.243434240404481
+      },
+      {
+        "span_fraction": 0.125,
+        "span_mm": 2.25,
+        "insertion_ps": 62.5,
+        "skew_ps": 0.7174765010160655,
+        "sink_delta_t_c": 13.243625926738773,
+        "break_even_ghz": 69.68869353796497
+      }
+    ]
   },
   "front_source": "reports/pareto_front_nsga2.json",
   "caveats": [

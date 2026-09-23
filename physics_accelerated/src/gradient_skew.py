@@ -77,10 +77,16 @@ UCIE_MATCH_PS = 2.0
 
 # Defaults, all inputs rather than findings.
 TEMPCO_PER_C = 0.0015          # 0.15 %/C of delay, mid-range for on-die logic
-INSERTION_PS = 500.0           # root-to-sink insertion delay of the tree
-CORE_CLOCK_PS = 500.0          # 2 GHz core clock period -- the on-die yardstick
+INSERTION_PS = 500.0           # root-to-sink insertion delay, full-die tree
 CTS_SKEW_TARGET = 0.05         # a clock tree is usually built to ~5% of period
 FEASIBLE_TJ_C = 105.0          # designs above this are not candidates anyway
+
+# There is deliberately no core-clock frequency constant here. An earlier
+# version carried CORE_CLOCK_PS = 500.0 ("2 GHz") and reported skew as a
+# percentage of it -- a number with no basis anywhere in this repository, which
+# has no clock frequency in any config or spec, and which read like a
+# requirement because it appeared in a results table. The reporting is inverted
+# instead: given the skew, at what frequency does it exhaust the allowance?
 
 
 @dataclass(frozen=True)
@@ -111,6 +117,12 @@ class HTree:
     levels: int = 3
     insertion_ps: float = INSERTION_PS
     tempco_per_c: float = TEMPCO_PER_C
+    # Fraction of the die the tree spans. A PHY's forwarded clock is
+    # distributed over its own macro, not the die, and a shorter tree has a
+    # proportionally shorter insertion delay -- so a narrower span cuts both the
+    # temperature difference it sees *and* the delay that difference scales.
+    span: float = 1.0
+    centre: tuple[float, float] = (0.5, 0.5)
     segments: list[Segment] = dc_field(default_factory=list)
     paths: list[list[int]] = dc_field(default_factory=list)
     sinks: list[tuple[float, float]] = dc_field(default_factory=list)
@@ -118,6 +130,10 @@ class HTree:
     def __post_init__(self):
         if not self.segments:
             self._build()
+
+    @property
+    def effective_insertion_ps(self) -> float:
+        return self.insertion_ps * self.span
 
     def _build(self) -> None:
         def recurse(cx: float, cy: float, half: float, level: int,
@@ -133,7 +149,7 @@ class HTree:
                 recurse(cx + dx, cy + dy, q, level + 1,
                         path + [len(self.segments) - 1])
 
-        recurse(0.5, 0.5, 0.5, 0, [])
+        recurse(self.centre[0], self.centre[1], self.span / 2.0, 0, [])
         lengths = {round(sum(self.segments[i].length for i in p), 12)
                    for p in self.paths}
         if len(lengths) != 1:
@@ -162,7 +178,7 @@ def skew(field2d: np.ndarray, tree: HTree,
     difference -- and the test suite checks that it does.
     """
     t_ref = float(field2d.mean()) if t_reference is None else t_reference
-    per_length = tree.insertion_ps / tree.path_length
+    per_length = tree.effective_insertion_ps / tree.path_length
     seg_delay = np.array([
         per_length * s.length
         * (1.0 + tree.tempco_per_c * (_sample(field2d, *s.midpoint) - t_ref))
@@ -245,47 +261,49 @@ def analyse_front(cascade: ReferenceCascade, maps: np.ndarray, tree: HTree,
     }
 
 
-def budget_view(skew_ps: float, tree: HTree,
-                clock_ps: float = CORE_CLOCK_PS) -> dict:
-    """Against the budget this skew actually lands in.
+def break_even_ghz(skew_ps: float, target: float = CTS_SKEW_TARGET) -> float:
+    """The clock frequency at which this skew alone fills the CTS allowance.
 
-    The first version of this compared on-die tree skew with the 224G link's
-    1.65 ps jitter budget and reported "4745% of budget", which is a category
-    error: that budget is for a serial link's reference and recovered clock, and
-    nobody distributes a 56 GHz clock across an 18 mm die -- a reference goes
-    out and local PLLs/CDRs regenerate. The budget on-die skew competes for is
-    the **clock period**, and the yardstick a CTS engineer uses is a few percent
-    of it.
-
-    The link numbers are kept as context, labelled, because there *is* a real
-    coupling -- data-to-clock matching on a forwarded-clock interface -- but it
-    applies over an interface's span, not the die's.
+    Inverting the comparison removes the invented number: rather than asking
+    "is 28 ps acceptable at an assumed 2 GHz", ask "above what frequency is it
+    not". The only assumption left is the rule of thumb that a tree is built to
+    a few percent of the period, which is an argument, not a datasheet.
     """
-    target_ps = clock_ps * CTS_SKEW_TARGET
+    if skew_ps <= 0.0:
+        return float("inf")
+    period_ps = skew_ps / target
+    return 1e3 / period_ps
+
+
+def budget_view(skew_ps: float, tree: HTree) -> dict:
+    """What this skew means, without inventing a clock.
+
+    The link numbers are context, not the budget this competes for: nobody
+    distributes a 56 GHz clock across 18 mm -- a reference goes out and local
+    PLLs/CDRs regenerate. A die-spanning tree is a core or fabric clock. The
+    fast interface clocks (LPDDR-class, PCIe-class) are *PHY-local*, which is a
+    different span and is swept separately.
+    """
     return {
         "skew_ps": skew_ps,
-        "on_die": {
-            "core_clock_ps": clock_ps,
-            "skew_fraction_of_period": skew_ps / clock_ps,
-            "cts_target_ps": target_ps,
-            "exceeds_cts_target": skew_ps > target_ps,
-            "note": f"a tree built to {CTS_SKEW_TARGET:.0%} of the period has "
-                    f"{target_ps:.1f} ps to spend; this is what the gradient "
-                    f"takes out of it before routing imbalance is counted",
-        },
+        "cts_allowance_fraction": CTS_SKEW_TARGET,
+        "break_even_ghz": break_even_ghz(skew_ps),
+        "break_even_note": (f"above this frequency the thermal gradient alone "
+                            f"exceeds a {CTS_SKEW_TARGET:.0%}-of-period skew "
+                            f"allowance, before routing imbalance or OCV"),
         "link_context": {
             "ui_ps": UI_PS,
             "total_jitter_budget_ps": TOTAL_JITTER_PS,
             "ucie_match_requirement_ps": UCIE_MATCH_PS,
             "warning": ("a different budget -- serial-link jitter and "
                         "interface-span matching, not die-spanning clock "
-                        "distribution. Quoting die skew against it overstates "
-                        "the coupling."),
+                        "distribution"),
         },
         "assumed_tempco_per_c": tree.tempco_per_c,
         "assumed_insertion_ps": tree.insertion_ps,
         "note": ("skew scales linearly with both assumptions, which is why "
-                 "ps-per-kelvin is the number to carry away"),
+                 "ps-per-kelvin and the break-even frequency are the numbers to "
+                 "carry away"),
     }
 
 
@@ -304,12 +322,13 @@ def print_report(doc: dict) -> None:
         print(f"    of which the {fs['n_designs']} under "
               f"{fs['tj_limit_c']:.0f} C : {fs['skew_ps']['min']:.3f} - "
               f"{fs['skew_ps']['max']:.3f} ps")
-    b = doc["budget_at_worst_feasible"]["on_die"]
-    print(f"    worst feasible: {doc['budget_at_worst_feasible']['skew_ps']:.3f} ps "
-          f"= {b['skew_fraction_of_period'] * 100:.1f}% of a "
-          f"{b['core_clock_ps']:.0f} ps period, against a "
-          f"{b['cts_target_ps']:.1f} ps CTS target -> "
-          f"{'EXCEEDS' if b['exceeds_cts_target'] else 'within'}")
+    b = doc["budget_at_worst_feasible"]
+    print(f"    worst feasible: {b['skew_ps']:.3f} ps -> fills a "
+          f"{b['cts_allowance_fraction']:.0%}-of-period allowance at "
+          f"{b['break_even_ghz']:.2f} GHz")
+    bf = doc["budget_at_flattest"]
+    print(f"    flattest      : {bf['skew_ps']:.3f} ps -> the same allowance at "
+          f"{bf['break_even_ghz']:.2f} GHz")
     print(f"\n  does the coolest design also have the flattest clock?")
     print(f"    Kendall tau, peak Tj vs skew : {a['kendall_tau']:+.3f}")
     print(f"    coolest design #{a['coolest_design']}, flattest #"
@@ -320,6 +339,15 @@ def print_report(doc: dict) -> None:
               f"{a['skew_cost_of_choosing_coolest_ps']:+.3f} ps of skew")
         print(f"    choosing the flattest costs "
               f"{a['thermal_cost_of_choosing_flattest_c']:+.2f} C of peak Tj")
+    sp = doc["span_sweep"]
+    print(f"\n  which clock? (design #{sp['design_index']}, insertion scales "
+          f"with span)")
+    print(f"    {'span':>8} {'insertion':>10} {'sink dT':>9} {'skew':>9} "
+          f"{'break-even':>11}")
+    for row in sp["rows"]:
+        print(f"    {row['span_mm']:6.1f}mm {row['insertion_ps']:9.0f}ps "
+              f"{row['sink_delta_t_c']:8.2f}C {row['skew_ps']:8.3f}ps "
+              f"{row['break_even_ghz']:10.2f}GHz")
     print(f"\n  {'design':>7} {'peak Tj':>9} {'spread':>8} {'skew':>8} "
           f"{'ps/K':>7}")
     order = sorted(f["designs"], key=lambda r: r["skew_ps"])
@@ -385,6 +413,24 @@ def main(argv=None) -> int:
                      if r["peak_tj_c"] <= FEASIBLE_TJ_C] or res["designs"]
     worst_feasible = max(feasible_rows, key=lambda r: r["skew_ps"])
 
+    # Which clock is this? A die-spanning tree is a core/fabric clock. The fast
+    # interface clocks are distributed inside a PHY, over a span an order of
+    # magnitude smaller -- so they see less of the gradient and carry less delay
+    # for it to act on, while needing a tighter budget. Measured rather than
+    # argued.
+    die_mm = json.loads(Path(args.config).read_text())["die_hierarchy"]["die_0"]["size_mm"][0]
+    worst_field = cascade.field(maps[worst_feasible["index"]], args.refine)[0]
+    spans = []
+    for frac in (1.0, 0.5, 0.25, 0.125):
+        t = HTree(levels=args.levels, insertion_ps=args.insertion_ps,
+                  tempco_per_c=args.tempco, span=frac,
+                  centre=tuple(worst_feasible["latest_sink"]))
+        r = skew(worst_field, t)
+        spans.append({"span_fraction": frac, "span_mm": frac * die_mm,
+                      "insertion_ps": t.effective_insertion_ps,
+                      "skew_ps": r["skew_ps"],
+                      "sink_delta_t_c": r["sink_delta_t_c"],
+                      "break_even_ghz": break_even_ghz(r["skew_ps"])})
     doc = {
         "question": ("how much clock skew does the temperature field cause on a "
                      "tree that is otherwise perfectly balanced?"),
@@ -400,6 +446,14 @@ def main(argv=None) -> int:
         "front": res,
         "budget_at_worst": budget_view(worst["skew_ps"], tree),
         "budget_at_worst_feasible": budget_view(worst_feasible["skew_ps"], tree),
+        "budget_at_flattest": budget_view(
+            min(r["skew_ps"] for r in res["designs"]), tree),
+        "span_sweep": {
+            "design_index": worst_feasible["index"],
+            "note": ("a die-spanning tree is a core/fabric clock; interface "
+                     "clocks are PHY-local. Insertion delay scales with span."),
+            "rows": spans,
+        },
         "front_source": os.path.relpath(args.front, REPO_ROOT),
         "caveats": [
             "the tree is a synthetic balanced H-tree, not this design's clock "

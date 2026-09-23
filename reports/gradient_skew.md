@@ -42,37 +42,61 @@ no buffer library and no extracted RC anywhere in this repository, and the clock
 distribution of the actual design is not described anywhere either. What is
 computed is a sensitivity on a synthetic tree.
 
-## 3. Which budget this lands in
+## 3. Which budget this lands in — and an invented number, removed
 
-The first version of this module compared die-spanning tree skew against the
-224G link's **1.65 ps** total jitter budget and reported *"4745% of budget"*.
-That is a category error, and it is recorded here because it is the kind that
-reads as a dramatic finding: nobody distributes a 56 GHz clock across 18 mm — a
-reference goes out and local PLLs/CDRs regenerate.
+Two framings were wrong before this section reached its current form, and both
+are worth recording because each read as a finding.
 
-On-die skew competes for the **clock period**. A tree built to the usual ~5% of
-period has, at 2 GHz, **25 ps** to spend on everything: routing imbalance, OCV,
-and the thermal gradient.
+**First: the wrong budget.** The original version compared die-spanning tree
+skew against the 224G link's **1.65 ps** total jitter budget and reported
+*"4745% of budget"*. That is a category error — nobody distributes a 56 GHz
+clock across 18 mm; a reference goes out and local PLLs/CDRs regenerate.
 
-The link numbers stay in the report as labelled context, because a real coupling
-does exist through data-to-clock matching on forwarded-clock interfaces — over an
-interface's span, not the die's.
+**Second: an invented clock.** The replacement compared skew against *"5.6% of a
+500 ps period"* — a 2 GHz core clock that **appears nowhere in this repository**.
+There is no clock frequency in any config or spec here; the only frequencies
+present are the 56 GHz SerDes Nyquist and a mention of PCIe 7.0. A number I
+chose was sitting in a results table looking like a requirement.
 
-## 4. Result
+The reporting is now inverted, which removes the assumption entirely:
 
-Across the 48 published front designs, on the 32×32×10 reference mesh:
+> **given the skew, at what clock frequency does it alone exhaust the
+> allowance?**
 
-| | Skew |
-| :--- | :--- |
-| Whole front | 10.9 – 78.3 ps (mean 38.6) |
-| The 23 designs under 105 °C | **10.9 – 28.1 ps** |
-| Worst feasible design | **28.1 ps = 5.6% of a 500 ps period** |
-| CTS allowance at 5% of period | 25.0 ps → **exceeded** |
+| Design | Skew | Fills a 5%-of-period allowance at |
+| :--- | ---: | ---: |
+| Flattest on the front | 10.9 ps | **4.59 GHz** |
+| Worst feasible (<105 °C) | 28.1 ps | **1.78 GHz** |
 
-**The thermal gradient alone spends the entire clock-tree skew budget on the
-worst feasible design, before any routing imbalance is counted.** At the flat end
-of the front it takes 10.9 ps, or 44% of that allowance — still the largest
-single contributor most CTS budgets carry.
+The only remaining assumption is the rule of thumb that a clock tree is built to
+a few percent of the period — an argument, not a datasheet, and exposed as a
+parameter.
+
+## 4. Which clock domain — the question that decides whether this matters
+
+Interface clocks are much faster than any core clock: PCIe 7.0 signalling and
+LPDDR6-class interfaces run well above a few GHz, so a naive reading says the
+budget is far tighter there. But those clocks are distributed **inside a PHY**,
+not across the die, and a shorter tree cuts *both* the temperature difference it
+sees and the insertion delay that difference scales.
+
+Measured on a feasible front design, with insertion delay scaled proportionally
+to span:
+
+| Tree span | Insertion | Sink-to-sink ΔT | Skew | Break-even |
+| ---: | ---: | ---: | ---: | ---: |
+| 18.0 mm (die) | 500 ps | 42.5 °C | **25.3 ps** | 1.98 GHz |
+| 9.0 mm | 250 ps | 48.7 °C | 11.7 ps | 4.26 GHz |
+| 4.5 mm | 125 ps | 35.6 °C | 3.8 ps | 13.24 GHz |
+| 2.2 mm (PHY) | 62 ps | 13.2 °C | **0.72 ps** | **69.69 GHz** |
+
+**A 35× reduction from die span to PHY span**, and the span effect wins
+decisively over the frequency effect. The conclusion that follows:
+
+> The thermal gradient is a **core/fabric clock problem**, not an interface
+> problem. A PHY-local forwarded clock at 0.72 ps is comfortable even against
+> the UCIe ±2 ps matching requirement; a die-spanning tree at 25 ps is not
+> comfortable above ~2 GHz.
 
 ## 5. The finding: peak Tj and skew are not the same objective
 
@@ -105,8 +129,10 @@ objective in `pareto_search.py` is a small change with a real trade to explore.
 * `α` and insertion delay are assumptions; every number here scales linearly with
   them, which is why §2's per-kelvin figure is the one to carry away.
 * The field is sampled on 562 µm cells, so a gradient sharper than a cell is
-  averaged out. **This is a lower bound on the skew**, and the ROI submodeling in
-  item 12 would raise it.
+  averaged out. **This is a lower bound on the skew.** [`submodel.md`](submodel.md)
+  since measured what that smearing costs: rearranging a macro's watts inside its
+  own footprint, at identical total power, moves the peak +36 °C — a sharper
+  field means steeper gradients and more skew than reported here.
 * Skew here is thermal only. Real CTS skew adds routing imbalance, OCV and
   supply-noise-induced jitter, none of which is modelled.
 

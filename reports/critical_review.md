@@ -430,10 +430,16 @@ the input resolution dominates every error term we have been measuring.
     `reports/gradient_skew.md`. On a 64-sink H-tree balanced by construction —
     so every picosecond it reports is thermal, and a flat field gives exactly
     zero — the published front's designs carry **10.9 to 78.3 ps** of skew, and
-    **10.9 to 28.1 ps** among the 23 that clear a 105 °C limit. Against the
-    ~25 ps a 2 GHz clock tree built to 5% of period has to spend, **the thermal
-    gradient alone exhausts the skew budget on the worst feasible design**,
-    before routing imbalance.
+    **10.9 to 28.1 ps** among the 23 that clear a 105 °C limit. Reported as the
+    frequency at which that alone fills a 5%-of-period allowance: **1.78 GHz**
+    for the worst feasible design, 4.59 GHz for the flattest.
+
+    *Which clock domain decides whether it matters.* Interface clocks are far
+    faster, but they are distributed inside a PHY rather than across the die,
+    and a shorter tree cuts both the ΔT it sees and the delay that ΔT scales.
+    Measured: 25.3 ps at an 18 mm span falls to **0.72 ps at 2.2 mm**, a 35×
+    reduction, moving break-even from 1.98 GHz to 69.7 GHz. **This is a
+    core/fabric clock problem, not an interface one.**
 
     *The finding worth carrying forward:* peak Tj and skew are **not the same
     objective**. Kendall τ between them across the front is **+0.722** — the
@@ -442,11 +448,14 @@ the input resolution dominates every error term we have been measuring.
     first quantity found where the existing Pareto front is *not* optimal, and
     it is free to evaluate: the field is already solved.
 
-    *And a mistake worth recording:* the first version compared die-spanning
-    tree skew against the 224G link's 1.65 ps jitter budget and reported
-    "4745% of budget". Nobody distributes a 56 GHz clock over 18 mm. On-die skew
-    competes for the clock period; the link budget is a different budget, and
-    the dramatic-looking number was a category error rather than a finding.
+    *And two mistakes worth recording, both of which read as findings.* The
+    first version compared die-spanning tree skew against the 224G link's
+    1.65 ps jitter budget and reported "4745% of budget" — a category error,
+    since nobody distributes a 56 GHz clock over 18 mm. The second compared it
+    against "5.6% of a 500 ps period", a 2 GHz core clock that **appears nowhere
+    in this repository** — a number I chose, sitting in a results table looking
+    like a requirement. The reporting is now inverted to a break-even frequency,
+    which carries no invented clock at all.
 
 ### Next up
 
