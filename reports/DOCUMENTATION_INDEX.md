@@ -37,6 +37,7 @@ This index tracks the mandatory documents required for architectural verificatio
 *   [reports/surrogate_retrain.json](surrogate_retrain.json): The retraining benchmark's full output.
 *   [reports/pareto_front_nsga2.json](pareto_front_nsga2.json): The Pareto front, genomes, and hypervolume baseline.
 *   [reports/rank_churn.json](rank_churn.json): What a vendor correlation could change — perturbation sweeps, churn thresholds, and the finding that an additive calibration cannot reorder a ranking.
+*   [reports/gradient_skew.md](gradient_skew.md): Clock skew caused by the temperature field — 10.9–28.1 ps across the feasible front against a ~25 ps CTS allowance, and the finding that peak Tj and skew rank designs differently (Kendall τ +0.72).
 *   [reports/memory_attach.md](memory_attach.md): Memory Tj as the decision variable — stacked vs package-on-package vs side-by-side, in four cooling/lid configurations, with the feasible SoC power each affords.
 *   [tests/physics/](../tests/physics/): the physics verification suite (`python -m unittest discover -s tests/physics -t .`).
 

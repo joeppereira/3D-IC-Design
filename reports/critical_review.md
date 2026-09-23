@@ -214,8 +214,8 @@ comparing a full link budget against a channel-only S-parameter.
 Ordered by effort-to-credibility. This section is the authoritative to-do list; it
 is kept current so no context is carried in anyone's head.
 
-**Last worked: 2026-09-21.** Items 1–5 and 10 are closed; item 11 is the next
-thing to pick up.
+**Last worked: 2026-09-23.** Items 1–5, 10 and 15 are closed; items 11–14 and
+16 are open, and item 12 (ROI submodeling) is the one the others most depend on.
 
 ### Closed
 
@@ -407,14 +407,38 @@ thing to pick up.
     `k_lateral` -- both already real knobs on `ThermalReference` -- would make a
     vendor run capable of changing a decision rather than only a number.
 
-15. **Thermal-gradient skew.** The solver returns the full field and only
-    `max()` has ever been published. A clock H-tree across an 18 mm die sees
-    per-branch temperature differences; at ~0.1-0.3 %/degC of delay tempco, an
-    8 degC gradient over a 500 ps insertion delay is order 6 ps of skew, against
-    a 1.65 ps total jitter budget. Needs the field, the H-tree geometry from
-    `clocking_jitter_spec.md`, and one coefficient. If the estimate survives
-    real numbers, it is the dominant term in the timing budget and is currently
-    unmodelled.
+15. ~~**Thermal-gradient skew.**~~ ✅ **Closed.**
+    `physics_accelerated/src/gradient_skew.py`, measured in
+    `reports/gradient_skew.md`. On a 64-sink H-tree balanced by construction —
+    so every picosecond it reports is thermal, and a flat field gives exactly
+    zero — the published front's designs carry **10.9 to 78.3 ps** of skew, and
+    **10.9 to 28.1 ps** among the 23 that clear a 105 °C limit. Against the
+    ~25 ps a 2 GHz clock tree built to 5% of period has to spend, **the thermal
+    gradient alone exhausts the skew budget on the worst feasible design**,
+    before routing imbalance.
+
+    *The finding worth carrying forward:* peak Tj and skew are **not the same
+    objective**. Kendall τ between them across the front is **+0.722** — the
+    coolest design (#0) is not the flattest (#4), and choosing the coolest costs
+    +2.54 ps of skew while choosing the flattest costs +2.29 °C. This is the
+    first quantity found where the existing Pareto front is *not* optimal, and
+    it is free to evaluate: the field is already solved.
+
+    *And a mistake worth recording:* the first version compared die-spanning
+    tree skew against the 224G link's 1.65 ps jitter budget and reported
+    "4745% of budget". Nobody distributes a 56 GHz clock over 18 mm. On-die skew
+    competes for the clock period; the link budget is a different budget, and
+    the dramatic-looking number was a category error rather than a finding.
+
+### Next up
+
+16. **Skew as a third search objective.** Item 15 showed the front is not
+    optimal for a quantity it already computes, and NSGA-II is indifferent to
+    how many objectives it carries. The work is one evaluator change plus a
+    decision about whether skew belongs in the objective vector or as a
+    constraint (a CTS budget is a limit, not something to minimise without
+    bound). Worth pairing with item 12: a sharper field can only raise skew, so
+    the trade may move.
 
 ### Decisions only the owner can make
 

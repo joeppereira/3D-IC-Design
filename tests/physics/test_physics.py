@@ -38,6 +38,7 @@ import dataset as ds                                                    # noqa: 
 import surrogate_benchmark as bench                                     # noqa: E402
 import rank_churn as rc                                                 # noqa: E402
 import memory_attach as ma                                              # noqa: E402
+import gradient_skew as gs                                              # noqa: E402
 from pareto_search import build_power_maps, GRID, SUB, N_SUB      # noqa: E402
 
 GOLDEN = os.path.join(ROOT, "physics_accelerated", "results", "golden_config.json")
@@ -1044,6 +1045,69 @@ class TestMemoryAttach(unittest.TestCase):
         lidded = ma.characterise(ma.adjacent(18e-3, 18e-3, lid_um=500.0), 3.0,
                                  nx=12, refine=1)
         self.assertLess(lidded["logic_tj_per_w"], bare["logic_tj_per_w"])
+
+
+class TestGradientSkew(unittest.TestCase):
+    """Clock skew from the temperature field, on a tree balanced by
+    construction -- so anything it reports is thermal, not geometric."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.tree = gs.HTree(levels=3)
+        cls.flat = np.full((32, 32), 80.0)
+        ramp = np.linspace(40.0, 120.0, 32)
+        cls.gradient = np.tile(ramp, (32, 1))          # hot to the east
+
+    def test_every_path_is_the_same_length(self):
+        for levels in (1, 2, 3, 4):
+            t = gs.HTree(levels=levels)
+            lengths = {round(sum(t.segments[i].length for i in p), 12)
+                       for p in t.paths}
+            self.assertEqual(len(lengths), 1, f"levels={levels}")
+            self.assertEqual(len(t.paths), 4 ** levels)
+
+    def test_a_flat_field_gives_exactly_zero_skew(self):
+        self.assertAlmostEqual(gs.skew(self.flat, self.tree)["skew_ps"], 0.0,
+                               places=12)
+
+    def test_a_gradient_gives_skew(self):
+        self.assertGreater(gs.skew(self.gradient, self.tree)["skew_ps"], 0.0)
+
+    def test_the_reference_temperature_cancels(self):
+        """It sets where 'nominal' sits; skew is a difference and must not move."""
+        a = gs.skew(self.gradient, self.tree, t_reference=0.0)["skew_ps"]
+        b = gs.skew(self.gradient, self.tree, t_reference=1000.0)["skew_ps"]
+        self.assertAlmostEqual(a, b, places=9)
+
+    def test_skew_scales_linearly_with_both_assumptions(self):
+        base = gs.skew(self.gradient, self.tree)["skew_ps"]
+        twice_alpha = gs.skew(self.gradient,
+                              gs.HTree(levels=3, tempco_per_c=2 * gs.TEMPCO_PER_C)
+                              )["skew_ps"]
+        twice_delay = gs.skew(self.gradient,
+                              gs.HTree(levels=3, insertion_ps=2 * gs.INSERTION_PS)
+                              )["skew_ps"]
+        self.assertAlmostEqual(twice_alpha, 2 * base, places=9)
+        self.assertAlmostEqual(twice_delay, 2 * base, places=9)
+
+    def test_skew_cannot_exceed_its_hard_ceiling(self):
+        """No path can differ from another by more than the full field spread."""
+        r = gs.skew(self.gradient, self.tree)
+        ceiling = (self.tree.insertion_ps * self.tree.tempco_per_c
+                   * r["field_spread_c"])
+        self.assertLessEqual(r["skew_ps"], ceiling + 1e-9)
+
+    def test_the_late_sink_is_the_hot_one(self):
+        r = gs.skew(self.gradient, self.tree)
+        self.assertGreater(r["latest_sink"][0], r["earliest_sink"][0],
+                           "the hot side is east; the late sink should be too")
+        self.assertGreater(r["sink_delta_t_c"], 0.0)
+
+    def test_a_steeper_gradient_skews_more(self):
+        mild = np.tile(np.linspace(70.0, 90.0, 32), (32, 1))
+        steep = np.tile(np.linspace(20.0, 140.0, 32), (32, 1))
+        self.assertLess(gs.skew(mild, self.tree)["skew_ps"],
+                        gs.skew(steep, self.tree)["skew_ps"])
 
 
 if __name__ == "__main__":

@@ -1,0 +1,1091 @@
+{
+  "question": "how much clock skew does the temperature field cause on a tree that is otherwise perfectly balanced?",
+  "model": "first-order: d = d_nom * (1 + alpha * (T - T_ref)). Not a static timing analysis -- there is no per-instance delay data in this repository. The transferable output is ps per kelvin of across-die spread.",
+  "tree": {
+    "levels": 3,
+    "n_sinks": 64,
+    "insertion_ps": 500.0,
+    "tempco_per_c": 0.0015,
+    "balanced": true
+  },
+  "budget_source": "reports/clocking_jitter_spec.md",
+  "front": {
+    "n_designs": 48,
+    "feasible_subset": {
+      "tj_limit_c": 105.0,
+      "n_designs": 23,
+      "skew_ps": {
+        "min": 10.89979575009096,
+        "max": 28.063373052986776
+      },
+      "note": "the front spans designs no one would build; this is the range over the ones that clear a plausible Tj limit"
+    },
+    "skew_ps": {
+      "min": 10.89979575009096,
+      "max": 78.2908375877688,
+      "mean": 38.563024553185265
+    },
+    "agreement_with_peak_tj": {
+      "kendall_tau": 0.7216312056737588,
+      "same_winner": false,
+      "coolest_design": 0,
+      "flattest_design": 4,
+      "skew_cost_of_choosing_coolest_ps": 2.540341453366068,
+      "thermal_cost_of_choosing_flattest_c": 2.286855288136877
+    },
+    "designs": [
+      {
+        "index": 0,
+        "peak_tj_c": 72.07347836050802,
+        "mean_tj_c": 48.020609638407905,
+        "skew_ps": 13.440137203457027,
+        "arrival_mean_ps": 500.42495707057515,
+        "latest_sink": [
+          0.8125,
+          0.8125
+        ],
+        "earliest_sink": [
+          0.3125,
+          0.9375
+        ],
+        "sink_delta_t_c": 36.803734322133884,
+        "field_spread_c": 37.52692990150191,
+        "n_sinks": 64,
+        "ps_per_c_of_spread": 0.35814646278642487,
+        "model_bound_ps": 28.14519742612643,
+        "within_bound": true
+      },
+      {
+        "index": 1,
+        "peak_tj_c": 72.77573260346163,
+        "mean_tj_c": 48.020609638406995,
+        "skew_ps": 13.095276192867118,
+        "arrival_mean_ps": 501.0993908592252,
+        "latest_sink": [
+          0.8125,
+          0.1875
+        ],
+        "earliest_sink": [
+          0.3125,
+          0.9375
+        ],
+        "sink_delta_t_c": 38.10917536567693,
+        "field_spread_c": 38.89686201986736,
+        "n_sinks": 64,
+        "ps_per_c_of_spread": 0.33666664900059134,
+        "model_bound_ps": 29.17264651490052,
+        "within_bound": true
+      },
+      {
+        "index": 2,
+        "peak_tj_c": 73.08139934585492,
+        "mean_tj_c": 48.020609638408494,
+        "skew_ps": 12.330228931939246,
+        "arrival_mean_ps": 501.54515840096633,
+        "latest_sink": [
+          0.3125,
+          0.3125
+        ],
+        "earliest_sink": [
+          0.3125,
+          0.9375
+        ],
+        "sink_delta_t_c": 24.60119123455643,
+        "field_spread_c": 40.29187484807966,
+        "n_sinks": 64,
+        "ps_per_c_of_spread": 0.30602271496251593,
+        "model_bound_ps": 30.218906136059744,
+        "within_bound": true
+      },
+      {
+        "index": 3,
+        "peak_tj_c": 74.79906299464295,
+        "mean_tj_c": 48.02060963840816,
+        "skew_ps": 12.57998581476943,
+        "arrival_mean_ps": 501.77314064844995,
+        "latest_sink": [
+          0.8125,
+          0.1875
+        ],
+        "earliest_sink": [
+          0.0625,
+          0.9375
+        ],
+        "sink_delta_t_c": 36.9348900321576,
+        "field_spread_c": 42.839305185444076,
+        "n_sinks": 64,
+        "ps_per_c_of_spread": 0.2936552252729779,
+        "model_bound_ps": 32.12947888908306,
+        "within_bound": true
+      },
+      {
+        "index": 4,
+        "peak_tj_c": 74.3603336486449,
+        "mean_tj_c": 48.02060963840792,
+        "skew_ps": 10.89979575009096,
+        "arrival_mean_ps": 501.9629298436478,
+        "latest_sink": [
+          0.6875,
+          0.1875
+        ],
+        "earliest_sink": [
+          0.0625,
+          0.9375
+        ],
+        "sink_delta_t_c": 33.095845983117776,
+        "field_spread_c": 42.179704028969354,
+        "n_sinks": 64,
+        "ps_per_c_of_spread": 0.2584132819567651,
+        "model_bound_ps": 31.634778021727016,
+        "within_bound": true
+      },
+      {
+        "index": 5,
+        "peak_tj_c": 75.68044751801384,
+        "mean_tj_c": 48.02060963840799,
+        "skew_ps": 17.717451705789586,
+        "arrival_mean_ps": 502.9663694593029,
+        "latest_sink": [
+          0.3125,
+          0.3125
+        ],
+        "earliest_sink": [
+          0.0625,
+          0.9375
+        ],
+        "sink_delta_t_c": 36.869086937235124,
+        "field_spread_c": 41.413254095533844,
+        "n_sinks": 64,
+        "ps_per_c_of_spread": 0.42782080502339226,
+        "model_bound_ps": 31.059940571650383,
+        "within_bound": true
+      },
+      {
+        "index": 6,
+        "peak_tj_c": 75.77519132702817,
+        "mean_tj_c": 48.0206096384074,
+        "skew_ps": 16.499663538685923,
+        "arrival_mean_ps": 504.06945100667417,
+        "latest_sink": [
+          0.3125,
+          0.3125
+        ],
+        "earliest_sink": [
+          0.0625,
+          0.9375
+        ],
+        "sink_delta_t_c": 37.754423421159686,
+        "field_spread_c": 42.599724946430506,
+        "n_sinks": 64,
+        "ps_per_c_of_spread": 0.3873185462918923,
+        "model_bound_ps": 31.949793709822877,
+        "within_bound": true
+      },
+      {
+        "index": 7,
+        "peak_tj_c": 76.52666200496681,
+        "mean_tj_c": 48.02060963840755,
+        "skew_ps": 14.976489732973732,
+        "arrival_mean_ps": 503.8305849284865,
+        "latest_sink": [
+          0.6875,
+          0.1875
+        ],
+        "earliest_sink": [
+          0.0625,
+          0.9375
+        ],
+        "sink_delta_t_c": 41.833332713236004,
+        "field_spread_c": 43.48207843444663,
+        "n_sinks": 64,
+        "ps_per_c_of_spread": 0.3444290216152435,
+        "model_bound_ps": 32.61155882583497,
+        "within_bound": true
+      },
+      {
+        "index": 8,
+        "peak_tj_c": 77.30413416157347,
+        "mean_tj_c": 48.020609638407635,
+        "skew_ps": 13.581073278215683,
+        "arrival_mean_ps": 502.59227329759733,
+        "latest_sink": [
+          0.6875,
+          0.1875
+        ],
+        "earliest_sink": [
+          0.0625,
+          0.9375
+        ],
+        "sink_delta_t_c": 40.50377447689679,
+        "field_spread_c": 45.528087138002704,
+        "n_sinks": 64,
+        "ps_per_c_of_spread": 0.2983009858738264,
+        "model_bound_ps": 34.146065353502024,
+        "within_bound": true
+      },
+      {
+        "index": 9,
+        "peak_tj_c": 77.81380047459452,
+        "mean_tj_c": 48.02060963840758,
+        "skew_ps": 13.08861511938585,
+        "arrival_mean_ps": 503.2848504709981,
+        "latest_sink": [
+          0.6875,
+          0.1875
+        ],
+        "earliest_sink": [
+          0.0625,
+          0.9375
+        ],
+        "sink_delta_t_c": 38.803549662008685,
+        "field_spread_c": 46.49254234287055,
+        "n_sinks": 64,
+        "ps_per_c_of_spread": 0.2815207441843184,
+        "model_bound_ps": 34.869406757152916,
+        "within_bound": true
+      },
+      {
+        "index": 10,
+        "peak_tj_c": 81.42768063722893,
+        "mean_tj_c": 48.02060963840924,
+        "skew_ps": 25.109731848272077,
+        "arrival_mean_ps": 507.0962062454688,
+        "latest_sink": [
+          0.3125,
+          0.8125
+        ],
+        "earliest_sink": [
+          0.9375,
+          0.0625
+        ],
+        "sink_delta_t_c": 44.735514702546816,
+        "field_spread_c": 49.38862841519006,
+        "n_sinks": 64,
+        "ps_per_c_of_spread": 0.508411200189339,
+        "model_bound_ps": 37.04147131139255,
+        "within_bound": true
+      },
+      {
+        "index": 11,
+        "peak_tj_c": 81.35230307090123,
+        "mean_tj_c": 48.020609638407066,
+        "skew_ps": 20.47868828250438,
+        "arrival_mean_ps": 505.17593899729076,
+        "latest_sink": [
+          0.6875,
+          0.3125
+        ],
+        "earliest_sink": [
+          0.0625,
+          0.9375
+        ],
+        "sink_delta_t_c": 46.388544097409685,
+        "field_spread_c": 50.36313542784111,
+        "n_sinks": 64,
+        "ps_per_c_of_spread": 0.406620598748179,
+        "model_bound_ps": 37.77235157088083,
+        "within_bound": true
+      },
+      {
+        "index": 12,
+        "peak_tj_c": 83.716975532346,
+        "mean_tj_c": 48.020609638406995,
+        "skew_ps": 24.144265471556878,
+        "arrival_mean_ps": 505.10520344570295,
+        "latest_sink": [
+          0.6875,
+          0.3125
+        ],
+        "earliest_sink": [
+          0.0625,
+          0.0625
+        ],
+        "sink_delta_t_c": 49.607825455388536,
+        "field_spread_c": 53.342243974428165,
+        "n_sinks": 64,
+        "ps_per_c_of_spread": 0.45262935475926813,
+        "model_bound_ps": 40.006682980821125,
+        "within_bound": true
+      },
+      {
+        "index": 13,
+        "peak_tj_c": 84.76366051126122,
+        "mean_tj_c": 48.02060963840787,
+        "skew_ps": 22.697648875255766,
+        "arrival_mean_ps": 507.1021762908107,
+        "latest_sink": [
+          0.6875,
+          0.6875
+        ],
+        "earliest_sink": [
+          0.0625,
+          0.0625
+        ],
+        "sink_delta_t_c": 46.83306427070304,
+        "field_spread_c": 54.22133866416786,
+        "n_sinks": 64,
+        "ps_per_c_of_spread": 0.4186110013963099,
+        "model_bound_ps": 40.666003998125895,
+        "within_bound": true
+      },
+      {
+        "index": 14,
+        "peak_tj_c": 85.44543293322016,
+        "mean_tj_c": 48.02060963840759,
+        "skew_ps": 23.09307177000028,
+        "arrival_mean_ps": 508.01801244362036,
+        "latest_sink": [
+          0.6875,
+          0.6875
+        ],
+        "earliest_sink": [
+          0.0625,
+          0.0625
+        ],
+        "sink_delta_t_c": 47.655692496937654,
+        "field_spread_c": 55.07639967579689,
+        "n_sinks": 64,
+        "ps_per_c_of_spread": 0.4192916005028636,
+        "model_bound_ps": 41.30729975684767,
+        "within_bound": true
+      },
+      {
+        "index": 15,
+        "peak_tj_c": 88.31290581158474,
+        "mean_tj_c": 48.020609638407976,
+        "skew_ps": 28.063373052986776,
+        "arrival_mean_ps": 508.4504271931174,
+        "latest_sink": [
+          0.6875,
+          0.6875
+        ],
+        "earliest_sink": [
+          0.0625,
+          0.0625
+        ],
+        "sink_delta_t_c": 50.151230077869414,
+        "field_spread_c": 58.72023405586701,
+        "n_sinks": 64,
+        "ps_per_c_of_spread": 0.4779165734640466,
+        "model_bound_ps": 44.040175541900254,
+        "within_bound": true
+      },
+      {
+        "index": 16,
+        "peak_tj_c": 90.12105113301807,
+        "mean_tj_c": 48.02060963840677,
+        "skew_ps": 21.513002819825317,
+        "arrival_mean_ps": 508.33583382197844,
+        "latest_sink": [
+          0.6875,
+          0.5625
+        ],
+        "earliest_sink": [
+          0.0625,
+          0.0625
+        ],
+        "sink_delta_t_c": 59.23541976365665,
+        "field_spread_c": 59.68155080464098,
+        "n_sinks": 64,
+        "ps_per_c_of_spread": 0.3604632006002166,
+        "model_bound_ps": 44.76116310348073,
+        "within_bound": true
+      },
+      {
+        "index": 17,
+        "peak_tj_c": 92.60122000761798,
+        "mean_tj_c": 48.020609638406924,
+        "skew_ps": 27.14965096944286,
+        "arrival_mean_ps": 510.02923495621985,
+        "latest_sink": [
+          0.3125,
+          0.5625
+        ],
+        "earliest_sink": [
+          0.9375,
+          0.0625
+        ],
+        "sink_delta_t_c": 54.50129980071134,
+        "field_spread_c": 62.32499789198989,
+        "n_sinks": 64,
+        "ps_per_c_of_spread": 0.43561414982305485,
+        "model_bound_ps": 46.74374841899242,
+        "within_bound": true
+      },
+      {
+        "index": 18,
+        "peak_tj_c": 94.15635773762637,
+        "mean_tj_c": 48.020609638406626,
+        "skew_ps": 23.795893123607186,
+        "arrival_mean_ps": 510.2477384123683,
+        "latest_sink": [
+          0.3125,
+          0.5625
+        ],
+        "earliest_sink": [
+          0.0625,
+          0.0625
+        ],
+        "sink_delta_t_c": 50.61585840352998,
+        "field_spread_c": 62.855581706080585,
+        "n_sinks": 64,
+        "ps_per_c_of_spread": 0.37858042957711097,
+        "model_bound_ps": 47.14168627956044,
+        "within_bound": true
+      },
+      {
+        "index": 19,
+        "peak_tj_c": 96.57045436790038,
+        "mean_tj_c": 48.020609638406555,
+        "skew_ps": 24.694464546597658,
+        "arrival_mean_ps": 510.84924141888666,
+        "latest_sink": [
+          0.3125,
+          0.5625
+        ],
+        "earliest_sink": [
+          0.0625,
+          0.0625
+        ],
+        "sink_delta_t_c": 51.744027158168656,
+        "field_spread_c": 65.47383251359074,
+        "n_sinks": 64,
+        "ps_per_c_of_spread": 0.37716540484279276,
+        "model_bound_ps": 49.10537438519305,
+        "within_bound": true
+      },
+      {
+        "index": 20,
+        "peak_tj_c": 99.45596644406588,
+        "mean_tj_c": 48.02060963840651,
+        "skew_ps": 21.731449832885176,
+        "arrival_mean_ps": 509.37421616261975,
+        "latest_sink": [
+          0.4375,
+          0.5625
+        ],
+        "earliest_sink": [
+          0.9375,
+          0.0625
+        ],
+        "sink_delta_t_c": 61.58551407798018,
+        "field_spread_c": 68.11260845763896,
+        "n_sinks": 64,
+        "ps_per_c_of_spread": 0.319051792685352,
+        "model_bound_ps": 51.08445634322922,
+        "within_bound": true
+      },
+      {
+        "index": 21,
+        "peak_tj_c": 100.86662949026277,
+        "mean_tj_c": 48.02060963840558,
+        "skew_ps": 13.692547175583513,
+        "arrival_mean_ps": 508.13833547657873,
+        "latest_sink": [
+          0.5625,
+          0.4375
+        ],
+        "earliest_sink": [
+          0.9375,
+          0.9375
+        ],
+        "sink_delta_t_c": 67.42255447445925,
+        "field_spread_c": 68.72943285250982,
+        "n_sinks": 64,
+        "ps_per_c_of_spread": 0.1992239220854199,
+        "model_bound_ps": 51.54707463938236,
+        "within_bound": true
+      },
+      {
+        "index": 22,
+        "peak_tj_c": 103.44061013076711,
+        "mean_tj_c": 48.020609638405276,
+        "skew_ps": 13.975180146769276,
+        "arrival_mean_ps": 508.06081345898355,
+        "latest_sink": [
+          0.4375,
+          0.4375
+        ],
+        "earliest_sink": [
+          0.9375,
+          0.9375
+        ],
+        "sink_delta_t_c": 67.23358095021511,
+        "field_spread_c": 71.64223534227568,
+        "n_sinks": 64,
+        "ps_per_c_of_spread": 0.19506901313173572,
+        "model_bound_ps": 53.73167650670676,
+        "within_bound": true
+      },
+      {
+        "index": 23,
+        "peak_tj_c": 105.86337584754374,
+        "mean_tj_c": 48.02060963840651,
+        "skew_ps": 19.55376576183687,
+        "arrival_mean_ps": 509.6888603198994,
+        "latest_sink": [
+          0.4375,
+          0.5625
+        ],
+        "earliest_sink": [
+          0.0625,
+          0.0625
+        ],
+        "sink_delta_t_c": 72.03606810561402,
+        "field_spread_c": 74.461514885437,
+        "n_sinks": 64,
+        "ps_per_c_of_spread": 0.2626023092858288,
+        "model_bound_ps": 55.84613616407775,
+        "within_bound": true
+      },
+      {
+        "index": 24,
+        "peak_tj_c": 107.05928951804077,
+        "mean_tj_c": 48.02060963840626,
+        "skew_ps": 20.13868699593462,
+        "arrival_mean_ps": 509.1790909093488,
+        "latest_sink": [
+          0.4375,
+          0.5625
+        ],
+        "earliest_sink": [
+          0.9375,
+          0.9375
+        ],
+        "sink_delta_t_c": 70.2191119960235,
+        "field_spread_c": 75.25153516070789,
+        "n_sinks": 64,
+        "ps_per_c_of_spread": 0.26761828782530817,
+        "model_bound_ps": 56.43865137053092,
+        "within_bound": true
+      },
+      {
+        "index": 25,
+        "peak_tj_c": 111.95123845257297,
+        "mean_tj_c": 48.02060963840578,
+        "skew_ps": 18.329094768033542,
+        "arrival_mean_ps": 508.8910517138427,
+        "latest_sink": [
+          0.4375,
+          0.4375
+        ],
+        "earliest_sink": [
+          0.9375,
+          0.9375
+        ],
+        "sink_delta_t_c": 77.36233005979676,
+        "field_spread_c": 80.38331749903156,
+        "n_sinks": 64,
+        "ps_per_c_of_spread": 0.228021128491672,
+        "model_bound_ps": 60.28748812427367,
+        "within_bound": true
+      },
+      {
+        "index": 26,
+        "peak_tj_c": 117.57872120373105,
+        "mean_tj_c": 48.02060963840496,
+        "skew_ps": 55.04526110716938,
+        "arrival_mean_ps": 503.3359134049185,
+        "latest_sink": [
+          0.6875,
+          0.0625
+        ],
+        "earliest_sink": [
+          0.0625,
+          0.9375
+        ],
+        "sink_delta_t_c": 87.77144735840253,
+        "field_spread_c": 91.18326213655797,
+        "n_sinks": 64,
+        "ps_per_c_of_spread": 0.6036772519141993,
+        "model_bound_ps": 68.38744660241848,
+        "within_bound": true
+      },
+      {
+        "index": 27,
+        "peak_tj_c": 120.38199711837461,
+        "mean_tj_c": 48.02060963840497,
+        "skew_ps": 56.13080767654981,
+        "arrival_mean_ps": 502.94278287025304,
+        "latest_sink": [
+          0.6875,
+          0.3125
+        ],
+        "earliest_sink": [
+          0.0625,
+          0.9375
+        ],
+        "sink_delta_t_c": 87.5508626695912,
+        "field_spread_c": 94.079521554498,
+        "n_sinks": 64,
+        "ps_per_c_of_spread": 0.5966315171366446,
+        "model_bound_ps": 70.5596411658735,
+        "within_bound": true
+      },
+      {
+        "index": 28,
+        "peak_tj_c": 121.59963686523416,
+        "mean_tj_c": 48.02060963840486,
+        "skew_ps": 56.607976377750276,
+        "arrival_mean_ps": 502.7162708413094,
+        "latest_sink": [
+          0.6875,
+          0.1875
+        ],
+        "earliest_sink": [
+          0.0625,
+          0.9375
+        ],
+        "sink_delta_t_c": 87.99433727211759,
+        "field_spread_c": 95.34418849189,
+        "n_sinks": 64,
+        "ps_per_c_of_spread": 0.5937223576302751,
+        "model_bound_ps": 71.50814136891749,
+        "within_bound": true
+      },
+      {
+        "index": 29,
+        "peak_tj_c": 124.31781890319276,
+        "mean_tj_c": 48.02060963840462,
+        "skew_ps": 57.39517736058076,
+        "arrival_mean_ps": 502.6916758112098,
+        "latest_sink": [
+          0.6875,
+          0.0625
+        ],
+        "earliest_sink": [
+          0.0625,
+          0.9375
+        ],
+        "sink_delta_t_c": 97.48698795424352,
+        "field_spread_c": 98.08942577189391,
+        "n_sinks": 64,
+        "ps_per_c_of_spread": 0.5851311383354688,
+        "model_bound_ps": 73.56706932892044,
+        "within_bound": true
+      },
+      {
+        "index": 30,
+        "peak_tj_c": 127.36567441039779,
+        "mean_tj_c": 48.020609638404665,
+        "skew_ps": 60.46631167143153,
+        "arrival_mean_ps": 504.33472663440864,
+        "latest_sink": [
+          0.6875,
+          0.3125
+        ],
+        "earliest_sink": [
+          0.0625,
+          0.9375
+        ],
+        "sink_delta_t_c": 98.93128307447988,
+        "field_spread_c": 100.88636541736115,
+        "n_sinks": 64,
+        "ps_per_c_of_spread": 0.599350679561959,
+        "model_bound_ps": 75.66477406302086,
+        "within_bound": true
+      },
+      {
+        "index": 31,
+        "peak_tj_c": 129.53882076542084,
+        "mean_tj_c": 48.02060963840505,
+        "skew_ps": 49.99646962977363,
+        "arrival_mean_ps": 500.3470197703018,
+        "latest_sink": [
+          0.6875,
+          0.1875
+        ],
+        "earliest_sink": [
+          0.0625,
+          0.9375
+        ],
+        "sink_delta_t_c": 97.55737652797802,
+        "field_spread_c": 103.36697162204075,
+        "n_sinks": 64,
+        "ps_per_c_of_spread": 0.48367934984672584,
+        "model_bound_ps": 77.52522871653056,
+        "within_bound": true
+      },
+      {
+        "index": 32,
+        "peak_tj_c": 131.4705120347918,
+        "mean_tj_c": 48.02060963840499,
+        "skew_ps": 52.06204848376649,
+        "arrival_mean_ps": 501.06747915313167,
+        "latest_sink": [
+          0.6875,
+          0.1875
+        ],
+        "earliest_sink": [
+          0.0625,
+          0.9375
+        ],
+        "sink_delta_t_c": 99.44157154878039,
+        "field_spread_c": 105.24714361431893,
+        "n_sinks": 64,
+        "ps_per_c_of_spread": 0.4946647167409056,
+        "model_bound_ps": 78.9353577107392,
+        "within_bound": true
+      },
+      {
+        "index": 33,
+        "peak_tj_c": 132.3390059471821,
+        "mean_tj_c": 48.02060963840445,
+        "skew_ps": 59.10509254381515,
+        "arrival_mean_ps": 503.0710332827892,
+        "latest_sink": [
+          0.6875,
+          0.1875
+        ],
+        "earliest_sink": [
+          0.0625,
+          0.9375
+        ],
+        "sink_delta_t_c": 99.5123883240676,
+        "field_spread_c": 106.04268106492901,
+        "n_sinks": 64,
+        "ps_per_c_of_spread": 0.5573707864630998,
+        "model_bound_ps": 79.53201079869676,
+        "within_bound": true
+      },
+      {
+        "index": 34,
+        "peak_tj_c": 132.61262530753902,
+        "mean_tj_c": 48.02060963840408,
+        "skew_ps": 59.36727402612115,
+        "arrival_mean_ps": 503.67748940792364,
+        "latest_sink": [
+          0.6875,
+          0.3125
+        ],
+        "earliest_sink": [
+          0.0625,
+          0.9375
+        ],
+        "sink_delta_t_c": 101.02119458506958,
+        "field_spread_c": 106.27521535019262,
+        "n_sinks": 64,
+        "ps_per_c_of_spread": 0.5586182425553988,
+        "model_bound_ps": 79.70641151264446,
+        "within_bound": true
+      },
+      {
+        "index": 35,
+        "peak_tj_c": 135.39460496480535,
+        "mean_tj_c": 48.02060963840398,
+        "skew_ps": 64.5231826144352,
+        "arrival_mean_ps": 504.85918639139686,
+        "latest_sink": [
+          0.6875,
+          0.3125
+        ],
+        "earliest_sink": [
+          0.0625,
+          0.9375
+        ],
+        "sink_delta_t_c": 105.0686751177744,
+        "field_spread_c": 108.98163237164223,
+        "n_sinks": 64,
+        "ps_per_c_of_spread": 0.5920555712948247,
+        "model_bound_ps": 81.73622427873167,
+        "within_bound": true
+      },
+      {
+        "index": 36,
+        "peak_tj_c": 143.5473349979602,
+        "mean_tj_c": 48.02060963840363,
+        "skew_ps": 64.13630613466637,
+        "arrival_mean_ps": 504.60807933235355,
+        "latest_sink": [
+          0.6875,
+          0.3125
+        ],
+        "earliest_sink": [
+          0.0625,
+          0.9375
+        ],
+        "sink_delta_t_c": 106.21022778276077,
+        "field_spread_c": 117.20844483737488,
+        "n_sinks": 64,
+        "ps_per_c_of_spread": 0.5471986785905625,
+        "model_bound_ps": 87.90633362803116,
+        "within_bound": true
+      },
+      {
+        "index": 37,
+        "peak_tj_c": 145.7139111614358,
+        "mean_tj_c": 48.02060963840346,
+        "skew_ps": 67.72909151782699,
+        "arrival_mean_ps": 505.50789296769034,
+        "latest_sink": [
+          0.6875,
+          0.3125
+        ],
+        "earliest_sink": [
+          0.0625,
+          0.9375
+        ],
+        "sink_delta_t_c": 109.98065120372327,
+        "field_spread_c": 119.24726687523814,
+        "n_sinks": 64,
+        "ps_per_c_of_spread": 0.567971856232883,
+        "model_bound_ps": 89.4354501564286,
+        "within_bound": true
+      },
+      {
+        "index": 38,
+        "peak_tj_c": 158.55846872382753,
+        "mean_tj_c": 48.02060963840326,
+        "skew_ps": 78.2908375877688,
+        "arrival_mean_ps": 506.85030148639976,
+        "latest_sink": [
+          0.6875,
+          0.3125
+        ],
+        "earliest_sink": [
+          0.0625,
+          0.9375
+        ],
+        "sink_delta_t_c": 131.04561262341045,
+        "field_spread_c": 132.00516561316235,
+        "n_sinks": 64,
+        "ps_per_c_of_spread": 0.5930891963515885,
+        "model_bound_ps": 99.00387420987175,
+        "within_bound": true
+      },
+      {
+        "index": 39,
+        "peak_tj_c": 159.1105988223591,
+        "mean_tj_c": 48.02060963840488,
+        "skew_ps": 61.76373472171832,
+        "arrival_mean_ps": 501.59083590393607,
+        "latest_sink": [
+          0.6875,
+          0.1875
+        ],
+        "earliest_sink": [
+          0.0625,
+          0.9375
+        ],
+        "sink_delta_t_c": 124.99250117125898,
+        "field_spread_c": 132.66432337900156,
+        "n_sinks": 64,
+        "ps_per_c_of_spread": 0.4655640126039676,
+        "model_bound_ps": 99.49824253425118,
+        "within_bound": true
+      },
+      {
+        "index": 40,
+        "peak_tj_c": 161.33814045690298,
+        "mean_tj_c": 48.02060963840459,
+        "skew_ps": 62.824448028803374,
+        "arrival_mean_ps": 500.95519429782405,
+        "latest_sink": [
+          0.6875,
+          0.1875
+        ],
+        "earliest_sink": [
+          0.0625,
+          0.9375
+        ],
+        "sink_delta_t_c": 132.01576727124254,
+        "field_spread_c": 135.04154217208048,
+        "n_sinks": 64,
+        "ps_per_c_of_spread": 0.4652231233315416,
+        "model_bound_ps": 101.28115662906036,
+        "within_bound": true
+      },
+      {
+        "index": 41,
+        "peak_tj_c": 167.2370912407031,
+        "mean_tj_c": 48.02060963840455,
+        "skew_ps": 61.801166011330395,
+        "arrival_mean_ps": 499.85408703937753,
+        "latest_sink": [
+          0.6875,
+          0.1875
+        ],
+        "earliest_sink": [
+          0.0625,
+          0.9375
+        ],
+        "sink_delta_t_c": 137.62813894619566,
+        "field_spread_c": 141.01810775076913,
+        "n_sinks": 64,
+        "ps_per_c_of_spread": 0.43824986022756585,
+        "model_bound_ps": 105.76358081307686,
+        "within_bound": true
+      },
+      {
+        "index": 42,
+        "peak_tj_c": 167.95002227579886,
+        "mean_tj_c": 48.020609638404906,
+        "skew_ps": 57.5717876196415,
+        "arrival_mean_ps": 499.4741899965043,
+        "latest_sink": [
+          0.5625,
+          0.1875
+        ],
+        "earliest_sink": [
+          0.0625,
+          0.9375
+        ],
+        "sink_delta_t_c": 130.51107615412428,
+        "field_spread_c": 141.74979276078767,
+        "n_sinks": 64,
+        "ps_per_c_of_spread": 0.40615077100534297,
+        "model_bound_ps": 106.31234457059075,
+        "within_bound": true
+      },
+      {
+        "index": 43,
+        "peak_tj_c": 178.40765678115247,
+        "mean_tj_c": 48.02060963840253,
+        "skew_ps": 61.79887273567692,
+        "arrival_mean_ps": 502.01421254178547,
+        "latest_sink": [
+          0.6875,
+          0.1875
+        ],
+        "earliest_sink": [
+          0.0625,
+          0.9375
+        ],
+        "sink_delta_t_c": 138.37868103643518,
+        "field_spread_c": 152.16701299146408,
+        "n_sinks": 64,
+        "ps_per_c_of_spread": 0.40612529299726463,
+        "model_bound_ps": 114.12525974359806,
+        "within_bound": true
+      },
+      {
+        "index": 44,
+        "peak_tj_c": 182.61049775176565,
+        "mean_tj_c": 48.020609638402675,
+        "skew_ps": 70.41586164600795,
+        "arrival_mean_ps": 503.8094641306287,
+        "latest_sink": [
+          0.6875,
+          0.1875
+        ],
+        "earliest_sink": [
+          0.0625,
+          0.9375
+        ],
+        "sink_delta_t_c": 144.88768945066158,
+        "field_spread_c": 156.30882235803494,
+        "n_sinks": 64,
+        "ps_per_c_of_spread": 0.4504919209532275,
+        "model_bound_ps": 117.23161676852621,
+        "within_bound": true
+      },
+      {
+        "index": 45,
+        "peak_tj_c": 192.49772261873161,
+        "mean_tj_c": 48.02060963840265,
+        "skew_ps": 67.80524842594502,
+        "arrival_mean_ps": 504.6670273148064,
+        "latest_sink": [
+          0.6875,
+          0.3125
+        ],
+        "earliest_sink": [
+          0.0625,
+          0.9375
+        ],
+        "sink_delta_t_c": 126.86037294058194,
+        "field_spread_c": 166.0808797173298,
+        "n_sinks": 64,
+        "ps_per_c_of_spread": 0.40826643344706376,
+        "model_bound_ps": 124.56065978799734,
+        "within_bound": true
+      },
+      {
+        "index": 46,
+        "peak_tj_c": 196.58934041218794,
+        "mean_tj_c": 48.0206096384025,
+        "skew_ps": 68.89521991059655,
+        "arrival_mean_ps": 503.67088523751045,
+        "latest_sink": [
+          0.6875,
+          0.1875
+        ],
+        "earliest_sink": [
+          0.0625,
+          0.9375
+        ],
+        "sink_delta_t_c": 148.65349920764277,
+        "field_spread_c": 170.22763494468018,
+        "n_sinks": 64,
+        "ps_per_c_of_spread": 0.40472406218288715,
+        "model_bound_ps": 127.67072620851013,
+        "within_bound": true
+      },
+      {
+        "index": 47,
+        "peak_tj_c": 201.608567400692,
+        "mean_tj_c": 48.02060963840215,
+        "skew_ps": 70.92377001225049,
+        "arrival_mean_ps": 503.41977817846714,
+        "latest_sink": [
+          0.6875,
+          0.1875
+        ],
+        "earliest_sink": [
+          0.0625,
+          0.9375
+        ],
+        "sink_delta_t_c": 157.90202745619774,
+        "field_spread_c": 175.32094436576205,
+        "n_sinks": 64,
+        "ps_per_c_of_spread": 0.4045367783571043,
+        "model_bound_ps": 131.49070827432155,
+        "within_bound": true
+      }
+    ]
+  },
+  "budget_at_worst": {
+    "skew_ps": 78.2908375877688,
+    "on_die": {
+      "core_clock_ps": 500.0,
+      "skew_fraction_of_period": 0.15658167517553762,
+      "cts_target_ps": 25.0,
+      "exceeds_cts_target": true,
+      "note": "a tree built to 5% of the period has 25.0 ps to spend; this is what the gradient takes out of it before routing imbalance is counted"
+    },
+    "link_context": {
+      "ui_ps": 8.9,
+      "total_jitter_budget_ps": 1.65,
+      "ucie_match_requirement_ps": 2.0,
+      "warning": "a different budget -- serial-link jitter and interface-span matching, not die-spanning clock distribution. Quoting die skew against it overstates the coupling."
+    },
+    "assumed_tempco_per_c": 0.0015,
+    "assumed_insertion_ps": 500.0,
+    "note": "skew scales linearly with both assumptions, which is why ps-per-kelvin is the number to carry away"
+  },
+  "budget_at_worst_feasible": {
+    "skew_ps": 28.063373052986776,
+    "on_die": {
+      "core_clock_ps": 500.0,
+      "skew_fraction_of_period": 0.056126746105973555,
+      "cts_target_ps": 25.0,
+      "exceeds_cts_target": true,
+      "note": "a tree built to 5% of the period has 25.0 ps to spend; this is what the gradient takes out of it before routing imbalance is counted"
+    },
+    "link_context": {
+      "ui_ps": 8.9,
+      "total_jitter_budget_ps": 1.65,
+      "ucie_match_requirement_ps": 2.0,
+      "warning": "a different budget -- serial-link jitter and interface-span matching, not die-spanning clock distribution. Quoting die skew against it overstates the coupling."
+    },
+    "assumed_tempco_per_c": 0.0015,
+    "assumed_insertion_ps": 500.0,
+    "note": "skew scales linearly with both assumptions, which is why ps-per-kelvin is the number to carry away"
+  },
+  "front_source": "reports/pareto_front_nsga2.json",
+  "caveats": [
+    "the tree is a synthetic balanced H-tree, not this design's clock distribution, which is not described anywhere in the repository",
+    "tempco and insertion delay are inputs; skew scales linearly in both",
+    "the field is sampled on 562 um cells, so a gradient sharper than that is averaged away and this is a lower bound"
+  ]
+}
