@@ -1,62 +1,62 @@
 {
-  "design": "gcd",
+  "design": "aes",
   "platform": "asap7",
   "stage": "3_place",
   "activity": 0.2,
   "die_um": [
     0.0,
     0.0,
-    88.89,
-    88.89
+    487.09,
+    487.09
   ],
-  "die_mm2": 0.0079014321,
+  "die_mm2": 0.23725666809999998,
   "instances": {
-    "instances_placed": 415,
-    "instances_with_power": 415,
-    "joined": 415,
+    "instances_placed": 12485,
+    "instances_with_power": 12485,
+    "joined": 12485,
     "placed_without_power": 0,
     "power_without_placement": 0
   },
   "power_w": {
-    "internal_w": 0.0010708135237357409,
-    "switching_w": 0.0005903718535050332,
-    "leakage_w": 3.275910277056e-08,
-    "total_w": 0.0016612181293359787
+    "internal_w": 0.04093548475368365,
+    "switching_w": 0.03167016674169162,
+    "leakage_w": 1.15201907309324e-06,
+    "total_w": 0.0726068032764997
   },
   "power_split": {
-    "internal_w": 0.6445953754211471,
-    "switching_w": 0.3553849088686603,
-    "leakage_w": 1.971992852236356e-05
+    "internal_w": 0.5637968193943755,
+    "switching_w": 0.43618731733837607,
+    "leakage_w": 1.586654447113097e-05
   },
   "by_grid": {
     "16": {
-      "cell_um": 5.555625,
-      "total_w": 0.0016612181293359787,
-      "peak_to_die_mean": 4.238436283767751,
-      "active_area_fraction": 0.859375,
-      "area_holding_50pct_power": 0.22265625,
-      "area_holding_90pct_power": 0.58203125
+      "cell_um": 30.443125,
+      "total_w": 0.07260680327649971,
+      "peak_to_die_mean": 4.728947533752607,
+      "active_area_fraction": 0.984375,
+      "area_holding_50pct_power": 0.2421875,
+      "area_holding_90pct_power": 0.671875
     },
     "32": {
-      "cell_um": 2.7778125,
-      "total_w": 0.0016612181293359785,
-      "peak_to_die_mean": 5.01564579234787,
-      "active_area_fraction": 0.794921875,
-      "area_holding_50pct_power": 0.1953125,
-      "area_holding_90pct_power": 0.5302734375
+      "cell_um": 15.2215625,
+      "total_w": 0.07260680327649971,
+      "peak_to_die_mean": 5.91163522502643,
+      "active_area_fraction": 0.875,
+      "area_holding_50pct_power": 0.2138671875,
+      "area_holding_90pct_power": 0.6474609375
     },
     "64": {
-      "cell_um": 1.38890625,
-      "total_w": 0.0016612181293359785,
-      "peak_to_die_mean": 8.305338158205783,
-      "active_area_fraction": 0.6943359375,
-      "area_holding_50pct_power": 0.14990234375,
-      "area_holding_90pct_power": 0.43994140625
+      "cell_um": 7.61078125,
+      "total_w": 0.07260680327649971,
+      "peak_to_die_mean": 8.785789327286642,
+      "active_area_fraction": 0.8525390625,
+      "area_holding_50pct_power": 0.186279296875,
+      "area_holding_90pct_power": 0.603515625
     }
   },
   "submodel_equivalent": {
     "fraction_of_power": 0.5,
-    "fraction_of_area": 0.14990234375,
+    "fraction_of_area": 0.186279296875,
     "note": "feed these to submodel.concentrate() to place the real design's shape on the measured Tj sensitivity curve"
   },
   "caveats": [

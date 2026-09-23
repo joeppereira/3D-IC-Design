@@ -214,9 +214,9 @@ comparing a full link budget against a channel-only S-parameter.
 Ordered by effort-to-credibility. This section is the authoritative to-do list; it
 is kept current so no context is carried in anyone's head.
 
-**Last worked: 2026-09-23.** Items 1–5, 10, 12 and 15 are closed; items 11, 13,
-14, 16 and 17 are open. Item 17 is the one that now matters most: item 12 showed
-the input resolution dominates every error term we have been measuring.
+**Last worked: 2026-09-23.** Items 1–5, 10, 12, 15 and 17 are closed; items 11,
+13, 14, 16, 18 and 19 are open. Item 18 is the one that now matters most: the
+power-map corrections are measured, and the search still does not carry them.
 
 ### Closed
 
@@ -467,18 +467,55 @@ the input resolution dominates every error term we have been measuring.
     bound). Worth pairing with item 12: a sharper field can only raise skew, so
     the trade may move.
 
-17. **Find out what the power maps actually look like.** Item 12 measured a
-    **+36 °C** sensitivity to how a macro's watts are arranged inside its own
-    footprint, and this repository has no data on that arrangement — the search
-    generates uniform blocks because that is what the parameterisation allows.
-    Everything else on this list is now a smaller term. Three routes, in
-    increasing order of what they would settle: derive a concentration factor
-    from the RTL analysis already in `serdes_architect/scripts/rtl_analyzer.py`;
-    take per-instance power from a synthesised netlist if one is ever produced;
-    or admit the uncertainty explicitly by carrying concentration as a
-    perturbation axis in `rank_churn.py` and publishing temperatures as bands
-    rather than points. The third is cheap and should probably happen regardless
-    of the first two.
+17. ~~**Find out what the power maps actually look like.**~~ ✅ **Closed.**
+    Measured two ways in `reports/power_map_reality.md`. `floorplan_power.py`
+    rasterises the design record the DEF emitter already carries — 32 PHY macros
+    at fixed origins, the 39/15/6 W split — and `openroad_power.py` reads a real
+    placed design: OpenROAD on ASAP7, OpenSTA power per instance, joined to
+    placement at cell resolution. No licence; `scripts/openroad/` records the
+    flow.
+
+    | Design | Instances | Power | 50% of power in |
+    | :--- | ---: | ---: | ---: |
+    | `gcd` | 415 | 1.66 mW | **15.0%** of area |
+    | `aes` | 12,485 | 72.6 mW | **18.6%** of area |
+
+    Two designs three orders of magnitude apart agree: half the power sits in
+    roughly a sixth of the area, peak-to-mean 8–9. Fed back into the submodel
+    curve, **real structure is worth +16.84 °C (`aes`) to +21.40 °C (`gcd`)** —
+    not the +13.3 °C optimistic end of the old assumed sweep, and not its
+    +36 °C worst case.
+
+    *The finding worth carrying forward:* **the two errors run in opposite
+    directions.** Above macro level the search abstraction is far *too*
+    concentrated — four hot blocks against 32 spread macros, worth about
+    −25 °C. Below macro level it is not concentrated *enough*, worth +17 to
+    +21 °C. Neither was visible without the other, and they partially cancel,
+    so quoting either alone would have misled. The net on the published
+    72.07 °C is small; the uncertainty is not, and it is asymmetric.
+
+    *Still a bound, not a resolution:* CTS crashes under amd64 emulation on this
+    machine, so the flow stops at placement. Clock buffers and routing would add
+    power and concentrate it further — the area fraction is an upper bound and
+    the temperature penalty a lower one.
+
+### Next up
+
+18. **Give the search a power model it can be wrong about honestly.**
+    `pareto_search.py` still evaluates uniform blocks, and item 17 measured that
+    this is −25 °C at macro level and +17…+21 °C below it. Two routes: bake the
+    measured concentration into `build_power_maps` so the surrogate trains and
+    searches on realistic structure, or keep the abstraction and publish every
+    temperature as a band with those two corrections as its edges. The first is
+    more work and changes the front; the second is honest immediately and is
+    what `rank_churn.py` was built to support.
+
+19. **Run the flow on an x86 host.** CTS and `sta::instance_power` both fail
+    under emulation here (`scripts/openroad/README.md`), which caps the
+    OpenROAD results at placement. A native x86 run would give routed power,
+    real SPEF — closing the parasitics correlation channel the review lists as
+    blocked on "OpenROAD or PrimeTime" — and a second independent reader for
+    DEF/LEF.
 
 ### Decisions only the owner can make
 

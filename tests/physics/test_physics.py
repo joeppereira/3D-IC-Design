@@ -15,9 +15,12 @@ trustworthy than itself.
 """
 from __future__ import annotations
 
+import json
 import os
 import sys
+import tempfile
 import unittest
+from pathlib import Path
 
 import numpy as np
 import torch
@@ -40,6 +43,8 @@ import rank_churn as rc                                                 # noqa: 
 import memory_attach as ma                                              # noqa: E402
 import gradient_skew as gs                                              # noqa: E402
 import submodel as sm                                                   # noqa: E402
+import floorplan_power as fpw                                           # noqa: E402
+import openroad_power as orp                                            # noqa: E402
 from pareto_search import build_power_maps, GRID, SUB, N_SUB      # noqa: E402
 
 GOLDEN = os.path.join(ROOT, "physics_accelerated", "results", "golden_config.json")
@@ -1195,6 +1200,126 @@ class TestSubmodel(unittest.TestCase):
                                     roi, refine=4,
                                     q_fine=sm.concentrate(q, 0.5, 0.0625))
         self.assertGreater(hot.t_field_c[0].max(), flat.t_field_c[0].max() + 5.0)
+
+
+class TestFloorplanPower(unittest.TestCase):
+    """The power map built from the record the DEF emitter carries."""
+
+    @classmethod
+    def setUpClass(cls):
+        sys.path.insert(0, ROOT)
+        from integrations.canonical import load_design
+        cls.design = load_design()
+
+    def test_rasterising_conserves_watts(self):
+        built = fpw.rasterise(self.design, 32, 32, 5, phy_share=0.45)
+        want = sum(d.power_w for d in self.design.dies
+                   if fpw.DIE_LAYER.get(d.name, 99) < 5)
+        self.assertAlmostEqual(float(built["q"].sum()), want, places=9)
+
+    def test_conservation_holds_at_every_resolution(self):
+        want = sum(d.power_w for d in self.design.dies
+                   if fpw.DIE_LAYER.get(d.name, 99) < 5)
+        for nx in (16, 32, 64):
+            b = fpw.rasterise(self.design, nx, nx, 5, phy_share=0.6)
+            self.assertAlmostEqual(float(b["q"].sum()), want, places=9, msg=str(nx))
+
+    def test_more_power_in_macros_concentrates_the_map(self):
+        low = fpw.concentration(fpw.rasterise(self.design, 64, 64, 5, 0.2)["q"][0])
+        high = fpw.concentration(fpw.rasterise(self.design, 64, 64, 5, 0.8)["q"][0])
+        self.assertGreater(high["peak_to_die_mean"], low["peak_to_die_mean"])
+
+    def test_rejects_a_share_outside_zero_to_one(self):
+        with self.assertRaises(ValueError):
+            fpw.rasterise(self.design, 16, 16, 5, phy_share=1.5)
+
+    def test_a_smaller_die_does_not_fill_the_domain(self):
+        """The SRAM die is 15x15 mm inside an 18x18 mm domain -- the case a
+        per-layer model could not express before Region existed."""
+        b = fpw.rasterise(self.design, 64, 64, 5, 0.45)
+        sram = b["per_die"]["SRAM_Search_Die"]
+        self.assertLess(sram["die_area_fraction_of_domain"], 0.9)
+        self.assertGreater(sram["die_area_fraction_of_domain"], 0.5)
+
+    def test_orientation_is_taken_from_canonical_not_re_derived(self):
+        """Re-deriving this rule is how two macros silently overlapped once."""
+        from integrations.canonical import footprint_um
+        self.assertEqual(footprint_um((900.0, 600.0), "E"), (600.0, 900.0))
+        self.assertEqual(footprint_um((900.0, 600.0), "N"), (900.0, 600.0))
+
+
+class TestOpenroadPower(unittest.TestCase):
+    """Joining a real placement with real per-instance power."""
+
+    def _fixture(self):
+        power = {f"u{i}": {"internal_w": 1e-6 * i, "switching_w": 5e-7 * i,
+                           "leakage_w": 1e-12, "total_w": 1.5e-6 * i + 1e-12}
+                 for i in range(1, 5)}
+        placement = {f"u{i}": {"master": "INVx1", "x_um": 2.0 * i, "y_um": 1.0,
+                               "w_um": 1.0, "h_um": 1.0} for i in range(1, 5)}
+        return power, placement
+
+    def test_join_reports_what_it_could_not_match(self):
+        power, placement = self._fixture()
+        placement["orphan"] = {"master": "X", "x_um": 0.0, "y_um": 0.0,
+                               "w_um": 1.0, "h_um": 1.0}
+        joined, audit = orp.join(power, placement)
+        self.assertEqual(audit["placed_without_power"], 1)
+        self.assertEqual(len(joined), 4)
+
+    def test_rasterising_conserves_watts(self):
+        power, placement = self._fixture()
+        joined, _ = orp.join(power, placement)
+        q = orp.rasterise(joined, [0.0, 0.0, 10.0, 10.0], 16, 16)
+        self.assertAlmostEqual(float(q.sum()),
+                               sum(i["total_w"] for i in joined), places=15)
+
+    def test_concentration_metrics_match_the_floorplan_module(self):
+        """Both modules must measure the same thing or the comparison between a
+        real design and an abstraction is meaningless."""
+        q = np.zeros((8, 8))
+        q[0, 0] = 1.0
+        q[1, 1] = 1.0
+        a = orp.concentration(q)
+        b = fpw.concentration(q)
+        for k in ("peak_to_die_mean", "active_area_fraction",
+                  "area_holding_50pct_power"):
+            self.assertAlmostEqual(a[k], b[k], places=12, msg=k)
+
+    def test_a_uniform_map_has_peak_to_mean_one(self):
+        q = np.full((8, 8), 0.5)
+        self.assertAlmostEqual(orp.concentration(q)["peak_to_die_mean"], 1.0)
+
+    def test_parses_a_report_power_instances_table(self):
+        text = ("     Internal    Switching      Leakage        Total\n"
+                "        Power        Power        Power        Power (Watts)\n"
+                "----------------------------------------------------\n"
+                " 1.240970e-05 6.885203e-06 1.565658e-10 1.929506e-05 u105\n"
+                " 6.514927e-06 1.261850e-05 6.404637e-11 1.913349e-05 place152\n")
+        with tempfile.NamedTemporaryFile("w", suffix=".txt", delete=False) as fh:
+            fh.write(text)
+            path = fh.name
+        try:
+            rows = orp.read_power(Path(path))
+            self.assertEqual(set(rows), {"u105", "place152"})
+            self.assertAlmostEqual(rows["u105"]["total_w"], 1.929506e-05)
+        finally:
+            os.unlink(path)
+
+    def test_the_real_extraction_if_present(self):
+        """Against the artifacts in reports/, when a flow has been run."""
+        path = os.path.join(ROOT, "reports", "openroad_power.json")
+        if not os.path.exists(path):
+            self.skipTest("no OpenROAD extraction present")
+        with open(path) as fh:
+            doc = json.load(fh)
+        self.assertEqual(doc["stage"], "3_place")
+        grids = sorted(int(k) for k in doc["by_grid"])
+        areas = [doc["by_grid"][str(g)]["area_holding_50pct_power"]
+                 for g in grids]
+        self.assertTrue(all(a >= b - 1e-12 for a, b in zip(areas, areas[1:])),
+                        "finer grids must not report more area holding half "
+                        "the power")
 
 
 if __name__ == "__main__":
