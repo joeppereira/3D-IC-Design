@@ -1,0 +1,67 @@
+{
+  "design": "gcd",
+  "platform": "asap7",
+  "stage": "3_place",
+  "activity": 0.2,
+  "die_um": [
+    0.0,
+    0.0,
+    88.89,
+    88.89
+  ],
+  "die_mm2": 0.0079014321,
+  "instances": {
+    "instances_placed": 415,
+    "instances_with_power": 415,
+    "joined": 415,
+    "placed_without_power": 0,
+    "power_without_placement": 0
+  },
+  "power_w": {
+    "internal_w": 0.0010708135237357409,
+    "switching_w": 0.0005903718535050332,
+    "leakage_w": 3.275910277056e-08,
+    "total_w": 0.0016612181293359787
+  },
+  "power_split": {
+    "internal_w": 0.6445953754211471,
+    "switching_w": 0.3553849088686603,
+    "leakage_w": 1.971992852236356e-05
+  },
+  "by_grid": {
+    "16": {
+      "cell_um": 5.555625,
+      "total_w": 0.0016612181293359787,
+      "peak_to_die_mean": 4.238436283767751,
+      "active_area_fraction": 0.859375,
+      "area_holding_50pct_power": 0.22265625,
+      "area_holding_90pct_power": 0.58203125
+    },
+    "32": {
+      "cell_um": 2.7778125,
+      "total_w": 0.0016612181293359785,
+      "peak_to_die_mean": 5.01564579234787,
+      "active_area_fraction": 0.794921875,
+      "area_holding_50pct_power": 0.1953125,
+      "area_holding_90pct_power": 0.5302734375
+    },
+    "64": {
+      "cell_um": 1.38890625,
+      "total_w": 0.0016612181293359785,
+      "peak_to_die_mean": 8.305338158205783,
+      "active_area_fraction": 0.6943359375,
+      "area_holding_50pct_power": 0.14990234375,
+      "area_holding_90pct_power": 0.43994140625
+    }
+  },
+  "submodel_equivalent": {
+    "fraction_of_power": 0.5,
+    "fraction_of_area": 0.14990234375,
+    "note": "feed these to submodel.concentrate() to place the real design's shape on the measured Tj sensitivity curve"
+  },
+  "caveats": [
+    "ASAP7 is a predictive 7 nm library and this is an ORFS benchmark design, not a CXL switch: absolute W/cm2 does not transfer, the shape does",
+    "the flow stops at placement because CTS crashes under amd64 emulation on this machine, so clock-tree buffers and routing parasitics are absent -- both would concentrate power further, making this a lower bound",
+    "switching activity is an assumption, stated above"
+  ]
+}
