@@ -78,9 +78,12 @@ same total watts, same mesh, only the arrangement inside the macro changing:
 | *previously assumed* (50% in 25%) | 85.52 °C | +13.31 °C |
 | *previously assumed* (50% in 6.25%) | 108.21 °C | +36.00 °C |
 
-**Real power-map structure is worth +17 to +21 °C on this stack** — not the
-+13 °C optimistic end of the old sweep, and not the +36 °C worst case. Measured
-from two independent designs rather than assumed.
+**On the front's coolest design, real power-map structure is worth +17 to
++21 °C** — not the +13 °C optimistic end of the old sweep, and not the +36 °C
+worst case. Measured from two independent designs rather than assumed.
+
+That is one design. §5 measures it across the front, where it is not a constant
+and this pair of numbers turns out to be the *low* end.
 
 ## 5. The correction is not an offset
 

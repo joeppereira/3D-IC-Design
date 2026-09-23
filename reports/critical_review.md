@@ -214,9 +214,11 @@ comparing a full link budget against a channel-only S-parameter.
 Ordered by effort-to-credibility. This section is the authoritative to-do list; it
 is kept current so no context is carried in anyone's head.
 
-**Last worked: 2026-09-23.** Items 1–5, 10, 12, 15 and 17 are closed; items 11,
-13, 14, 16, 18 and 19 are open. Item 18 is the one that now matters most: the
-power-map corrections are measured, and the search still does not carry them.
+**Last worked: 2026-09-23.** Items 1–5, 10, 12, 15, 17 and 18 are closed; items
+11, 13, 14, 16 and 19 are open. Item 11 is the one that now matters most: item
+18 showed the structural correction cannot be represented on a 16×16 grid at
+all, so a finer grid is what would let the search see what it is being corrected
+for.
 
 ### Closed
 
@@ -501,14 +503,39 @@ power-map corrections are measured, and the search still does not carry them.
 
 ### Next up
 
-18. **Give the search a power model it can be wrong about honestly.**
-    `pareto_search.py` still evaluates uniform blocks, and item 17 measured that
-    this is −25 °C at macro level and +17…+21 °C below it. Two routes: bake the
-    measured concentration into `build_power_maps` so the surrogate trains and
-    searches on realistic structure, or keep the abstraction and publish every
-    temperature as a band with those two corrections as its edges. The first is
-    more work and changes the front; the second is honest immediately and is
-    what `rank_churn.py` was built to support.
+18. ~~**Give the search a power model it can be wrong about honestly.**~~
+    ✅ **Closed**, by the second of the two routes, and the first turned out to
+    be impossible at this grid: on a 16×16 map a 2×2 macro is four cells, so
+    "half the power in 15% of the macro's area" is not a representable
+    quantity. The correction has to travel beside the number, not inside it,
+    until item 11 provides a finer grid.
+
+    `physics_accelerated/src/structural_band.py` measures what that correction
+    is, across six front designs rather than one, because the question that
+    decides how it travels is whether it reorders the front:
+
+    | Design | Uniform | `aes` shape | `gcd` shape |
+    | ---: | ---: | ---: | ---: |
+    | 0 | 72.22 °C | +16.16 °C | +19.34 °C |
+    | 28 | 121.02 °C | +53.09 °C | +62.31 °C |
+    | 47 | 201.71 °C | +65.29 °C | +77.70 °C |
+
+    *The finding:* **the penalty is not an offset.** It runs +16 °C on the
+    coolest design to +78 °C on the hottest, because a design that is already
+    hot concentrates worse — so an absolute band would be wrong everywhere
+    except where it was measured. As a fraction of the temperature rise above
+    ambient it is **31–66%**, which is the form that transfers.
+
+    The ordering survives regardless (Kendall τ = 1.000, winner unchanged), but
+    *not* for the reason an offset would: the penalty rises monotonically with
+    the base peak, and a monotone transform cannot reorder. Same conclusion as
+    item 5's calibration argument, reached by a different route. **Published
+    temperatures need the band; the ranking does not.**
+
+    *Worth recording:* the first version of this module printed "close enough
+    to an offset" directly above a table spanning 61 °C — a summary
+    contradicting its own data. The verdict now tests for offset explicitly,
+    and an assertion fails if a band wider than 2 °C is described as one.
 
 19. **Run the flow on an x86 host.** CTS and `sta::instance_power` both fail
     under emulation here (`scripts/openroad/README.md`), which caps the
