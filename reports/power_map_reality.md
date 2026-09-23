@@ -82,7 +82,35 @@ same total watts, same mesh, only the arrangement inside the macro changing:
 +13 °C optimistic end of the old sweep, and not the +36 °C worst case. Measured
 from two independent designs rather than assumed.
 
-## 5. The two errors run in opposite directions
+## 5. The correction is not an offset
+
+Measured across six front designs ([`structural_band.json`](structural_band.json),
+`physics_accelerated/src/structural_band.py`), the penalty for real structure is
+**not a constant**:
+
+| Design | Uniform | `aes` shape | `gcd` shape |
+| ---: | ---: | ---: | ---: |
+| 0 | 72.22 °C | +16.16 °C | +19.34 °C |
+| 9 | 77.85 °C | +16.19 °C | +19.36 °C |
+| 18 | 94.09 °C | +37.69 °C | +45.76 °C |
+| 28 | 121.02 °C | +53.09 °C | +62.31 °C |
+| 37 | 145.01 °C | +39.92 °C | +47.86 °C |
+| 47 | 201.71 °C | +65.29 °C | +77.70 °C |
+
+It runs **+16 °C on the coolest design to +78 °C on the hottest** — a design
+that is already hot concentrates worse. An absolute band would therefore be
+wrong everywhere except where it was measured. As a fraction of the temperature
+rise above ambient it is **31–66%**, which is the form that transfers.
+
+**The ordering survives anyway** — Kendall τ = 1.000 for both shapes, winner
+unchanged — but *not* because the penalty is an offset. It rises monotonically
+with the base peak, and a monotone transform cannot reorder. That is the same
+argument `rank_churn.py` makes about additive calibration, arriving at the same
+place by a different route.
+
+Consequence: **published temperatures need the band; the ranking does not.**
+
+## 6. The two errors run in opposite directions
 
 This is the part that matters for how the numbers are used:
 
@@ -97,7 +125,7 @@ cancel — which is exactly why quoting either one alone would have been
 misleading. The net on the published 72.07 °C is small but the *uncertainty* is
 not, and it is asymmetric.
 
-## 6. Caveats
+## 7. Caveats
 
 * ASAP7 is a predictive 7 nm library and `gcd`/`aes` are ORFS benchmarks, not a
   CXL switch. **Absolute W/cm² does not transfer**; the shape does, and shape is
@@ -111,7 +139,7 @@ not, and it is asymmetric.
 * `sta::instance_power` segfaults in this environment; power is parsed from
   `report_power -instances`. Recorded in `scripts/openroad/README.md`.
 
-## 7. Related
+## 8. Related
 
 * [`reports/submodel.md`](submodel.md) — the sensitivity curve this supplies the real input to.
 * [`reports/gradient_skew.md`](gradient_skew.md) — also a lower bound for the same reason; a sharper field means steeper gradients.
