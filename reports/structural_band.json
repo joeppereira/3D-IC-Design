@@ -1,0 +1,137 @@
+{
+  "question": "is the correction for unrepresentable power structure an offset, which cannot reorder the front, or does it vary by design, which can?",
+  "shapes": {
+    "aes": 0.186,
+    "gcd": 0.15
+  },
+  "power_fraction_in_core": 0.5,
+  "n_designs": 6,
+  "designs": [
+    {
+      "index": 0,
+      "uniform_peak_c": 72.21793683051553,
+      "parent_peak_c": 72.07347836050806,
+      "aes_peak_c": 88.38118958174678,
+      "aes_penalty_c": 16.163252751231255,
+      "aes_penalty_frac_of_rise": 0.34231171110351083,
+      "gcd_peak_c": 91.55448080282979,
+      "gcd_penalty_c": 19.33654397231426,
+      "gcd_penalty_frac_of_rise": 0.4095169181516977
+    },
+    {
+      "index": 9,
+      "uniform_peak_c": 77.85460207605061,
+      "parent_peak_c": 77.81380047459449,
+      "aes_peak_c": 94.04707807515102,
+      "aes_penalty_c": 16.19247599910041,
+      "aes_penalty_frac_of_rise": 0.30635886683626207,
+      "gcd_peak_c": 97.21001397827547,
+      "gcd_penalty_c": 19.35541190222486,
+      "gcd_penalty_frac_of_rise": 0.3662010712780515
+    },
+    {
+      "index": 18,
+      "uniform_peak_c": 94.0888464895979,
+      "parent_peak_c": 94.15635773762631,
+      "aes_peak_c": 131.77676481791895,
+      "aes_penalty_c": 37.68791832832105,
+      "aes_penalty_frac_of_rise": 0.5454993134672669,
+      "gcd_peak_c": 139.8518559464955,
+      "gcd_penalty_c": 45.763009456897606,
+      "gcd_penalty_frac_of_rise": 0.6623791216978524
+    },
+    {
+      "index": 28,
+      "uniform_peak_c": 121.02471970149658,
+      "parent_peak_c": 121.59963686523419,
+      "aes_peak_c": 174.11672963315192,
+      "aes_penalty_c": 53.09200993165534,
+      "aes_penalty_frac_of_rise": 0.5528994002450379,
+      "gcd_peak_c": 183.33455484263217,
+      "gcd_penalty_c": 62.30983514113559,
+      "gcd_penalty_frac_of_rise": 0.648893694611477
+    },
+    {
+      "index": 37,
+      "uniform_peak_c": 145.00890179801803,
+      "parent_peak_c": 145.71391116143587,
+      "aes_peak_c": 184.92794873557284,
+      "aes_penalty_c": 39.91904693755481,
+      "aes_penalty_frac_of_rise": 0.33263404913696226,
+      "gcd_peak_c": 192.86546984896472,
+      "gcd_penalty_c": 47.85656805094669,
+      "gcd_penalty_frac_of_rise": 0.39877515195907787
+    },
+    {
+      "index": 47,
+      "uniform_peak_c": 201.70564284719836,
+      "parent_peak_c": 201.60856740069164,
+      "aes_peak_c": 266.99802990770894,
+      "aes_penalty_c": 65.29238706051058,
+      "aes_penalty_frac_of_rise": 0.3694980307842828,
+      "gcd_peak_c": 279.4017122263653,
+      "gcd_penalty_c": 77.69606937916694,
+      "gcd_penalty_frac_of_rise": 0.439692067142149
+    }
+  ],
+  "per_shape": {
+    "aes": {
+      "area_fraction": 0.186,
+      "penalty_c": {
+        "min": 16.163252751231255,
+        "max": 65.29238706051058,
+        "mean": 38.057848501395576,
+        "spread": 49.12913430927932
+      },
+      "penalty_fraction_of_rise": {
+        "min": 0.30635886683626207,
+        "max": 0.5528994002450379,
+        "mean": 0.40820022859555377
+      },
+      "kendall_tau_vs_uniform": 1.0,
+      "winner_uniform": 0,
+      "winner_structured": 0,
+      "reorders": false
+    },
+    "gcd": {
+      "area_fraction": 0.15,
+      "penalty_c": {
+        "min": 19.33654397231426,
+        "max": 77.69606937916694,
+        "mean": 45.386239650447656,
+        "spread": 58.35952540685268
+      },
+      "penalty_fraction_of_rise": {
+        "min": 0.3662010712780515,
+        "max": 0.6623791216978524,
+        "mean": 0.4875763374733843
+      },
+      "kendall_tau_vs_uniform": 1.0,
+      "winner_uniform": 0,
+      "winner_structured": 0,
+      "reorders": false
+    }
+  },
+  "band_c": {
+    "low": 16.163252751231255,
+    "high": 77.69606937916694,
+    "spread": 61.53281662793569
+  },
+  "band_fraction_of_rise": {
+    "low": 0.30635886683626207,
+    "high": 0.6623791216978524,
+    "mean": 0.447888283034469
+  },
+  "is_offset": false,
+  "rank_preserving": true,
+  "verdict": "the penalty is NOT an offset -- it scales with how hot a design already is -- but it rises monotonically with the base peak, so it is a monotone transform and the ordering survives. Quote it as a fraction of the temperature rise, not as degrees",
+  "source": {
+    "shapes_from": "reports/power_map_reality.md (OpenROAD on ASAP7)",
+    "front": "reports/pareto_front_nsga2.json",
+    "note": "the shapes are measured from real placed designs; applying them to this design assumes its logic concentrates similarly, which is why two designs are carried as a band rather than one as a correction"
+  },
+  "caveats": [
+    "the search cannot represent this structure at 16x16 -- a 2x2 macro is four cells -- so the correction is an annotation, not a fix; item 11 (a finer grid) is what would let the search see it",
+    "the OpenROAD flow stopped at placement, so the shapes are an upper bound on area and the penalties a lower bound"
+  ]
+}

@@ -45,6 +45,7 @@ import gradient_skew as gs                                              # noqa: 
 import submodel as sm                                                   # noqa: E402
 import floorplan_power as fpw                                           # noqa: E402
 import openroad_power as orp                                            # noqa: E402
+import structural_band as sb                                            # noqa: E402
 from pareto_search import build_power_maps, GRID, SUB, N_SUB      # noqa: E402
 
 GOLDEN = os.path.join(ROOT, "physics_accelerated", "results", "golden_config.json")
@@ -1320,6 +1321,61 @@ class TestOpenroadPower(unittest.TestCase):
         self.assertTrue(all(a >= b - 1e-12 for a, b in zip(areas, areas[1:])),
                         "finer grids must not report more area holding half "
                         "the power")
+
+
+class TestStructuralBand(unittest.TestCase):
+    """The correction the search grid cannot represent, and whether it reorders."""
+
+    def test_shapes_come_from_the_measured_designs(self):
+        """These are measurements from reports/power_map_reality.md, not knobs."""
+        self.assertIn("aes", sb.SHAPES)
+        self.assertIn("gcd", sb.SHAPES)
+        for v in sb.SHAPES.values():
+            self.assertTrue(0.10 < v < 0.25, v)
+
+    def test_verdict_distinguishes_offset_from_monotone(self):
+        """A penalty can preserve order without being an offset, and the two
+        have different consequences: an offset is one number, a monotone
+        transform is a function of temperature."""
+        rows = [{"index": i, "uniform_peak_c": 70.0 + 30 * i,
+                 "aes_peak_c": 70.0 + 30 * i + 10 * (i + 1),
+                 "aes_penalty_c": 10.0 * (i + 1),
+                 "aes_penalty_frac_of_rise": 10.0 * (i + 1) / (45.0 + 30 * i)}
+                for i in range(4)]
+        pen = np.array([r["aes_penalty_c"] for r in rows])
+        self.assertGreater(pen.max() - pen.min(), 2.0)      # not an offset
+        uniform = np.array([r["uniform_peak_c"] for r in rows])
+        structured = np.array([r["aes_peak_c"] for r in rows])
+        self.assertAlmostEqual(tg._kendall_tau(uniform, structured), 1.0)
+
+    def test_the_published_band_if_present(self):
+        path = os.path.join(ROOT, "reports", "structural_band.json")
+        if not os.path.exists(path):
+            self.skipTest("no structural band measured")
+        with open(path) as fh:
+            doc = json.load(fh)
+        for r in doc["designs"]:
+            for name in doc["shapes"]:
+                self.assertGreater(r[f"{name}_penalty_c"], 0.0,
+                                   "concentrating the same watts must not cool")
+        # the tighter shape must always cost at least as much
+        tight = min(doc["shapes"], key=lambda k: doc["shapes"][k])
+        loose = max(doc["shapes"], key=lambda k: doc["shapes"][k])
+        for r in doc["designs"]:
+            self.assertGreaterEqual(r[f"{tight}_penalty_c"],
+                                    r[f"{loose}_penalty_c"] - 1e-9)
+        self.assertEqual(doc["is_offset"], doc["band_c"]["spread"] < 2.0)
+
+    def test_a_band_that_reorders_is_reported_as_such(self):
+        doc = {"designs": [{"index": 0, "uniform_peak_c": 70.0, "x_peak_c": 90.0,
+                            "x_penalty_c": 20.0, "x_penalty_frac_of_rise": 0.44}],
+               "shapes": {"x": 0.15},
+               "per_shape": {"x": {"kendall_tau_vs_uniform": 0.2,
+                                   "reorders": True,
+                                   "penalty_c": {"min": 20.0, "max": 20.0}}},
+               "band_c": {"low": 20.0, "high": 20.0, "spread": 0.0},
+               "is_offset": True}
+        self.assertFalse(sb._assert_behaves(doc))
 
 
 if __name__ == "__main__":
