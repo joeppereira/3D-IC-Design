@@ -63,10 +63,10 @@ At an identical evaluation budget of 3,888 surrogate evaluations:
 
 | Search | Hypervolume | Front size |
 | :--- | :--- | :--- |
-| **NSGA-II** | **0.9304** | 48 |
-| Random sampling (what `gepa.py` did) | 0.9081 | 24 |
+| **NSGA-II** | **0.9508** | 48 |
+| Random sampling (what `gepa.py` did) | 0.9096 | 24 |
 
-Hypervolume rises **0.747 → 0.930** across generations. The +2.4% margin is
+Hypervolume rises **0.756 → 0.951** across generations. The +4.5% margin is
 modest, and it is *smaller* than the +7.9% this table reported before the
 surrogate was retrained (§5): on an objective function that is no longer
 systematically biased, random sampling does relatively better. The front-size
@@ -82,11 +82,11 @@ rather than trusted from the surrogate:
 | | Surrogate | Reference solver |
 | :--- | :--- | :--- |
 | Monolithic logic (1 × 4×4 block) | 108.34 °C | 109.09 °C |
-| Shattered logic (4 × 2×2 blocks) | 71.12 °C | 72.07 °C |
-| **Headroom recovered** | **+37.22 °C** | **+37.02 °C** |
+| Shattered logic (4 × 2×2 blocks) | 70.99 °C | 72.65 °C |
+| **Headroom recovered** | **+36.37 °C** | **+36.45 °C** |
 
-The claim survives high-fidelity checking: **+37.02 °C**, with prediction and
-reference now agreeing to **0.20 °C**. The mechanism is straightforward —
+The claim survives high-fidelity checking: **+36.45 °C**, with prediction and
+reference agreeing to **0.08 °C**. The mechanism is straightforward —
 dispersed heat sources do not superpose the way a compact block does, at
 identical power density per cell.
 
@@ -108,9 +108,9 @@ surrogate is least reliable. The trust guard (§6) measures it where it is used:
 
 | Front member | Surrogate | Reference | Error |
 | :--- | :--- | :--- | :--- |
-| coolest | 71.12 °C | 72.07 °C | **−0.96 K** |
-| median | 108.64 °C | 107.06 °C | **+1.58 K** |
-| hottest | 201.70 °C | 201.61 °C | **+0.10 K** |
+| coolest | 71.00 °C | 72.65 °C | **−1.65 K** |
+| median | 98.24 °C | 97.43 °C | **+0.81 K** |
+| hottest | 189.96 °C | 188.89 °C | **+1.07 K** |
 
 The previous version of this table read **+8.45 / +11.45 / +40.17 K**, every
 error positive. The guard diagnosed why — 100% of the designs the optimiser
@@ -121,7 +121,7 @@ optimiser-selected designs fell **14.21 K → 1.36 K**.
 
 **The search got better designs out of it, not just better predictions.** Led by
 the retrained surrogate, NSGA-II now finds a front whose coolest member is
-**72.07 °C on the reference solver**, against **77.61 °C** for the design the
+**72.65 °C on the reference solver**, against **77.61 °C** for the design the
 biased surrogate chose. A surrogate that over-predicts non-uniformly does not
 merely misreport a design; it picks the wrong one.
 
@@ -182,24 +182,26 @@ The guard splits the error three ways, and the three sum to the total exactly
 
 | Term | Mean | Max | Fixed by |
 | :--- | :--- | :--- | :--- |
-| network extrapolation (surrogate vs the solver that made its labels, same mesh) | −1.30 K | 3.41 K | retraining — **done**, was +14.21 K |
-| solver agreement (that solver vs the reference, same mesh) | 0.00003 K | 0.00004 K | nothing — it is what makes the split valid |
-| **training-mesh discretisation (16×16×5 vs 32×32×10)** | **+1.88 K** | **+7.52 K** | re-solving, which is what the guard does |
-| total | +0.59 K | 5.21 K | |
+| network extrapolation (surrogate vs the reference on its own training mesh) | −0.91 K | 3.40 K | retraining — **done**, was +14.21 K |
+| training-mesh discretisation (16×16×**10** vs 32×32×10) | **+0.99 K** | **+5.41 K** | a finer training mesh — **done**, was +1.88 K ([`vertical_mesh.md`](vertical_mesh.md)) |
+| total | **+0.08 K** | 5.41 K | |
 
-**The mesh is now the dominant term.** That is the useful consequence of fixing
-the network: the surrogate is 1.5× worse at optimiser-selected designs than on
-its own training distribution (1.33 K against 0.90 K), down from 6.8×, and what
-is left is a property of the 16×16×5 grid rather than of the network. Moving the
-surrogate onto the converged mesh is the open item this now points at
-(`critical_review.md` §5 item 11); until then, tier 1 is what stands between a
-prediction and a published temperature.
+**Both terms are now under 1 K on average**, and the total bias is +0.08 K. The
+mesh term was the dominant one until the surrogate was moved onto a z-refined
+stack — the discretisation error turned out to be *vertical*, not in-plane, and
+halving the layer thickness took it from +1.88 K to +0.99 K
+([`vertical_mesh.md`](vertical_mesh.md)).
+
+What remains larger than either is the term neither addresses: the **+31–66% of
+temperature rise** for power structure the 16×16 grid cannot represent at all
+([`power_map_reality.md`](power_map_reality.md) §5). Tier 1 still stands between
+a prediction and a published temperature.
 
 ### 6.4 The ranking, measured on the whole front
 
 | | |
 | :--- | :--- |
-| Kendall τ, surrogate vs reference, across all 48 front members | **0.996** |
+| Kendall τ, surrogate vs reference, across all 48 front members | **0.986** |
 | selection regret (the surrogate's own pick vs the coolest design the reference finds) | **+0.00 °C** |
 
 This held even when the surrogate was 8–47 K optimistic (τ was 0.986 then):

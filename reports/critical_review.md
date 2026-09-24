@@ -214,11 +214,12 @@ comparing a full link budget against a channel-only S-parameter.
 Ordered by effort-to-credibility. This section is the authoritative to-do list; it
 is kept current so no context is carried in anyone's head.
 
-**Last worked: 2026-09-23.** Items 1–5, 10, 12, 15, 17 and 18 are closed; items
-11, 13, 14, 16 and 19 are open. Item 11 is the one that now matters most: item
-18 showed the structural correction cannot be represented on a 16×16 grid at
-all, so a finer grid is what would let the search see what it is being corrected
-for.
+**Last worked: 2026-09-23.** Items 1–5, 10, 11, 12, 15, 17 and 18 are closed;
+items 13, 14, 16 and 19 are open. The largest remaining error is no longer in
+the solver or the network: it is the **+31–66% of temperature rise** for power
+structure the 16×16 grid cannot express (item 18), which needs sub-macro
+structure in the search's parameterisation rather than a finer mesh under a
+uniform block.
 
 ### Closed
 
@@ -374,43 +375,36 @@ for.
 
 ### Next up
 
-11. **Move the surrogate onto the converged mesh.** With extrapolation down to
-    ~1.4 K, the largest remaining term between a surrogate prediction and a
-    defensible temperature is the **16×16×5 mesh itself**: +2.76 K mean and
-    +10.02 K worst against 32×32×10 at optimiser-selected designs. Labels on the
-    finer mesh now cost almost nothing (`dataset.py` labels 3,800 maps in under
-    a second; the finer mesh is ~2 ms per solve), so the work is regenerating at
-    32×32×10, widening the FNO's input, and re-measuring. The success criterion
-    is the trust guard's own error budget: the discretisation row should
-    collapse to the 0.18 K that separates 32×32×10 from 64×64×20.
+11. ~~**Move the surrogate onto the converged mesh.**~~ ✅ **Closed**, and the
+    item was pointing the wrong way. It assumed the +1.88 K discretisation error
+    was in-plane and prescribed a 32×32 retrain. Decomposing it first
+    (`reports/vertical_mesh.md`):
 
-12. ~~**ROI submodeling in the reference solver.**~~ ✅ **Closed.**
-    `physics_accelerated/src/submodel.py`, measured in `reports/submodel.md`.
-    The solver gained a Dirichlet lateral boundary so a region can inherit its
-    surroundings, and the two checks the deleted `transient_roi_solver.py`
-    lacked both found bugs: **exactness** (the submodel at the parent's own
-    resolution must *be* the parent — 3.03e-2 °C until corner cells got a value
-    per open face rather than per cell, then 3.9e-11 °C) and **region
-    independence** (the peak moves 0.007 °C across boxes from 3.9 to 9.0 mm
-    while the boundary flux swings through zero). A third fix came with them:
-    the energy balance counted only the top and bottom faces, so a solve with a
-    prescribed lateral boundary read a 58% "error" while being perfectly
-    correct.
+    | Refinement | Mean | Consistent? |
+    | :--- | ---: | :--- |
+    | in-plane, 16×16 → 32×32 | **−0.27 °C** | no, ranges −2.14 to +1.01 |
+    | vertical, 1 → 2 z-cells per layer | **+1.77 °C** | yes, always positive |
 
-    *The finding, and it is the largest number this project has produced:*
-    **the grid-convergence study was converging the wrong thing.** GCI 0.081% is
-    a true statement about the discretisation of a power map already smeared
-    into 1.125 mm blocks. Holding total power, mesh and design fixed and only
-    rearranging a macro's watts *within its own footprint* — structure no 562 µm
-    cell can represent — moves the peak by **+36.00 °C** at 944 W/cm², a density
-    within the range normally discussed for a logic hotspot.
+    **The error was vertical.** A ten-minute measurement redirected about two
+    hours of work at four times the training cost. The surrogate now predicts on
+    a stack with two z-cells per layer, with the physics residual rebuilt on the
+    same refined stack so the PINO term still scores its labels' own
+    discretisation (label residual 3.7e-6 K, unchanged).
 
-    *Why that matters beyond one number:* no vendor correlation of the same
-    input would find it. Icepak fed the same blocks returns the same smeared
-    answer, so this is invisible to the entire T1/T2 ladder. It is a modelling
-    resolution gap, not a model-form gap, and it is an order of magnitude larger
-    than every error term the trust guard currently reports. It also makes the
-    28.1 ps gradient-skew result a lower bound.
+    Measured by the guard: discretisation **+1.88 → +0.99 K** mean, network
+    −1.30 → −0.91 K, **total bias +0.59 → +0.08 K**. Against the legacy
+    surrogate on the same designs the benchmark reads **18.03 K → 0.79 K**.
+    Held-out field RMSE moved the other way, 0.580 → 0.689 K, because the model
+    predicts twice the channels of a field with more structure — a different
+    metric from the one the project quotes.
+
+    *And a bug of a familiar kind:* the guard's budget compared the surrogate
+    against a 16×16×5 "training mesh" it no longer used, reporting the
+    discretisation term getting *worse* after the fix. `ReferenceCascade.level`
+    now takes in-plane and vertical refinement separately and `audit` reads the
+    training mesh off the model's own weights. Third time in this project a
+    number was scored against the wrong discretisation, which is why the
+    budget's terms are asserted to sum to the total — they do, to 0.0 K.
 
 13. **A timing/eye return channel, and rank churn on the result.**
     `integrations/correlate.py` has four channels (thermal, IR drop,

@@ -45,7 +45,7 @@ from pathlib import Path
 import numpy as np
 import torch
 
-from trust_guard import ReferenceCascade, build_context
+from trust_guard import ReferenceCascade, build_context, expand_power_map
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_CONFIG = REPO_ROOT / "physics_accelerated/results/golden_config.json"
@@ -133,9 +133,38 @@ SAMPLERS = {"hotspots": hotspot_maps, "layouts": layout_maps,
 
 # --- labels ---------------------------------------------------------------
 
-def solve_labels(maps: np.ndarray, cascade: ReferenceCascade) -> np.ndarray:
-    """Exact steady-state fields on the map's own mesh, one factorisation."""
-    return np.stack([cascade.field(m, 1) for m in maps]).astype(np.float32)
+def solve_labels(maps: np.ndarray, cascade: ReferenceCascade,
+                 refine_z: int = 1) -> np.ndarray:
+    """Exact steady-state fields, on a mesh refined `refine_z` times in z.
+
+    One z-cell per layer leaves +1.77 C of discretisation error in the peak,
+    measured across the front and consistently positive -- the dominant term
+    once the network was retrained. Labelling on the refined stack moves that
+    error out of the surrogate rather than correcting for it afterwards. The
+    field returned has `layers * refine_z` channels, and the power maps are
+    expanded to match.
+    """
+    lv = cascade.level(1)
+    if refine_z == 1:
+        return np.stack([cascade.field(m, 1) for m in maps]).astype(np.float32)
+    a, b, mesh = cascade.ref.assemble(maps.shape[-1], maps.shape[-2], refine_z)
+    import scipy.sparse.linalg as spla
+    lu = spla.splu(a.tocsc())
+    bc = b - mesh["q"].reshape(-1)
+    out = []
+    for m in maps:
+        q = expand_power_map(m, 1, mesh["layer_of"])
+        t = lu.solve(bc + q.reshape(-1))
+        out.append(t.reshape(mesh["nz"], mesh["ny"], mesh["nx"]))
+    return np.stack(out).astype(np.float32)
+
+
+def expand_maps_z(maps: np.ndarray, refine_z: int) -> np.ndarray:
+    """Power maps onto the refined stack: each layer's watts split evenly over
+    its sub-layers, so the total is unchanged."""
+    if refine_z == 1:
+        return maps
+    return np.repeat(maps, refine_z, axis=1) / refine_z
 
 
 def _rel(path: Path) -> str:
@@ -149,7 +178,8 @@ def _rel(path: Path) -> str:
 
 
 def build(distribution: str, counts: dict, config: Path, out_dir: Path,
-          tag: str | None = None, seed: int = 20260920) -> dict:
+          tag: str | None = None, seed: int = 20260920,
+          refine_z: int = 1) -> dict:
     config = Path(config).resolve()
     out_dir = Path(out_dir).resolve()
     solver, cascade = build_context(config)
@@ -164,7 +194,9 @@ def build(distribution: str, counts: dict, config: Path, out_dir: Path,
     manifest = {
         "distribution": distribution,
         "config": _rel(config),
-        "grid": grid, "layers": layers, "nominal_total_power_w": total_w,
+        "grid": grid, "layers": layers, "refine_z": refine_z,
+        "channels": layers * refine_z,
+        "nominal_total_power_w": total_w,
         "label_method": ("reference solver, direct sparse solve on the same "
                          "16x16x5 discretisation the FDM solver uses "
                          "(agreement 0.0031 K across the field)"),
@@ -180,7 +212,8 @@ def build(distribution: str, counts: dict, config: Path, out_dir: Path,
         x = sampler(n, rng, total_w, layers, grid)
         t_sample = time.perf_counter() - t0
         t0 = time.perf_counter()
-        y = solve_labels(x, cascade)
+        y = solve_labels(x, cascade, refine_z)
+        x = expand_maps_z(x, refine_z)
         t_label = time.perf_counter() - t0
 
         xp = out_dir / f"x_{name}_{split}.pt"
@@ -207,7 +240,7 @@ def build(distribution: str, counts: dict, config: Path, out_dir: Path,
     import sys
     sys.path.insert(0, str(REPO_ROOT / "serdes_architect/src"))
     from heat_residual import HeatEquationResidual
-    res = HeatEquationResidual.from_solver(solver)
+    res = HeatEquationResidual.from_solver(solver, refine_z=refine_z)
     split = next(iter(manifest["splits"]))
     x = torch.load(REPO_ROOT / manifest["splits"][split]["x"])
     y = torch.load(REPO_ROOT / manifest["splits"][split]["y"])  # _rel keeps this valid
@@ -232,13 +265,17 @@ def main(argv=None) -> int:
     ap.add_argument("--config", default=str(DEFAULT_CONFIG))
     ap.add_argument("--out", default=str(DEFAULT_OUT))
     ap.add_argument("--seed", type=int, default=20260920)
+    ap.add_argument("--refine-z", type=int, default=1,
+                    help="z-cells per layer in the labels; 2 removes the "
+                         "+1.77 C vertical discretisation error")
     args = ap.parse_args(argv)
 
     print(f"📦 {args.distribution} dataset: {args.train} train / {args.val} val "
           f"/ {args.test} test")
     build(args.distribution,
           {"train": args.train, "val": args.val, "test": args.test},
-          Path(args.config), Path(args.out), tag=args.tag, seed=args.seed)
+          Path(args.config), Path(args.out), tag=args.tag, seed=args.seed,
+          refine_z=args.refine_z)
     return 0
 
 

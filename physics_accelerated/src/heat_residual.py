@@ -85,9 +85,26 @@ class HeatEquationResidual(nn.Module):
             return float(torch.sqrt((self.forward(t_c, q_w) ** 2).mean()))
 
     @classmethod
-    def from_solver(cls, solver) -> "HeatEquationResidual":
+    def from_solver(cls, solver, refine_z: int = 1) -> "HeatEquationResidual":
         """Build from serdes_architect's ThermalSolver so the discretisation,
-        materials and boundary conditions cannot drift apart."""
-        return cls(dx_m=solver.dx, dy_m=solver.dy, dz_m=solver.dz,
-                   k_w_mk=solver.k, h_top=solver.h_top,
+        materials and boundary conditions cannot drift apart.
+
+        `refine_z` splits every layer into that many sub-layers of equal
+        thickness and identical material, which is the same stack discretised
+        more finely rather than a different stack. It exists because the
+        surrogate's discretisation error turned out to be **vertical**: refining
+        16x16 to 32x32 in plane moves the peak by -0.27 C on average and not
+        even consistently in sign, while going from one z-cell per layer to two
+        moves it +1.77 C, consistently positive. A surrogate that predicts on
+        the refined stack needs a residual operator defined on the same one.
+        """
+        if refine_z < 1:
+            raise ValueError("refine_z must be at least 1")
+        dz = torch.as_tensor(solver.dz, dtype=torch.float32)
+        k = torch.as_tensor(solver.k, dtype=torch.float32)
+        if refine_z > 1:
+            dz = torch.repeat_interleave(dz / refine_z, refine_z)
+            k = torch.repeat_interleave(k, refine_z)
+        return cls(dx_m=solver.dx, dy_m=solver.dy, dz_m=dz,
+                   k_w_mk=k, h_top=solver.h_top,
                    h_bottom=solver.h_bottom, t_ambient_c=solver.t_ambient)

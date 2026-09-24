@@ -1378,5 +1378,74 @@ class TestStructuralBand(unittest.TestCase):
         self.assertFalse(sb._assert_behaves(doc))
 
 
+class TestZRefinedResidual(unittest.TestCase):
+    """The residual operator on a stack split into more z-cells.
+
+    This exists because the surrogate's discretisation error turned out to be
+    vertical, not in-plane: 16x16 -> 32x32 moves the peak -0.27 C on average
+    and not consistently in sign, while one z-cell per layer -> two moves it
+    +1.77 C, consistently positive."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.solver = ThermalSolver(GOLDEN)
+
+    def test_refining_preserves_the_stack(self):
+        """Splitting a layer in two must not change its total thickness or its
+        material -- it is the same stack, discretised more finely."""
+        one = HeatEquationResidual.from_solver(self.solver, refine_z=1)
+        two = HeatEquationResidual.from_solver(self.solver, refine_z=2)
+        self.assertEqual(two.layers, 2 * one.layers)
+        import torch as _t
+        dz1 = _t.as_tensor(self.solver.dz, dtype=_t.float32)
+        dz2 = _t.repeat_interleave(dz1 / 2, 2)
+        self.assertAlmostEqual(float(dz1.sum()), float(dz2.sum()), places=9)
+
+    def test_rejects_a_refinement_below_one(self):
+        with self.assertRaises(ValueError):
+            HeatEquationResidual.from_solver(self.solver, refine_z=0)
+
+    def test_a_refined_solve_satisfies_the_refined_operator(self):
+        """The labels and the physics term must agree about the stack, or the
+        PINO loss is scoring a field against a different discretisation."""
+        import dataset as ds
+        cascade = tg.ReferenceCascade(tg.reference_from_solver(self.solver))
+        maps = ds.layout_maps(4, np.random.default_rng(5), 60.0,
+                              self.solver.layers, GRID)
+        labels = ds.solve_labels(maps, cascade, refine_z=2)
+        expanded = ds.expand_maps_z(maps, 2)
+        self.assertEqual(labels.shape[1], 2 * self.solver.layers)
+        self.assertEqual(expanded.shape[1], labels.shape[1])
+        res = HeatEquationResidual.from_solver(self.solver, refine_z=2)
+        self.assertLess(float(res.rms_k(torch.from_numpy(labels),
+                                        torch.from_numpy(expanded))), 1e-3)
+
+    def test_expanding_maps_conserves_watts(self):
+        import dataset as ds
+        maps = ds.layout_maps(3, np.random.default_rng(6), 60.0,
+                              self.solver.layers, GRID)
+        for rz in (1, 2, 4):
+            self.assertAlmostEqual(float(ds.expand_maps_z(maps, rz).sum()),
+                                   float(maps.sum()), places=4, msg=str(rz))
+
+    def test_the_vertical_term_dominates_the_in_plane_one(self):
+        """The measurement that redirected this work, as a regression test."""
+        cascade = tg.ReferenceCascade(tg.reference_from_solver(self.solver))
+        m = build_power_maps(
+            np.random.default_rng(9).uniform(0, GRID - SUB, (3, 2 * N_SUB + 2)),
+            45.0, 15.0, self.solver.layers).numpy()
+        inplane, vertical = [], []
+        for one in m:
+            coarse = cascade.peak(one, 1)
+            fine_z = float(cascade.ref.solve(nx=GRID, ny=GRID, refine_z=2,
+                                             power_map=tg.expand_power_map(
+                                                 one, 1, cascade.ref.assemble(
+                                                     GRID, GRID, 2)[2]["layer_of"])
+                                             ).t_field_c[0].max())
+            vertical.append(coarse - fine_z)
+        self.assertTrue(all(v > 0 for v in vertical),
+                        "refining z must lower the peak consistently")
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -46,11 +46,41 @@ GENOME_KEYS = [f"{a}{i}" for i in range(N_SUB) for a in ("x", "y")] + ["mx", "my
 
 
 def load_surrogate(model_path: str, stats_path: str, layers: int = 5):
-    model = FNO2d(modes1=8, modes2=8, width=32, layers=layers)
-    model.load_state_dict(torch.load(model_path, map_location="cpu"))
+    """Load a surrogate, taking its channel count from the weights.
+
+    A z-refined surrogate predicts two cells per physical layer, so it has
+    twice the channels. Reading that from `fc2.bias` rather than from the
+    caller means a model and its channel count cannot be paired wrongly --
+    which would otherwise fail as a shape error deep inside a search.
+    """
+    state = torch.load(model_path, map_location="cpu")
+    channels = state["fc2.bias"].numel() if "fc2.bias" in state else layers
+    model = FNO2d(modes1=8, modes2=8, width=32, layers=channels)
+    model.load_state_dict(state)
     model.eval()
     stats = torch.load(stats_path, map_location="cpu")
     return model, float(stats["mean"]), float(stats["std"])
+
+
+def surrogate_channels(model) -> int:
+    return int(model.fc2.bias.numel())
+
+
+def adapt_maps(maps, model):
+    """A [layers, G, G] power map onto whatever channel count the model wants.
+
+    Watts are split evenly over each layer's sub-cells, matching what
+    `dataset.expand_maps_z` did when the labels were made.
+    """
+    t = maps if torch.is_tensor(maps) else torch.from_numpy(np.asarray(maps)).float()
+    channels = surrogate_channels(model)
+    if channels == t.shape[1]:
+        return t
+    if channels % t.shape[1]:
+        raise ValueError(f"model wants {channels} channels, map has "
+                         f"{t.shape[1]}, which does not divide it")
+    rz = channels // t.shape[1]
+    return torch.repeat_interleave(t, rz, dim=1) / rz
 
 
 def build_power_maps(genomes: np.ndarray, logic_w: float, mem_w: float,
@@ -81,19 +111,23 @@ def monolithic_power_map(logic_w: float, mem_w: float, layers: int,
     return maps
 
 
-def surrogate_peaks(model, mean, std, maps) -> np.ndarray:
-    """Predicted logic-die peak temperature for already-built power maps."""
-    t = maps if torch.is_tensor(maps) else torch.from_numpy(np.asarray(maps)).float()
+def surrogate_peaks(model, mean, std, maps, layers: int = 5) -> np.ndarray:
+    """Predicted logic-die peak temperature for already-built power maps.
+
+    The logic die is the first physical layer, which on a z-refined model is
+    the first `channels / layers` channels rather than channel 0.
+    """
+    t = adapt_maps(maps, model)
+    per_layer = max(1, surrogate_channels(model) // layers)
     with torch.no_grad():
-        return ((model(t) * std + mean)[:, 0].amax(dim=(1, 2))).numpy()
+        field = model(t) * std + mean
+        return field[:, :per_layer].amax(dim=(1, 2, 3)).numpy()
 
 
 def make_evaluator(model, mean, std, logic_w, mem_w, layers=5, counter=None):
     def evaluate(genomes: np.ndarray) -> np.ndarray:
         maps = build_power_maps(genomes, logic_w, mem_w, layers)
-        with torch.no_grad():
-            t = model(maps) * std + mean
-        logic_peak = t[:, 0].amax(dim=(1, 2)).numpy()
+        logic_peak = surrogate_peaks(model, mean, std, maps, layers)
         # Total interconnect: sub-macro spread plus the hop to the memory block.
         span = []
         for g in genomes:
@@ -111,7 +145,7 @@ def make_evaluator(model, mean, std, logic_w, mem_w, layers=5, counter=None):
 
 def run_trust_guard(genomes: np.ndarray, surrogate_peaks: np.ndarray, args,
                     logic_w: float, mem_w: float, layers: int,
-                    surrogate_fn=None) -> dict:
+                    surrogate_fn=None, model=None) -> dict:
     """Re-solve what the search selected, before any of it is published.
 
     The surrogate is 8-47 K optimistic at these designs and every one of them is
@@ -128,15 +162,21 @@ def run_trust_guard(genomes: np.ndarray, surrogate_peaks: np.ndarray, args,
     # training set happens to be on disk -- and hold onto them, because the
     # in-distribution control has to be drawn from the same place or it is a
     # control for a different model.
-    train_maps = load_training_maps(training_set_for(args.model))
+    train_maps = load_training_maps(training_set_for(args.model), layers)
     guard = SurrogateTrustGuard(cascade, DistributionGuard.fit(train_maps))
     maps = build_power_maps(genomes, logic_w, mem_w, layers)
     fdm = solver.solve_steady_state(maps)[:, 0].amax(dim=(1, 2)).numpy()
 
     print()
+    # The surrogate's training mesh, read off its own weights: a z-refined
+    # model was trained against a reference with that many cells per layer, and
+    # scoring it against a one-cell mesh would report a discretisation error it
+    # does not have.
+    train_rz = max(1, surrogate_channels(model) // layers) if model else 1
     report = guard.audit(maps.numpy(), surrogate_peaks,
                          top_k=args.trust_k or None,
-                         confirm_k=args.confirm_k, fdm_peaks=fdm)
+                         confirm_k=args.confirm_k, fdm_peaks=fdm,
+                         train_refine_z=train_rz)
     if surrogate_fn is not None:
         report["in_distribution_control"] = guard.in_distribution_control(
             surrogate_fn, train_maps=train_maps,
@@ -193,8 +233,8 @@ def main():
     # legacy pair is results/fno_model_lam0p1.pt + norm_stats_legacy_lam0p1.pt;
     # stats are per-variant because a model paired with another variant's mean
     # and std silently shifts every temperature it predicts.
-    ap.add_argument("--model", default="results/fno_model_mixed_lam0p1.pt")
-    ap.add_argument("--stats", default="results/norm_stats_mixed_lam0p1.pt")
+    ap.add_argument("--model", default="results/fno_model_mixedz2_lam0p1.pt")
+    ap.add_argument("--stats", default="results/norm_stats_mixedz2_lam0p1.pt")
     ap.add_argument("--config", default="results/golden_config.json")
     ap.add_argument("--pop", type=int, default=48)
     ap.add_argument("--generations", type=int, default=60)
@@ -268,9 +308,7 @@ def main():
             my = int(np.clip(round(g[3]), 0, GRID - BLOCK))
             maps[i, 0, ly:ly + BLOCK, lx:lx + BLOCK] = logic_w / (BLOCK * BLOCK)
             maps[i, 1, my:my + BLOCK, mx:mx + BLOCK] = mem_w / (BLOCK * BLOCK)
-        with torch.no_grad():
-            t = model(maps) * std + mean
-        peak = t[:, 0].amax(dim=(1, 2)).numpy()
+        peak = surrogate_peaks(model, mean, std, maps, layers)
         span = np.array([abs(g[0] - g[2]) + abs(g[1] - g[3]) for g in genomes])
         return np.stack([peak, span], axis=1)
 
@@ -298,8 +336,9 @@ def main():
         # near zero rather than as an error.
         trust = run_trust_guard(front_genomes, front_sorted[:, 0], args,
                                 logic_w, mem_w, layers,
-                                surrogate_fn=lambda m: surrogate_peaks(model, mean,
-                                                                       std, m))
+                                surrogate_fn=lambda m: surrogate_peaks(
+                                    model, mean, std, m, layers),
+                                model=model)
 
     outdir = Path(args.out)
     outdir.mkdir(parents=True, exist_ok=True)

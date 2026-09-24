@@ -4,7 +4,7 @@
   "front_designs": {
     "source": "reports/pareto_front_nsga2.json",
     "n": 48,
-    "note": "selected by the legacy model; both models are measured on these same designs"
+    "note": "the currently published front; both models are measured on these same designs, and this set moves when pareto_search.py is re-run"
   },
   "models": {
     "legacy": {
@@ -38,18 +38,18 @@
       "at_optimiser_selected_designs": {
         "n": 48,
         "network_error_k": {
-          "mean_abs": 14.211755003644612,
-          "max_abs": 38.179673524673404,
-          "mean_signed": 14.211755003644612
+          "mean_abs": 18.031415491892904,
+          "max_abs": 35.39245458482097,
+          "mean_signed": 18.031415491892904
         },
         "total_error_vs_refined_k": {
-          "mean_abs": 16.97510717809287,
-          "max_abs": 46.83952155464951,
-          "mean_signed": 16.97510717809287
+          "mean_abs": 20.467928060173026,
+          "max_abs": 44.51296023328683,
+          "mean_signed": 20.467928060173026
         },
         "mahalanobis": {
-          "min": 36.41723931740302,
-          "max": 71.82853557768493,
+          "min": 36.41725283216843,
+          "max": 71.82241098626162,
           "threshold": 4.686605121088157,
           "flagged_fraction": 1.0
         }
@@ -86,18 +86,18 @@
       "at_optimiser_selected_designs": {
         "n": 48,
         "network_error_k": {
-          "mean_abs": 1.3557495612764503,
-          "max_abs": 3.1085016921096553,
-          "mean_signed": -1.3557495612764503
+          "mean_abs": 0.7889031300089785,
+          "max_abs": 2.43536635331742,
+          "mean_signed": -0.7858670258581556
         },
         "total_error_vs_refined_k": {
-          "mean_abs": 1.5890262912321687,
-          "max_abs": 8.931769218368117,
-          "mean_signed": 1.407602613171809
+          "mean_abs": 1.6929704679110895,
+          "max_abs": 9.438283719614958,
+          "mean_signed": 1.6506455424219688
         },
         "mahalanobis": {
-          "min": 2.0141633047084495,
-          "max": 6.176245711957054,
+          "min": 1.9944317365719555,
+          "max": 6.175521838715449,
           "threshold": 6.667232741691674,
           "flagged_fraction": 0.0
         }

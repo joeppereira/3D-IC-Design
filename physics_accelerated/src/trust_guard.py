@@ -173,9 +173,30 @@ class DistributionGuard:
         return FEATURE_NAMES[i], float(z[i])
 
 
-def load_training_maps(path: Path = TRAINING_SET) -> np.ndarray:
+def collapse_z(maps: np.ndarray, layers: int) -> np.ndarray:
+    """A z-refined map back to one channel per physical layer, watts preserved.
+
+    Everything in the guard reasons in *physical* layers -- `power_map_features`
+    reads plane 0 as the logic die and plane 1 as the memory die, and the FDM
+    solver has one cell per layer. A z-refined training set has two channels per
+    layer, so feeding it in raw would compare feature vectors that mean
+    different things and hand the solver the wrong shape. Both happened.
+    """
+    maps = np.asarray(maps)
+    if maps.shape[1] == layers:
+        return maps
+    if maps.shape[1] % layers:
+        raise ValueError(f"{maps.shape[1]} channels is not a whole multiple of "
+                         f"{layers} layers")
+    rz = maps.shape[1] // layers
+    return maps.reshape(maps.shape[0], layers, rz, *maps.shape[2:]).sum(axis=2)
+
+
+def load_training_maps(path: Path = TRAINING_SET,
+                       layers: int | None = None) -> np.ndarray:
     import torch                       # local: the guard's maths needs no torch
-    return torch.load(path).numpy()
+    maps = torch.load(path).numpy()
+    return maps if layers is None else collapse_z(maps, layers)
 
 
 def training_set_for(model_path) -> Path:
@@ -249,11 +270,20 @@ class ReferenceCascade:
         self.grid = grid
         self._levels: dict[int, MeshLevel] = {}
 
-    def level(self, refine: int) -> MeshLevel:
-        if refine not in self._levels:
+    def level(self, refine: int, refine_z: int | None = None) -> MeshLevel:
+        """A prefactorised mesh. `refine_z` defaults to `refine`.
+
+        They are separable because the surrogate's training mesh is not square
+        in that sense: it predicts 16x16 in plane with two cells per layer, and
+        an error budget that compared it against 16x16x5 would attribute a
+        discretisation error the surrogate no longer has.
+        """
+        key = (refine, refine if refine_z is None else refine_z)
+        refine_z = key[1]
+        if key not in self._levels:
             n = self.grid * refine
             t0 = time.perf_counter()
-            a, b, mesh = self.ref.assemble(n, n, refine)
+            a, b, mesh = self.ref.assemble(n, n, refine_z)
             t_asm = time.perf_counter() - t0
             t0 = time.perf_counter()
             lu = spla.splu(a.tocsc())
@@ -261,26 +291,34 @@ class ReferenceCascade:
             # b = boundary terms + this mesh's own load; subtracting the load
             # leaves the parameter-independent part, so every later design is
             # one vector add and one back-substitution.
-            self._levels[refine] = MeshLevel(
+            self._levels[key] = MeshLevel(
                 refine=refine, a=a, b_boundary=b - mesh["q"].reshape(-1),
                 mesh=mesh, lu=lu, assemble_s=t_asm, factorise_s=t_lu)
-        return self._levels[refine]
+        return self._levels[key]
 
-    def rhs(self, power_map: np.ndarray, refine: int) -> np.ndarray:
-        lv = self.level(refine)
+    def rhs(self, power_map: np.ndarray, refine: int,
+            refine_z: int | None = None) -> np.ndarray:
+        lv = self.level(refine, refine_z)
         q = expand_power_map(power_map, refine, lv.mesh["layer_of"])
         return lv.b_boundary + q.reshape(-1)
 
-    def field(self, power_map: np.ndarray, refine: int) -> np.ndarray:
-        lv = self.level(refine)
-        t = lv.lu.solve(self.rhs(power_map, refine))
+    def field(self, power_map: np.ndarray, refine: int,
+              refine_z: int | None = None) -> np.ndarray:
+        lv = self.level(refine, refine_z)
+        t = lv.lu.solve(self.rhs(power_map, refine, refine_z))
         return t.reshape(lv.mesh["nz"], lv.mesh["ny"], lv.mesh["nx"])
 
-    def peak(self, power_map: np.ndarray, refine: int, layer: int = 0) -> float:
-        return float(self.field(power_map, refine)[layer].max())
+    def peak(self, power_map: np.ndarray, refine: int, layer: int = 0,
+             refine_z: int | None = None) -> float:
+        """Peak over one *physical* layer, whatever its z-cell count."""
+        f = self.field(power_map, refine, refine_z)
+        per = max(1, f.shape[0] // len(self.ref.layers))
+        return float(f[layer * per:(layer + 1) * per].max())
 
-    def peaks(self, power_maps, refine: int, layer: int = 0) -> np.ndarray:
-        return np.asarray([self.peak(m, refine, layer) for m in power_maps])
+    def peaks(self, power_maps, refine: int, layer: int = 0,
+              refine_z: int | None = None) -> np.ndarray:
+        return np.asarray([self.peak(m, refine, layer, refine_z)
+                           for m in power_maps])
 
 
 # --- the audit -----------------------------------------------------------
@@ -324,7 +362,8 @@ class SurrogateTrustGuard:
 
     def audit(self, power_maps, surrogate_peaks: np.ndarray,
               top_k: int | None = None, confirm_k: int = 0,
-              fdm_peaks: np.ndarray | None = None) -> dict:
+              fdm_peaks: np.ndarray | None = None,
+              train_refine_z: int = 1) -> dict:
         maps = [np.asarray(m, dtype=float) for m in power_maps]
         surrogate_peaks = np.asarray(surrogate_peaks, dtype=float)
         if len(maps) != len(surrogate_peaks):
@@ -411,19 +450,30 @@ class SurrogateTrustGuard:
             #   discretisation  16x16 reference vs the working mesh -> re-solve
             # The three sum to the total by construction.
             fdm = np.asarray(fdm_peaks, dtype=float)[sel]
-            coarse = self.cascade.peaks([maps[i] for i in sel], 1)
+            # The surrogate's own training mesh, which is 16x16 in plane and
+            # `train_refine_z` cells per layer -- not necessarily 16x16x5.
+            coarse = self.cascade.peaks([maps[i] for i in sel], 1,
+                                        refine_z=train_refine_z)
             report["error_budget_k"] = {
-                "network_extrapolation": _stats(surrogate_peaks[sel] - fdm),
-                "solver_agreement_same_mesh": _stats(fdm - coarse),
+                "network_extrapolation": _stats(surrogate_peaks[sel] - coarse),
+                # Only meaningful when the training mesh *is* the FDM solver's
+                # one cell per layer; on a refined training mesh the FDM is a
+                # different discretisation and this is folded into the
+                # discretisation row instead.
+                "solver_agreement_same_mesh": (_stats(fdm - coarse)
+                                               if train_refine_z == 1 else None),
                 "training_mesh_discretisation": _stats(coarse - ref_peaks),
                 "total": _stats(err),
                 "closes_to_k": float(np.abs(
-                    (surrogate_peaks[sel] - fdm) + (fdm - coarse)
+                    (surrogate_peaks[sel] - coarse)
                     + (coarse - ref_peaks) - err).max()),
+                "training_mesh_z_cells_per_layer": train_refine_z,
                 "note": ("network_extrapolation is the surrogate against the "
-                         "solver that produced its training labels, on the mesh "
-                         "it was trained on; discretisation is that mesh against "
-                         f"{lv.shape}. Retraining fixes only the first."),
+                         "reference on the mesh it was trained on "
+                         f"({train_refine_z} z-cell(s) per layer); "
+                         f"discretisation is that mesh against {lv.shape}. "
+                         "Retraining fixes only the first; a finer training "
+                         "mesh is what moves the second."),
             }
 
         if confirm_k > 0:
@@ -584,8 +634,8 @@ def main(argv=None) -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--config", default=str(RESULTS / "golden_config.json"))
     ap.add_argument("--front", default=str(REPO_ROOT / "reports/pareto_front_nsga2.json"))
-    ap.add_argument("--model", default=str(RESULTS / "fno_model_mixed_lam0p1.pt"))
-    ap.add_argument("--stats", default=str(RESULTS / "norm_stats_mixed_lam0p1.pt"))
+    ap.add_argument("--model", default=str(RESULTS / "fno_model_mixedz2_lam0p1.pt"))
+    ap.add_argument("--stats", default=str(RESULTS / "norm_stats_mixedz2_lam0p1.pt"))
     ap.add_argument("--top-k", type=int, default=0, help="0 = every design")
     ap.add_argument("--confirm-k", type=int, default=3)
     ap.add_argument("--calibrate-screen", action="store_true")
@@ -594,7 +644,8 @@ def main(argv=None) -> int:
     args = ap.parse_args(argv)
 
     import torch
-    from pareto_search import build_power_maps, load_surrogate, GRID, SUB, N_SUB
+    from pareto_search import (build_power_maps, load_surrogate,   # noqa: E402
+                               surrogate_peaks, GRID, SUB, N_SUB)
 
     cfg = json.loads(Path(args.config).read_text())
     total_w = float(cfg.get("max_power_budget_w", 60.0))
@@ -604,15 +655,14 @@ def main(argv=None) -> int:
     solver, cascade = build_context(Path(args.config))
     train_set = training_set_for(args.model)
     print(f"  distribution reference: {train_set.relative_to(REPO_ROOT)}")
-    train_maps = load_training_maps(train_set)
+    train_maps = load_training_maps(train_set, layers)
     dguard = DistributionGuard.fit(train_maps)
     tguard = SurrogateTrustGuard(cascade, dguard)
 
     model, mean, std = load_surrogate(args.model, args.stats, layers)
 
-    def surrogate(maps: torch.Tensor) -> np.ndarray:
-        with torch.no_grad():
-            return (model(maps) * std + mean)[:, 0].amax(dim=(1, 2)).numpy()
+    def surrogate(maps) -> np.ndarray:
+        return surrogate_peaks(model, mean, std, maps, layers)
 
     front = json.loads(Path(args.front).read_text())
     keys = front["genome_keys"]
@@ -620,11 +670,14 @@ def main(argv=None) -> int:
     maps_t = build_power_maps(genomes, logic_w, mem_w, layers)
     maps = maps_t.numpy()
 
+    from pareto_search import surrogate_channels
+    train_rz = max(1, surrogate_channels(model) // layers)
     report = tguard.audit(maps, surrogate(maps_t),
                           top_k=args.top_k or None,
                           confirm_k=args.confirm_k,
                           fdm_peaks=solver.solve_steady_state(maps_t)[:, 0]
-                          .amax(dim=(1, 2)).numpy())
+                          .amax(dim=(1, 2)).numpy(),
+                          train_refine_z=train_rz)
 
     # The in-distribution control, computed the same way the search computes
     # it, so the two reports cannot disagree.
@@ -677,9 +730,12 @@ def print_report(r: dict) -> None:
         if "network_error_k" in c and "error_budget_k" in r:
             here = r["error_budget_k"]["network_extrapolation"]["mean_abs_k"]
             there = c["network_error_k"]["mean_abs_k"]
+            ratio = here / there if there > 0 else float("inf")
+            direction = ("worse" if ratio > 1.0 else "better")
+            factor = ratio if ratio > 1.0 else (1.0 / ratio if ratio else 0.0)
             print(f"  network error, in-dist vs at the optimum: "
                   f"{there:.2f} K -> {here:.2f} K "
-                  f"({here / there:.1f}x worse where the optimiser looks)")
+                  f"({factor:.1f}x {direction} where the optimiser looks)")
     if "error_budget_k" in r:
         b = r["error_budget_k"]
         print(f"\n  error budget at the selected designs:")

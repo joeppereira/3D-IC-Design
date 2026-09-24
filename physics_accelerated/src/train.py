@@ -222,8 +222,20 @@ def train(args):
         from heat_residual import HeatEquationResidual
         from thermal.solver import ThermalSolver
         solver_cfg = args.config
+        # The residual has to be defined on the same discretisation the labels
+        # came from. A dataset labelled with two z-cells per layer carries
+        # twice the channels, and scoring it against a one-cell operator would
+        # silently compare two different stacks.
+        _solver = ThermalSolver(solver_cfg)
+        refine_z = x_train.shape[1] // len(_solver.layer_materials)
+        if refine_z * len(_solver.layer_materials) != x_train.shape[1]:
+            raise ValueError(
+                f"data has {x_train.shape[1]} channels, which is not a whole "
+                f"multiple of the stack's {len(_solver.layer_materials)} layers")
         residual_op = HeatEquationResidual.from_solver(
-            ThermalSolver(solver_cfg)).to(device)
+            _solver, refine_z=refine_z).to(device)
+        if refine_z > 1:
+            print(f"  Residual on a z-refined stack: {refine_z} cells per layer")
         print(f"  Physics term: lambda = {lam:g}"
               f"{' (metric only, not in the loss)' if lam == 0 else ''}")
         with torch.no_grad():

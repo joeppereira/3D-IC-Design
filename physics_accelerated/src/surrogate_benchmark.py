@@ -37,8 +37,10 @@ if HERE not in sys.path:
 sys.path.insert(0, os.path.join(HERE, "..", "..", "serdes_architect", "src"))
 
 from trust_guard import (DistributionGuard, ReferenceCascade,        # noqa: E402
-                         build_context, load_training_maps, training_set_for)
-from pareto_search import build_power_maps, load_surrogate           # noqa: E402
+                         build_context, collapse_z, load_training_maps,
+                         training_set_for)
+from pareto_search import (build_power_maps, load_surrogate,        # noqa: E402
+                           adapt_maps, surrogate_channels)
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 RESULTS = REPO_ROOT / "physics_accelerated/results"
@@ -60,7 +62,7 @@ def peaks_and_fields(model, mean, std, x: torch.Tensor, batch: int = 64):
     out = []
     with torch.no_grad():
         for i in range(0, len(x), batch):
-            out.append(model(x[i:i + batch]) * std + mean)
+            out.append(model(adapt_maps(x[i:i + batch], model)) * std + mean)
     return torch.cat(out)
 
 
@@ -156,7 +158,7 @@ def main(argv=None) -> int:
         model, mean, std = load_surrogate(str(spec["model"]), str(spec["stats"]),
                                           layers)
         train_set = training_set_for(spec["model"])
-        guard = DistributionGuard.fit(load_training_maps(train_set))
+        guard = DistributionGuard.fit(load_training_maps(train_set, layers))
         entry = {
             "model": os.path.relpath(spec["model"], REPO_ROOT),
             "trained_on": spec["trained_on"],

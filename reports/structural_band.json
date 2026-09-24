@@ -9,84 +9,84 @@
   "designs": [
     {
       "index": 0,
-      "uniform_peak_c": 72.21793683051553,
-      "parent_peak_c": 72.07347836050806,
-      "aes_peak_c": 88.38118958174678,
-      "aes_penalty_c": 16.163252751231255,
-      "aes_penalty_frac_of_rise": 0.34231171110351083,
-      "gcd_peak_c": 91.55448080282979,
-      "gcd_penalty_c": 19.33654397231426,
-      "gcd_penalty_frac_of_rise": 0.4095169181516977
+      "uniform_peak_c": 72.84863505362058,
+      "parent_peak_c": 72.64624224540425,
+      "aes_peak_c": 88.9512230616737,
+      "aes_penalty_c": 16.102588008053118,
+      "aes_penalty_frac_of_rise": 0.336531815171072,
+      "gcd_peak_c": 92.10673598879586,
+      "gcd_penalty_c": 19.25810093517528,
+      "gcd_penalty_frac_of_rise": 0.40247963005828874
     },
     {
       "index": 9,
-      "uniform_peak_c": 77.85460207605061,
-      "parent_peak_c": 77.81380047459449,
-      "aes_peak_c": 94.04707807515102,
-      "aes_penalty_c": 16.19247599910041,
-      "aes_penalty_frac_of_rise": 0.30635886683626207,
-      "gcd_peak_c": 97.21001397827547,
-      "gcd_penalty_c": 19.35541190222486,
-      "gcd_penalty_frac_of_rise": 0.3662010712780515
+      "uniform_peak_c": 77.07936603911962,
+      "parent_peak_c": 77.18367806423738,
+      "aes_peak_c": 93.0867727076857,
+      "aes_penalty_c": 16.007406668566077,
+      "aes_penalty_frac_of_rise": 0.3073656207055602,
+      "gcd_peak_c": 96.24595523831827,
+      "gcd_penalty_c": 19.166589199198654,
+      "gcd_penalty_frac_of_rise": 0.3680265459606708
     },
     {
       "index": 18,
-      "uniform_peak_c": 94.0888464895979,
-      "parent_peak_c": 94.15635773762631,
-      "aes_peak_c": 131.77676481791895,
-      "aes_penalty_c": 37.68791832832105,
-      "aes_penalty_frac_of_rise": 0.5454993134672669,
-      "gcd_peak_c": 139.8518559464955,
-      "gcd_penalty_c": 45.763009456897606,
-      "gcd_penalty_frac_of_rise": 0.6623791216978524
+      "uniform_peak_c": 88.45739250393515,
+      "parent_peak_c": 88.8136705276841,
+      "aes_peak_c": 117.43087836977143,
+      "aes_penalty_c": 28.97348586583628,
+      "aes_penalty_frac_of_rise": 0.45658172708624234,
+      "gcd_peak_c": 121.65477362354247,
+      "gcd_penalty_c": 33.197381119607314,
+      "gcd_penalty_frac_of_rise": 0.5231444250967082
     },
     {
       "index": 28,
-      "uniform_peak_c": 121.02471970149658,
-      "parent_peak_c": 121.59963686523419,
-      "aes_peak_c": 174.11672963315192,
-      "aes_penalty_c": 53.09200993165534,
-      "aes_penalty_frac_of_rise": 0.5528994002450379,
-      "gcd_peak_c": 183.33455484263217,
-      "gcd_penalty_c": 62.30983514113559,
-      "gcd_penalty_frac_of_rise": 0.648893694611477
+      "uniform_peak_c": 101.55508544321847,
+      "parent_peak_c": 101.58790863068712,
+      "aes_peak_c": 145.07975604929115,
+      "aes_penalty_c": 43.524670606072675,
+      "aes_penalty_frac_of_rise": 0.5685405529114754,
+      "gcd_peak_c": 150.8895208606241,
+      "gcd_penalty_c": 49.334435417405615,
+      "gcd_penalty_frac_of_rise": 0.6444305447741596
     },
     {
       "index": 37,
-      "uniform_peak_c": 145.00890179801803,
-      "parent_peak_c": 145.71391116143587,
-      "aes_peak_c": 184.92794873557284,
-      "aes_penalty_c": 39.91904693755481,
-      "aes_penalty_frac_of_rise": 0.33263404913696226,
-      "gcd_peak_c": 192.86546984896472,
-      "gcd_penalty_c": 47.85656805094669,
-      "gcd_penalty_frac_of_rise": 0.39877515195907787
+      "uniform_peak_c": 140.8043551149503,
+      "parent_peak_c": 142.22876983774097,
+      "aes_peak_c": 178.433972069373,
+      "aes_penalty_c": 37.62961695442269,
+      "aes_penalty_frac_of_rise": 0.3249412935901295,
+      "gcd_peak_c": 188.62626093808376,
+      "gcd_penalty_c": 47.82190582313345,
+      "gcd_penalty_frac_of_rise": 0.4129542949888562
     },
     {
       "index": 47,
-      "uniform_peak_c": 201.70564284719836,
-      "parent_peak_c": 201.60856740069164,
-      "aes_peak_c": 266.99802990770894,
-      "aes_penalty_c": 65.29238706051058,
-      "aes_penalty_frac_of_rise": 0.3694980307842828,
-      "gcd_peak_c": 279.4017122263653,
-      "gcd_penalty_c": 77.69606937916694,
-      "gcd_penalty_frac_of_rise": 0.439692067142149
+      "uniform_peak_c": 187.38347331596214,
+      "parent_peak_c": 188.88643765686902,
+      "aes_peak_c": 232.2653011796649,
+      "aes_penalty_c": 44.88182786370277,
+      "aes_penalty_frac_of_rise": 0.27639406244484443,
+      "gcd_peak_c": 251.61275398169138,
+      "gcd_penalty_c": 64.22928066572925,
+      "gcd_penalty_frac_of_rise": 0.39554074903148145
     }
   ],
   "per_shape": {
     "aes": {
       "area_fraction": 0.186,
       "penalty_c": {
-        "min": 16.163252751231255,
-        "max": 65.29238706051058,
-        "mean": 38.057848501395576,
-        "spread": 49.12913430927932
+        "min": 16.007406668566077,
+        "max": 44.88182786370277,
+        "mean": 31.1865993277756,
+        "spread": 28.87442119513669
       },
       "penalty_fraction_of_rise": {
-        "min": 0.30635886683626207,
-        "max": 0.5528994002450379,
-        "mean": 0.40820022859555377
+        "min": 0.27639406244484443,
+        "max": 0.5685405529114754,
+        "mean": 0.3783925119848874
       },
       "kendall_tau_vs_uniform": 1.0,
       "winner_uniform": 0,
@@ -96,15 +96,15 @@
     "gcd": {
       "area_fraction": 0.15,
       "penalty_c": {
-        "min": 19.33654397231426,
-        "max": 77.69606937916694,
-        "mean": 45.386239650447656,
-        "spread": 58.35952540685268
+        "min": 19.166589199198654,
+        "max": 64.22928066572925,
+        "mean": 38.834615526708255,
+        "spread": 45.062691466530595
       },
       "penalty_fraction_of_rise": {
-        "min": 0.3662010712780515,
-        "max": 0.6623791216978524,
-        "mean": 0.4875763374733843
+        "min": 0.3680265459606708,
+        "max": 0.6444305447741596,
+        "mean": 0.45776269831836086
       },
       "kendall_tau_vs_uniform": 1.0,
       "winner_uniform": 0,
@@ -113,14 +113,14 @@
     }
   },
   "band_c": {
-    "low": 16.163252751231255,
-    "high": 77.69606937916694,
-    "spread": 61.53281662793569
+    "low": 16.007406668566077,
+    "high": 64.22928066572925,
+    "spread": 48.22187399716317
   },
   "band_fraction_of_rise": {
-    "low": 0.30635886683626207,
-    "high": 0.6623791216978524,
-    "mean": 0.447888283034469
+    "low": 0.27639406244484443,
+    "high": 0.6444305447741596,
+    "mean": 0.4180776051516242
   },
   "is_offset": false,
   "rank_preserving": true,

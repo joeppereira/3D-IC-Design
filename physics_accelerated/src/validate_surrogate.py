@@ -30,7 +30,7 @@ from thermal.solver import ThermalSolver                          # noqa: E402
 # reports cite.
 from trust_guard import ReferenceCascade, reference_from_solver   # noqa: E402
 from pareto_search import (load_surrogate, build_power_maps, GRID, BLOCK,  # noqa: E402
-                           SUB, N_SUB)
+                           SUB, N_SUB, surrogate_peaks)
 
 
 def solve_reference(cascade: ReferenceCascade, power_map: torch.Tensor,
@@ -55,8 +55,8 @@ def main():
 
     solver = ThermalSolver(cfg_path)
     cascade = ReferenceCascade(reference_from_solver(solver))
-    model, mean, std = load_surrogate("results/fno_model_mixed_lam0p1.pt",
-                                      "results/norm_stats_mixed_lam0p1.pt",
+    model, mean, std = load_surrogate("results/fno_model_mixedz2_lam0p1.pt",
+                                      "results/norm_stats_mixedz2_lam0p1.pt",
                                       layers)
 
     front_doc = json.loads(Path("../reports/pareto_front_nsga2.json").read_text())
@@ -74,8 +74,7 @@ def main():
     for label, idx in picks.items():
         g = np.array([[genomes[idx][k] for k in keys]])
         pmap = build_power_maps(g, logic_w, mem_w, layers)
-        with torch.no_grad():
-            surro = float((model(pmap) * std + mean)[0, 0].max())
+        surro = float(surrogate_peaks(model, mean, std, pmap, layers)[0])
         fdm = float(solver.solve_steady_state(pmap)[0, 0].max())
         r1 = solve_reference(cascade, pmap, refine=1)
         r2 = solve_reference(cascade, pmap, refine=2)
@@ -132,8 +131,9 @@ def main():
             "verified_against": "analytic 1D slab (1e-9 C) and global energy balance "
                                 "(8e-12 relative)",
         },
-        "surrogate": "results/fno_model_mixed_lam0p1.pt (FNO + heat-equation "
-                     "residual, retrained on the search distribution)",
+        "surrogate": "results/fno_model_mixedz2_lam0p1.pt (FNO + heat-equation "
+                     "residual, retrained on the search distribution, labels "
+                     "on a z-refined stack)",
         "designs": rows,
         "surrogate_error_vs_reference_k": {
             "mean_abs": float(np.mean([abs(r["surrogate_error_vs_reference_k"]) for r in rows])),
