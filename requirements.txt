@@ -26,3 +26,17 @@ liberty-parser   # Liberty -- a real lark grammar rather than regexes
 #   SPEF  -- needs OpenROAD or PrimeTime; no independent Python reader exists
 #   IBIS  -- needs ibischk7, whose download the IBIS Open Forum gates behind
 #            licence acceptance, so it is an owner action rather than a pip
+
+# --- optional: the same rule applied to the surrogate --------------------------
+# The FNO in train.py is ours, so an error in it is invisible from inside. These
+# give the operator a foreign reader, the way gdstk does for GDSII. Deliberately
+# NOT required: nvidia-physicsnemo pulls ~20 packages including torchvision,
+# which constrains the torch version, and this repository's published physics
+# numbers were measured against torch 2.10.0. Without them the 14 tests in
+# tests/physics/test_physicsnemo_interop.py skip with a loud reason.
+# See reports/physicsnemo_interop.md section 7.
+#
+#   pip install nvidia-physicsnemo   # independent FNO + .mdlus checkpoints
+#   pip install onnx onnxruntime     # the surrogate as a self-describing artifact
+#
+# onnx/onnxruntime alone are enough for physicsnemo_bridge.export_onnx.

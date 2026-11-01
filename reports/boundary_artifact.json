@@ -1,0 +1,116 @@
+{
+  "question": "the surrogate's spectral convolution is circular and the die's sides are adiabatic; what does the missing domain padding cost?",
+  "model": "physics_accelerated/results/fno_model_mixedz2_lam0p1.pt",
+  "z_refine": 2,
+  "test_set": {
+    "n": 400,
+    "grid": 16
+  },
+  "error_by_edge_distance": {
+    "0": {
+      "cells_per_map": 60,
+      "mean_abs_k": 0.5290458798408508,
+      "mean_signed_k": -0.03274133801460266
+    },
+    "1": {
+      "cells_per_map": 52,
+      "mean_abs_k": 0.3895598351955414,
+      "mean_signed_k": -0.09616788476705551
+    },
+    "2": {
+      "cells_per_map": 44,
+      "mean_abs_k": 0.35294052958488464,
+      "mean_signed_k": -0.08462794125080109
+    },
+    "3": {
+      "cells_per_map": 36,
+      "mean_abs_k": 0.3005765378475189,
+      "mean_signed_k": -0.0705304890871048
+    },
+    "4": {
+      "cells_per_map": 28,
+      "mean_abs_k": 0.2665969133377075,
+      "mean_signed_k": -0.07980786263942719
+    },
+    "5": {
+      "cells_per_map": 20,
+      "mean_abs_k": 0.24750107526779175,
+      "mean_signed_k": -0.08872835338115692
+    },
+    "6": {
+      "cells_per_map": 12,
+      "mean_abs_k": 0.22883060574531555,
+      "mean_signed_k": -0.07010402530431747
+    },
+    "7": {
+      "cells_per_map": 4,
+      "mean_abs_k": 0.2251635491847992,
+      "mean_signed_k": -0.08466846495866776
+    },
+    "outer_over_inner": 2.349607126714126
+  },
+  "edge_hotspot_probe": [
+    {
+      "macro_x": 0,
+      "ref_far_edge_c": 26.15707927487005,
+      "surrogate_far_edge_c": 39.756690979003906,
+      "delta_k": 13.599611704133856,
+      "ref_peak_c": 231.94046711744605,
+      "surrogate_peak_c": 223.90869140625
+    },
+    {
+      "macro_x": 1,
+      "ref_far_edge_c": 26.35371720489131,
+      "surrogate_far_edge_c": 27.11163330078125,
+      "delta_k": 0.7579160958899394,
+      "ref_peak_c": 190.43728670802017,
+      "surrogate_peak_c": 195.96401977539062
+    },
+    {
+      "macro_x": 2,
+      "ref_far_edge_c": 26.709553260695237,
+      "surrogate_far_edge_c": 28.997812271118164,
+      "delta_k": 2.2882590104229266,
+      "ref_peak_c": 176.05677611398852,
+      "surrogate_peak_c": 176.20742797851562
+    },
+    {
+      "macro_x": 4,
+      "ref_far_edge_c": 28.114976626476246,
+      "surrogate_far_edge_c": 29.097702026367188,
+      "delta_k": 0.982725399890942,
+      "ref_peak_c": 167.39122891126368,
+      "surrogate_peak_c": 167.45994567871094
+    },
+    {
+      "macro_x": 7,
+      "ref_far_edge_c": 33.86420004817663,
+      "surrogate_far_edge_c": 34.16228103637695,
+      "delta_k": 0.2980809882003257,
+      "ref_peak_c": 165.38973997202237,
+      "surrogate_peak_c": 165.61697387695312
+    }
+  ],
+  "antipodal_coupling": {
+    "slope_k_per_w": 0.06554076673979255,
+    "pearson_r": 0.35659344390751774,
+    "slope_controlled_for_total_power": 0.06778731041137262,
+    "slope_controlled_for_total_and_same_edge": 0.06671971887551742,
+    "total_power_coefficient": -0.00532789471528107,
+    "corr_opposite_edge_power_vs_total": 0.1203747371099817,
+    "n": 1600
+  },
+  "published_front_exposure": {
+    "available": true,
+    "members": 48,
+    "logic_submacro_on_edge": 0,
+    "memory_block_on_edge": 11,
+    "min_submacro_coord": 2,
+    "max_submacro_coord": 12
+  },
+  "wrap_signal_k": {
+    "macro_on_edge": 13.599611704133856,
+    "macro_centred": 0.2980809882003257,
+    "attributable_to_position": 13.30153071593353
+  }
+}

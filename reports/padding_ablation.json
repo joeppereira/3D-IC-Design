@@ -1,0 +1,24 @@
+{
+  "padding_0": {
+    "padding": 0,
+    "train_s": 183.4908936660504,
+    "field_rmse_k": 0.6328365802764893,
+    "peak_mean_abs_k": 0.977821409702301,
+    "peak_max_abs_k": 25.573715209960938,
+    "outer_ring_mean_abs_k": 0.5194737911224365,
+    "core_mean_abs_k": 0.26661479473114014,
+    "antipodal_slope_k_per_w": 0.05571756884455681,
+    "outer_over_core": 1.9484057201187377
+  },
+  "padding_8": {
+    "padding": 8,
+    "train_s": 264.63389199995436,
+    "field_rmse_k": 0.5513966679573059,
+    "peak_mean_abs_k": 1.2041559219360352,
+    "peak_max_abs_k": 26.127365112304688,
+    "outer_ring_mean_abs_k": 0.4302469491958618,
+    "core_mean_abs_k": 0.3284115195274353,
+    "antipodal_slope_k_per_w": 0.07395058125257492,
+    "outer_over_core": 1.3100848283731388
+  }
+}
