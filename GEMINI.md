@@ -1,3 +1,26 @@
+> # ⚠️ SUPERSEDED — historical document, not a specification
+>
+> This was the Gemini-CLI-era "living spec". It is **no longer authoritative**
+> and is kept only for history. For how this repository actually works see
+> [`CLAUDE.md`](CLAUDE.md); for what it has actually measured see
+> [`reports/critical_review.md`](reports/critical_review.md).
+>
+> Claims below that the repository's own measurements contradict:
+>
+> | Claimed here | Measured |
+> | :--- | :--- |
+> | "Level 2: 1µm Global", "Level 3: 50nm ROI" (§5) | That mesh **was never run**. The real study is [`mesh_convergence_audit.json`](reports/mesh_convergence_audit.json) — 12/24/48 grid refinement, GCI 0.081%. |
+> | ROMs built "from high-fidelity Ansys Icepak data" (§4) | `thermal_rom.py` builds POD from **our own reference solver**. No licensed tool has ever opened an artifact from this repo — T1/T2 are empty. |
+> | "Lobe B: JEPA-12L, 12-Layer CNN-MLP, ~420k parameters" | The surrogate is an **FNO**, 534,442 parameters ([`physicsnemo_interop.md`](reports/physicsnemo_interop.md)). |
+> | Accuracy "~90% / ~95% / ~98%" (§5) | Unsourced. The house standard is kelvin with a stated basis. |
+> | "Physics Injection: automatic injection of local `.TEMP` ... into SPICE sub-circuits" (§3) | `spice_io.write_primesim` emits **one global `.temp`** plus identical comment lines. Per-instance injection needs `dtemp` and is unbuilt. |
+> | "RLPF loop verified ... triggers QLoRA fine-tuning" (Status) | `.gemini/hooks/train-logic.sh` calls `serdes_architect/src/train.py`, **which does not exist**. |
+> | "Regression Verification: Suite v1.0 PASSED" (Status) | The interchange cross-consistency gate **fails with 1 error**, by documented design decision. |
+>
+> Everything below this line is unedited.
+
+---
+
 # 🚀 Living Spec: Data Center "Search-Switch" (v2 Unified Expert)
 
 ## 🏗️ Expert Domains

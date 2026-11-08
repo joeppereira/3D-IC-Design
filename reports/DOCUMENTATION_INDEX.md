@@ -4,7 +4,8 @@ This index tracks the mandatory documents required for architectural verificatio
 
 ## 📁 1. Project Management & Spec
 *   [README.md](../README.md): High-level project summary.
-*   [GEMINI.md](../GEMINI.md): Living spec and autonomous reasoning anchor.
+*   [CLAUDE.md](../CLAUDE.md): How this repository is worked in — the conventions the tests and gates enforce.
+*   [GEMINI.md](../GEMINI.md): **Superseded.** The Gemini-CLI-era spec, kept for history; its header lists the claims the measurements contradict.
 *   [reports/full_soc_architecture_spec.md](full_soc_architecture_spec.md): Full SoC Spec (Every IP, Memory, and IO).
 *   [configs/formal_spec.json](../configs/formal_spec.json): Machine-readable constraints.
 

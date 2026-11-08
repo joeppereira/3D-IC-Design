@@ -25,7 +25,7 @@ The integration work below is therefore ordered **vendor-neutral first**. One in
 
 ### 0.1 The Claim Ladder (non-negotiable)
 
-Every integration claim in `README.md`, `GEMINI.md`, or any external document must name its tier.
+Every integration claim in `README.md`, `CLAUDE.md`, or any external document must name its tier.
 
 | Tier | Meaning | Requires |
 | :--- | :--- | :--- |
@@ -283,7 +283,7 @@ Ranked by effort-to-credibility within the vendor.
 
 ### 4.1 PrimeSim HSPICE / PrimeSim XA — 224G link testbench
 - **Insertion point**: replace the fictional deck in `netlist_exporter.py` with a real, runnable netlist.
-- **Emit**: a PrimeSim-compatible hierarchical netlist — TX/RX subcircuits, `W`-element or Touchstone-referenced channel (`.model ... s-parameter` from §2.6), per-ROI `.temp` and local supply injection (the "physics injection" already described in `GEMINI.md`), correct analysis statements for the measurement being made.
+- **Emit**: a PrimeSim-compatible hierarchical netlist — TX/RX subcircuits, `W`-element or Touchstone-referenced channel (`.model ... s-parameter` from §2.6), per-ROI `.temp` and local supply injection — **not yet built**: the current emitter writes one global `.temp` and per-die comments, and real per-region injection needs a per-instance `dtemp`/`trise` sampled from the thermal field (ngspice honours `dtemp`, so the mechanism is T0-verifiable before any licence) — correct analysis statements for the measurement being made.
 - **T0**: the deck parses under `ngspice`/`Xyce` with stub models; hierarchy and node connectivity round-trip.
 - **Effort**: 4 days. Highest credibility item in the Synopsys phase — it is the "physical → SPICE" leg of the flow claim.
 

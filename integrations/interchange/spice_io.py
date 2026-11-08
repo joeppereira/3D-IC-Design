@@ -90,8 +90,23 @@ def write_ngspice(design: DesignRecord, link: Link, path: Path, prov: dict) -> P
 
 def write_primesim(design: DesignRecord, link: Link, path: Path, prov: dict,
                    s4p_rel: str) -> Path:
-    """PrimeSim HSPICE/XA deck: real hierarchy, Touchstone channel, per-ROI
-    temperature injection (the 'physics injection' GEMINI.md describes)."""
+    """PrimeSim HSPICE/XA deck: real hierarchy, Touchstone channel, and a
+    single global operating temperature.
+
+    This docstring used to claim "per-ROI temperature injection (the 'physics
+    injection' GEMINI.md describes)". It does not do that. The deck carries one
+    `.temp` for the whole netlist, and the per-die lines below it are *comments*
+    that all repeat the same number -- a 775 um die at 6 W is annotated
+    identically to a 50 um logic die at 39 W. GEMINI.md asserted the capability,
+    this docstring cited GEMINI.md, and nothing implemented it.
+
+    Real per-region injection needs a per-instance temperature delta (`dtemp`
+    in HSPICE/PrimeSim and Eldo, `trise` in Spectre), sampled from the thermal
+    field at each instance's placement. ngspice honours `dtemp` per instance, so
+    that mechanism is T0-verifiable on this machine before any licensed tool
+    sees it. Until it is built, the comments stay comments and this docstring
+    says so.
+    """
     ui_ps = 1000.0 / link.baud_gbd
     L = [f"* 3DIC-X {design.project} -- {link.name} PrimeSim HSPICE/XA testbench",
          provenance_header(prov, "*").rstrip("\n"),
