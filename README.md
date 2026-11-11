@@ -37,7 +37,8 @@ The tool utilizes a 2026-era hybrid intelligence stack:
 *   [**Mesh Convergence Audit**](reports/mesh_convergence_audit.json): measured 12/24/48 grid-refinement study with Richardson extrapolation and a published GCI. (It is not the variable 1 µm/50 nm ROI mesh an earlier README described — that mesh was never run.)
 *   [**Technical Audit & Benchmarking**](reports/technical_audit_v5.md): Detailed comparison against Ansys Heatwave and industry-standard sign-off flows.
 *   [**Fidelity Integration**](reports/fidelity_integration.md): how this explorer couples to Icepak/StarRC/HFSS-class tooling — the fidelity ladder, what a licensed run can and cannot change, and the two-timescale scheme for sub-ns margin against thermal transients.
-*   [**PhysicsNeMo Interop**](reports/physicsnemo_interop.md): the surrogate's first foreign reader — our FNO's weights mapped onto NVIDIA PhysicsNeMo's, agreeing to **7.4e-05 K** on 400 held-out maps with the published front's non-dominated set and rank order **unchanged**; plus the surrogate as a **307 KB ONNX** artifact that onnxruntime executes.
+*   [**Surrogate Handoff**](reports/surrogate_handoff.md): the trained surrogate as an artifact another project can run — a **181 KB ONNX** graph plus a contract declaring units, channel layout, de-normalisation, the measured error band and the two known defects. Emitted as `neutral:surrogate`, validated by `onnx.checker` and **executed by onnxruntime at a batch the export never traced**. Built because sibling projects were standing up physics services against randomly-initialised mock operators while a reference-checked one had no way out of this repo.
+*   [**PhysicsNeMo Interop**](reports/physicsnemo_interop.md): the surrogate's first foreign reader — our FNO's weights mapped onto NVIDIA PhysicsNeMo's, agreeing to **7.4e-05 K** on 400 held-out maps with the published front's non-dominated set and rank order **unchanged**. (The shipping ONNX artifact is the one above; the bridge's own export is a separate, PhysicsNeMo-dependent path kept for verification.)
 *   [**PhysicsNeMo Gap Review**](reports/physicsnemo_gap_review.md): what their recipe recommends that we do not do. One measured defect — our spectral convolution is circular over a die with adiabatic sides, worth **+13.6 K of phantom temperature on the opposite edge** when a macro sits on the boundary ([the measurement](reports/boundary_artifact.json)) — and a reasoned refusal to adopt their PDE residual, which assumes the periodicity ours handles.
 *   [**Critical Review**](reports/critical_review.md): Adversarial audit of this repository — which claims the code supports, which it does not, and why.
 *   [**EDA Vendor Integration Spec**](reports/eda_vendor_integration_spec.md): Hook architecture and interchange layer for handoff into Cadence, Synopsys, and Siemens flows.
@@ -46,8 +47,9 @@ The tool utilizes a 2026-era hybrid intelligence stack:
 The `integrations/` package emits standard artifacts from the physics surrogates and reads vendor results back:
 
 ```bash
-python -m integrations.cli status                       # design record + the 17 emit targets
+python -m integrations.cli status                       # design record + the 18 emit targets
 python -m integrations.cli emit --target neutral:all    # DEF/LEF, GDSII, SPEF, Liberty, Touchstone, IBIS, SPICE
+python -m integrations.cli emit --target neutral:surrogate              # the trained surrogate: ONNX + contract
 python -m integrations.cli emit --target cadence:celsius
 python -m integrations.cli correlate --thermal celsius_temperature.csv   # vendor result -> error band
 python -m integrations.cli verify                       # cross-consistency vs the silicon flow

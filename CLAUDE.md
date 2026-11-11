@@ -88,7 +88,7 @@ something more trustworthy is a liability, not a feature.
 | `integrations/` | EDA interchange: `canonical.py` → `vendors/` hooks → `interchange/` writers |
 | `reports/` | one `.md` per finding, usually paired with a `.json` of the numbers |
 | `regression_suite/` | the three gates |
-| `tests/physics/`, `tests/integrations/` | unittest, 285 tests |
+| `tests/physics/`, `tests/integrations/` | unittest, 300 tests |
 | `.claude/` | skills, the claim-lint hook, project settings |
 | `evals/` | evals for the guardrails, and prose-against-data drift |
 
@@ -158,9 +158,11 @@ history, and editing it to pass would falsify what it exists to preserve.
 * `.venv/` — Python 3.14, **torch pinned at 2.10.0**. The published physics
   numbers were measured against it; a resolver that moves torch underneath them
   invalidates a measurement record. Do not upgrade it casually.
-* **Optional deps, deliberately not required**: `nvidia-physicsnemo`, `onnx`,
-  `onnxruntime` (see `reports/physicsnemo_interop.md` §7). Without them 14 tests
-  skip loudly.
+* **Optional deps, deliberately not required**: `nvidia-physicsnemo` for
+  verification (see `reports/physicsnemo_interop.md` §7; without it 14 tests
+  skip loudly), and `onnx onnxscript onnxruntime` for the `neutral:surrogate`
+  emit target. The shipping export path imports no PhysicsNeMo — keep it that
+  way, or producing the handoff artifact needs a twenty-package dependency.
 * `ngspice` via Homebrew — not a pip package, and the one simulator available
   here. Use it: it is the only way to make a SPICE claim T0.
 * **Trained weights and datasets are build artifacts.** `.gitignore` excludes
@@ -200,3 +202,10 @@ Two known, documented defects not yet fixed:
 * **`spice_io.write_primesim` emits one global `.temp`.** Per-instance thermal
   injection needs `dtemp`, which ngspice honours and which is therefore
   T0-verifiable today.
+
+**Consumers.** `sec-soc` and `node-migration` run physics surrogates as mocks;
+`neutral:surrogate` is how the trained one reaches them
+(`reports/surrogate_handoff.md`). Their needs are not all ours: node-migration
+wants parasitic and litho surrogates, and this repo has neither a trained
+parasitic model nor any lithography at all. Do not let a thermal bundle be read
+as "the physics service".

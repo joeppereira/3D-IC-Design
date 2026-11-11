@@ -36,7 +36,12 @@ liberty-parser   # Liberty -- a real lark grammar rather than regexes
 # tests/physics/test_physicsnemo_interop.py skip with a loud reason.
 # See reports/physicsnemo_interop.md section 7.
 #
-#   pip install nvidia-physicsnemo   # independent FNO + .mdlus checkpoints
-#   pip install onnx onnxruntime     # the surrogate as a self-describing artifact
+#   pip install nvidia-physicsnemo              # independent FNO + .mdlus
+#   pip install onnx onnxscript onnxruntime     # the surrogate as an artifact
 #
-# onnx/onnxruntime alone are enough for physicsnemo_bridge.export_onnx.
+# The three onnx packages are what `neutral:surrogate` needs, and they are
+# enough on their own -- `physics_accelerated/src/surrogate_export.py` imports
+# no PhysicsNeMo. (`onnxscript` is not optional: torch's exporter imports it.
+# An earlier version of this note said onnx + onnxruntime were enough and
+# pointed at `physicsnemo_bridge.export_onnx`, which was wrong twice over --
+# that module imports PhysicsNeMo at module scope.)

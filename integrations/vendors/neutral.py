@@ -11,7 +11,7 @@ from ..base import (VendorHook, HookResult, Finding, register, SEV_INFO, SEV_WAR
                     FIDELITY_SURROGATE, FIDELITY_SYNTHETIC, TIER_EMITTED)
 from ..canonical import DesignRecord
 from ..interchange import (stackup, def_io, lef_io, gds_io, spef_io, liberty_io,
-                           touchstone_io as ts, spice_io, ibis_io)
+                           touchstone_io as ts, spice_io, ibis_io, surrogate_io)
 
 
 @register
@@ -203,3 +203,54 @@ class SpiceHook(VendorHook):
             if path.exists():
                 f += spice_io.validate(spice_io.run_ngspice(path), link, design)
         return f
+
+
+@register
+class SurrogateHook(VendorHook):
+    """The surrogate itself, as an artifact a consumer can run.
+
+    Every other target hands over geometry or an electrical description; this
+    one hands over the model that produced the thermal numbers the others are
+    annotated with. It exists because sibling projects were standing up
+    "central physics surrogate services" against randomly-initialised mock
+    operators while a trained, reference-checked one lived here with no way out.
+
+    `requires` is empty: the bundle comes from the trained weights and the
+    stackup, not from the design record's die/net/link tables. It still takes
+    the design-record hash in its provenance so an artifact can be traced to
+    the record it was emitted alongside.
+    """
+
+    vendor, tool = "neutral", "surrogate"
+    requires = ()
+
+    def emit(self, design, outdir):
+        ok, why = surrogate_io.available()
+        if not ok:
+            # Skip loudly. A missing optional dependency or an absent build
+            # artifact must never read as a passing emit.
+            return HookResult(
+                self.vendor, self.tool, self.tier, self.fidelity, files=[],
+                findings=[Finding(SEV_WARN, "unavailable", why)],
+                notes=["skipped: " + why])
+        files = surrogate_io.write(outdir, self.prov(design, validation="onnxruntime"))
+        doc = surrogate_io.read(outdir)
+        band = doc["error_band"]
+        return HookResult(
+            self.vendor, self.tool, self.tier, self.fidelity, files=files,
+            notes=[f"ONNX + contract: {doc['input']['name']} "
+                   f"{doc['input']['shape']} in W per cell -> "
+                   f"T_degC = y * {doc['output']['std']:.4f} + "
+                   f"{doc['output']['mean']:.4f}",
+                   f"error band {band['held_out_field_rmse_k']} K field RMSE, "
+                   f"{band['error_at_optimiser_selected_designs_k']} K at "
+                   f"optimiser-selected designs -- for RANKING, not absolute "
+                   f"temperatures",
+                   f"{len(doc['known_defects'])} known defect(s) declared in "
+                   f"the contract"])
+
+    def validate(self, design, result, outdir):
+        if not result.files:
+            return result.findings          # skipped; already reported
+        f = super().validate(design, result, outdir)
+        return f + surrogate_io.validate(outdir)

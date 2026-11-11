@@ -198,7 +198,13 @@ SKIP_DIRS = {".venv", "__pycache__", "node_modules", ".git", "dist"}
 # deliberately unedited below its header, and that header already tabulates
 # every claim these rules would flag. Editing it to satisfy a linter would
 # falsify the history it exists to preserve.
-EXEMPT = {"GEMINI.md": "superseded historical document, unedited by intent"}
+EXEMPT = {
+    "GEMINI.md": "superseded historical document, unedited by intent",
+    # The eval corpus is *made of* bad claims on purpose -- that is what makes
+    # it an eval. Linting it reports every positive case as a defect, which is
+    # how a guardrail ends up flagging its own test fixtures.
+    "evals/cases/claims.md": "labelled bad claims, by construction",
+}
 
 
 def tracked_files() -> list[Path]:
