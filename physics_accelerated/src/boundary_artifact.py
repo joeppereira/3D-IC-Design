@@ -136,12 +136,22 @@ def coupling(err: np.ndarray, power: np.ndarray) -> dict:
     simple = fit(opp)
     ctrl = fit(opp, total)
     both = fit(opp, total, same)
+
+    # The two controls that make the opposite-edge slope mean something. Both
+    # are quoted in the report, so both have to be in this file -- a number in
+    # prose with no backing in the data is the drift `evals/run_evals.py`
+    # exists to catch.
+    a_same = np.column_stack([same, np.ones(len(e_edge))])
+    same_only = float(np.linalg.lstsq(a_same, e_edge, rcond=None)[0][0])
+
     out = {
         "slope_k_per_w": float(simple[0]),
         "pearson_r": float(np.corrcoef(opp, e_edge)[0, 1]),
         "slope_controlled_for_total_power": float(ctrl[0]),
         "slope_controlled_for_total_and_same_edge": float(both[0]),
         "total_power_coefficient": float(ctrl[1]),
+        "same_edge_only_slope_k_per_w": same_only,
+        "same_edge_only_pearson_r": float(np.corrcoef(same, e_edge)[0, 1]),
         "corr_opposite_edge_power_vs_total": float(np.corrcoef(opp, total)[0, 1]),
         "n": int(len(e_edge)),
     }

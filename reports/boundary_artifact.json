@@ -97,6 +97,8 @@
     "slope_controlled_for_total_power": 0.06778731041137262,
     "slope_controlled_for_total_and_same_edge": 0.06671971887551742,
     "total_power_coefficient": -0.00532789471528107,
+    "same_edge_only_slope_k_per_w": -0.018007151279616353,
+    "same_edge_only_pearson_r": -0.0979730999372557,
     "corr_opposite_edge_power_vs_total": 0.1203747371099817,
     "n": 1600
   },

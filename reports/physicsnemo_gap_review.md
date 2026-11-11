@@ -113,7 +113,9 @@ repository has.
 
 PhysicsNeMo's FNO trained on our z-refined mixed training set, 40 epochs, plain
 MSE, identical seed and optimiser, `padding=0` vs their default `padding=8`.
-Both arms use *their* model, so padding is the only variable:
+Both arms use *their* model, so padding is the only variable
+(`physics_accelerated/src/padding_ablation.py` →
+[`padding_ablation.json`](padding_ablation.json)):
 
 | | padding=0 | padding=8 |
 | :--- | ---: | ---: |

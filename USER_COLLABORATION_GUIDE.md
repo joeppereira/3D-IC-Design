@@ -17,7 +17,7 @@ When the Agent pauses, you can provide the missing "Resource" or "Constraint":
 ## 3. Local Hybrid Model Training
 The Local JEPA is trained on your specific repository data. 
 *   **Command**: `Gemini, train your local physics head on the last 50 design attempts.`
-*   **Benefit**: This allows the Agent to "remember" the specific parasitics of your custom interposer, making its initial guesses 90% accurate without running a solver.
+*   **Benefit**: Retraining on the distribution you actually search is what makes the surrogate usable without a solver in the loop. Measured, not estimated: error at optimiser-selected designs went **14.21 K → 1.33 K** ([`surrogate_retraining.md`](reports/surrogate_retraining.md)). There is no measured figure for interposer parasitics specifically; this guide previously claimed "90% accurate", which was never measured and has been removed.
 
 ---
 **The goal is not full autonomy, but collaborative mastery.**

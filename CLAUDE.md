@@ -87,8 +87,10 @@ something more trustworthy is a liability, not a feature.
 | `serdes_architect/src/thermal/` | FDM + transient solvers (`ThermalSolver`) |
 | `integrations/` | EDA interchange: `canonical.py` → `vendors/` hooks → `interchange/` writers |
 | `reports/` | one `.md` per finding, usually paired with a `.json` of the numbers |
-| `regression_suite/` | the two gates |
+| `regression_suite/` | the three gates |
 | `tests/physics/`, `tests/integrations/` | unittest, 285 tests |
+| `.claude/` | skills, the claim-lint hook, project settings |
+| `evals/` | evals for the guardrails, and prose-against-data drift |
 
 **Reports pair prose with data and cite the script that produced it.** A claim in
 a `.md` should be traceable to a `.json` and a runnable command. Match that when
@@ -97,6 +99,7 @@ adding one.
 ## 4. Commands
 
 ```bash
+./regression_suite/run_claim_verification.sh        # seconds; run this first
 ./regression_suite/run_physics_verification.sh      # 8 stages, no licences
 ./regression_suite/run_interchange_qualification.sh # T0 + cross-consistency
 
@@ -112,7 +115,45 @@ adding one.
 memory module whose die hierarchy contains no memory die. That is a design-data
 decision, not a code bug. It fails identically on every commit.
 
-## 5. Environment
+## 5. The claim guardrails
+
+Tests check that the code computes what it says. Nothing checked that the
+**prose** said what the code computed — and every defect in
+`reports/critical_review.md` is that shape. So:
+
+| | |
+| :--- | :--- |
+| `.claude/hooks/claim_lint.py` | four rules: bare-percent accuracy, unchecked speedup, prose implying a licensed tool ran, sign-off asserted about our own result |
+| `evals/run_evals.py` | labelled cases proving the linter fires on bad prose and stays silent on good; plus prose-against-data drift over `reports/` |
+| `evals/cases/claims.md` | the cases, most lifted verbatim from real retractions here |
+| `regression_suite/run_claim_verification.sh` | both of the above, as a gate |
+| `.claude/settings.json` | a `PostToolUse` hook that lints each `.md`/`.py` as it is written |
+
+The rules are **deliberately narrow**: they were calibrated against the existing
+reports and tightened until every hit was real (15 hits → 1). A rule that fires
+on honest prose is worse than no rule, because it trains people to ignore it.
+The hardest negatives are sentences that *quote* a bad claim in order to retract
+it — those must stay silent, and there are cases pinning that.
+
+If you believe a rule is wrong, add a `clean` case to `evals/cases/claims.md`
+and fix the rule. Do not loosen a rule without a case, and do not edit prose
+solely to satisfy a linter.
+
+`GEMINI.md` is exempt, with the reason recorded in the linter: it is frozen
+history, and editing it to pass would falsify what it exists to preserve.
+
+## 6. Skills
+
+`.claude/skills/` carries the procedures that are easy to get wrong:
+
+| Skill | Use it when |
+| :--- | :--- |
+| `physics-claim` | adding or changing any numerical claim |
+| `emit-target` | touching `integrations/` or emitting a vendor format |
+| `tier-audit` | asking whether something here is actually true |
+| `gates` | running the gates, or deciding whether a failure is yours |
+
+## 7. Environment
 
 * `.venv/` — Python 3.14, **torch pinned at 2.10.0**. The published physics
   numbers were measured against it; a resolver that moves torch underneath them
@@ -127,7 +168,7 @@ decision, not a code bug. It fails identically on every commit.
   them must skip loudly, not crash. `golden_config.json` is force-included
   because it is an input, not an artifact.
 
-## 6. Commit messages
+## 8. Commit messages
 
 House style: a subject that states the **finding**, not the activity, and a body
 that explains what was measured and what it changed. Self-correction is normal
@@ -144,7 +185,7 @@ Add the section the previous commit message claimed
 Branch for substantial work; a purely additive change with both gates green may
 go to `main` directly.
 
-## 7. Open items
+## 9. Open items
 
 `reports/critical_review.md` §5 is the authoritative to-do list — a standing
 adversarial audit of which claims the code supports and which it does not. Read
